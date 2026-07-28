@@ -5,6 +5,17 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Market Lab — an investing simulator for the classroom</title>
 <meta name="description" content="A ten-year investing simulator that teaches high school students about risk, return, compounding, diversification and fees.">
+<!-- pwa:start — stripped from the single-file bundle, which has no server to
+     resolve these against. -->
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png" sizes="192x192" type="image/png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Market Lab">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#f9f9f7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#1a1a19" media="(prefers-color-scheme: dark)">
+<!-- pwa:end -->
 <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
@@ -16,6 +27,8 @@
       <span class="tag">Ten years. Real trade-offs.</span>
     </div>
     <div class="clock"><span id="clock-text">Start &middot; Year 0</span></div>
+    <!-- Revealed only when the browser says the app can actually be installed. -->
+    <button class="icon-btn install" id="install-btn" type="button" hidden>Install app</button>
     <button class="icon-btn" id="theme-btn" type="button" aria-label="Switch between light and dark theme">Theme</button>
   </header>
 

@@ -131,6 +131,50 @@
     if (saved === 'dark' || saved === 'light') applyTheme(saved);
   }
 
+  /* ---------------- installing as an app ---------------- */
+
+  /* Service workers are refused on file:// URLs, so this only runs when the app
+   * is actually being served. Opening index.html straight off disk still works
+   * — it just doesn't get the offline cache or the install prompt. */
+  function registerServiceWorker() {
+    const servedOverHttp = location.protocol === 'http:' || location.protocol === 'https:';
+    if (!servedOverHttp || !('serviceWorker' in navigator)) return;
+    window.addEventListener('load', function () {
+      navigator.serviceWorker.register('sw.js').catch(function () {
+        /* Offline support is a bonus; the app is fully usable without it. */
+      });
+    });
+  }
+
+  /* Chrome and Edge fire beforeinstallprompt when the app qualifies for
+   * installation, and require the prompt be triggered by a real click — so the
+   * event is stashed and replayed from the button. Safari and Firefox never fire
+   * it, and the button simply stays hidden. */
+  function setupInstall() {
+    let deferred = null;
+    const btn = $('install-btn');
+
+    window.addEventListener('beforeinstallprompt', function (ev) {
+      ev.preventDefault();
+      deferred = ev;
+      btn.hidden = false;
+    });
+
+    btn.addEventListener('click', function () {
+      if (!deferred) return;
+      deferred.prompt();
+      deferred.userChoice.finally(function () {
+        deferred = null;
+        btn.hidden = true;
+      });
+    });
+
+    window.addEventListener('appinstalled', function () {
+      deferred = null;
+      btn.hidden = true;
+    });
+  }
+
   /* ---------------- wiring ---------------- */
 
   function restart() {
@@ -144,8 +188,11 @@
     return 'run-' + Math.random().toString(36).slice(2, 8);
   }
 
+  registerServiceWorker();
+
   document.addEventListener('DOMContentLoaded', function () {
     restoreTheme();
+    setupInstall();
 
     $('next-month').addEventListener('click', function () {
       step(1);

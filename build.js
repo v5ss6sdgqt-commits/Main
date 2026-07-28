@@ -30,6 +30,11 @@ function replaceOnce(source, pattern, text) {
   return source.replace(pattern, () => text);
 }
 
+/* The manifest and icon links point at sibling files that a lone HTML file has
+ * no way to resolve, so they come out. The service worker registration can stay
+ * — it checks the protocol and no-ops on file:// URLs. */
+html = replaceOnce(html, /<!-- pwa:start[\s\S]*?pwa:end -->\n?/, '');
+
 const css = read('css/styles.css');
 html = replaceOnce(
   html,

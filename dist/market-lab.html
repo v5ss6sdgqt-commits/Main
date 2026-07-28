@@ -196,6 +196,24 @@ button {
   color: var(--text-primary);
 }
 
+/* Slightly forward of the other header buttons — it is an offer, not a setting,
+   and it disappears for good once taken. */
+.icon-btn.install {
+  border-color: var(--accent);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.icon-btn.install:hover {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
 /* ---------- cards ---------- */
 
 .card {
@@ -882,6 +900,8 @@ footer {
       <span class="tag">Ten years. Real trade-offs.</span>
     </div>
     <div class="clock"><span id="clock-text">Start &middot; Year 0</span></div>
+    <!-- Revealed only when the browser says the app can actually be installed. -->
+    <button class="icon-btn install" id="install-btn" type="button" hidden>Install app</button>
     <button class="icon-btn" id="theme-btn" type="button" aria-label="Switch between light and dark theme">Theme</button>
   </header>
 
@@ -2763,6 +2783,50 @@ footer {
     if (saved === 'dark' || saved === 'light') applyTheme(saved);
   }
 
+  /* ---------------- installing as an app ---------------- */
+
+  /* Service workers are refused on file:// URLs, so this only runs when the app
+   * is actually being served. Opening index.html straight off disk still works
+   * — it just doesn't get the offline cache or the install prompt. */
+  function registerServiceWorker() {
+    const servedOverHttp = location.protocol === 'http:' || location.protocol === 'https:';
+    if (!servedOverHttp || !('serviceWorker' in navigator)) return;
+    window.addEventListener('load', function () {
+      navigator.serviceWorker.register('sw.js').catch(function () {
+        /* Offline support is a bonus; the app is fully usable without it. */
+      });
+    });
+  }
+
+  /* Chrome and Edge fire beforeinstallprompt when the app qualifies for
+   * installation, and require the prompt be triggered by a real click — so the
+   * event is stashed and replayed from the button. Safari and Firefox never fire
+   * it, and the button simply stays hidden. */
+  function setupInstall() {
+    let deferred = null;
+    const btn = $('install-btn');
+
+    window.addEventListener('beforeinstallprompt', function (ev) {
+      ev.preventDefault();
+      deferred = ev;
+      btn.hidden = false;
+    });
+
+    btn.addEventListener('click', function () {
+      if (!deferred) return;
+      deferred.prompt();
+      deferred.userChoice.finally(function () {
+        deferred = null;
+        btn.hidden = true;
+      });
+    });
+
+    window.addEventListener('appinstalled', function () {
+      deferred = null;
+      btn.hidden = true;
+    });
+  }
+
   /* ---------------- wiring ---------------- */
 
   function restart() {
@@ -2776,8 +2840,11 @@ footer {
     return 'run-' + Math.random().toString(36).slice(2, 8);
   }
 
+  registerServiceWorker();
+
   document.addEventListener('DOMContentLoaded', function () {
     restoreTheme();
+    setupInstall();
 
     $('next-month').addEventListener('click', function () {
       step(1);
