@@ -2,7 +2,11 @@
  *
  * The market table's rows are built once and then updated in place rather than
  * re-created each month — rebuilding would wipe whatever amount the student had
- * typed into a trade box mid-decision. */
+ * typed into a trade box mid-decision.
+ *
+ * With sixteen assets the table is grouped by category, and the allocation
+ * summary aggregates by category too: sixteen distinguishable colours is beyond
+ * what anyone can actually read, and five is comfortable. */
 
 (function (global) {
   'use strict';
@@ -19,6 +23,14 @@
       '$' +
       Math.abs(n).toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d })
     );
+  }
+
+  /* Prices span $0.62 (Air NZ) to $178,000 (bitcoin), so a fixed number of
+   * decimals is wrong at one end or the other. */
+  function price(n) {
+    if (n >= 10000) return money(n, 0);
+    if (n >= 100) return money(n, 2);
+    return money(n, 2);
   }
 
   function signedMoney(n, dp) {
@@ -67,6 +79,7 @@
     $('months-left').textContent = left === 0 ? 'Finished' : left + ' months to go';
     $('next-month').disabled = state.finished;
     $('next-year').disabled = state.finished;
+    $('play-btn').disabled = state.finished;
   }
 
   function renderHero(state) {
@@ -84,6 +97,7 @@
   function renderTiles(state) {
     const total = Portfolio.totalValue(state);
     $('tile-cash').textContent = money(state.cash);
+    $('tile-cash-note').textContent = 'Earns ' + plainPct(state.cfg.savingsRate) + ' a year';
     $('tile-contributed').textContent = money(state.totalContributed);
     $('tile-contributed-note').textContent = money(state.cfg.monthlyContribution) + ' added monthly';
     $('tile-real').textContent = money(Portfolio.realValue(state, total));
@@ -107,8 +121,8 @@
       },
       {
         key: 'benchmark',
-        name: 'Index fund, bought and held',
-        color: resolveColor('var(--series-index)'),
+        name: 'World fund, bought and held',
+        color: resolveColor('var(--series-world)'),
         values: state.history.map(function (h) {
           return h.benchmark;
         })
@@ -155,7 +169,7 @@
       '<div class="t-row"><span class="key dot" style="background:var(--series-portfolio)"></span>Your portfolio<span class="v">' +
       money(h.total) +
       '</span></div>' +
-      '<div class="t-row"><span class="key dot" style="background:var(--series-index)"></span>Index only<span class="v">' +
+      '<div class="t-row"><span class="key dot" style="background:var(--series-world)"></span>Doing nothing<span class="v">' +
       money(h.benchmark) +
       '</span></div>' +
       '<div class="t-row" style="margin-top:4px">Difference<span class="v ' +
@@ -180,11 +194,16 @@
 
   /* ---------------- allocation ---------------- */
 
+  /* Aggregated by category rather than by asset: a student holding eight things
+   * wants to know "how much of me is crypto", not to decode eight shades. */
   function allocationParts(state) {
     const parts = [];
-    Market.ASSETS.forEach(function (a) {
-      const v = Portfolio.holdingValue(state, a.id);
-      if (v > 0.005) parts.push({ id: a.id, name: a.name, color: a.color, value: v });
+    Market.CATEGORIES.forEach(function (cat) {
+      let value = 0;
+      Market.assetsInCategory(cat.id).forEach(function (a) {
+        value += Portfolio.holdingValue(state, a.id);
+      });
+      if (value > 0.005) parts.push({ id: cat.id, name: cat.name, color: cat.color, value: value });
     });
     if (state.cash > 0.005) {
       parts.push({ id: 'cash', name: 'Cash', color: 'var(--series-cash)', value: state.cash });
@@ -252,60 +271,88 @@
       delete marketRows[k];
     });
 
-    Market.ASSETS.forEach(function (a) {
-      const tr = document.createElement('tr');
-      tr.innerHTML =
-        '<td><div class="asset-cell"><span class="key dot" style="background:' +
-        a.color +
-        '"></span><span><span class="asset-name">' +
-        a.name +
-        '</span><br><span class="asset-kind">' +
-        a.kind +
-        ' · ' +
-        a.ticker +
-        '</span></span></div></td>' +
-        '<td data-label="Risk"><span class="risk risk-' +
-        a.risk +
-        '">' +
-        RISK_WORDS[a.risk] +
-        '</span></td>' +
-        '<td class="c-price" data-label="Price"></td>' +
-        '<td class="c-change" data-label="1 month"></td>' +
-        '<td class="col-history"><canvas class="spark"></canvas></td>' +
-        '<td class="c-holding" data-label="You hold"></td>' +
-        '<td data-label="Trade"><div class="trade-cell">' +
-        '<input type="number" min="0" step="50" placeholder="$" aria-label="Amount in dollars to trade in ' +
-        a.name +
-        '">' +
-        '<button class="mini buy" type="button">Buy</button>' +
-        '<button class="mini sell" type="button">Sell</button>' +
-        '</div></td>';
-      body.appendChild(tr);
+    Market.CATEGORIES.forEach(function (cat) {
+      const head = document.createElement('tr');
+      head.className = 'cat-row';
+      head.innerHTML =
+        '<td colspan="8"><span class="cat-chip" style="background:' +
+        cat.color +
+        '"></span><span class="cat-name">' +
+        cat.name +
+        '</span><span class="cat-blurb">' +
+        cat.blurb +
+        '</span></td>';
+      body.appendChild(head);
 
-      const input = tr.querySelector('input');
-      const buyBtn = tr.querySelector('.buy');
-      const sellBtn = tr.querySelector('.sell');
+      Market.assetsInCategory(cat.id).forEach(function (a) {
+        const tr = document.createElement('tr');
+        tr.innerHTML =
+          '<td><div class="asset-cell"><span class="key dot" style="background:' +
+          a.color +
+          '"></span><span><span class="asset-name">' +
+          a.name +
+          '</span><br><span class="asset-kind">' +
+          a.ticker +
+          ' · ' +
+          a.where +
+          '</span></span></div></td>' +
+          '<td data-label="Risk"><span class="risk risk-' +
+          a.risk +
+          '">' +
+          RISK_WORDS[a.risk] +
+          '</span></td>' +
+          '<td class="c-price" data-label="Price"></td>' +
+          '<td class="c-change" data-label="1 month"></td>' +
+          /* The two return figures sit side by side deliberately — the gap
+             between them is the lesson, and it only works if you see both. */
+          '<td class="c-returns" data-label="Past / expected">' +
+          '<button type="button" class="ret-pair" data-term="past-performance" aria-label="Past and expected return for ' +
+          a.name +
+          ' — what does this mean?">' +
+          '<span class="ret-past">' +
+          plainPct(a.past.ret, 0) +
+          '</span><span class="ret-sep">→</span><span class="ret-exp">' +
+          plainPct(a.mu, 1) +
+          '</span></button>' +
+          '<span class="ret-note">' +
+          a.past.since +
+          '</span></td>' +
+          '<td class="col-history"><canvas class="spark"></canvas></td>' +
+          '<td class="c-holding" data-label="You hold"></td>' +
+          '<td data-label="Trade"><div class="trade-cell">' +
+          '<input type="number" min="0" step="10" placeholder="$" aria-label="Amount in dollars to trade in ' +
+          a.name +
+          '">' +
+          '<button class="mini buy" type="button">Buy</button>' +
+          '<button class="mini sell" type="button">Sell</button>' +
+          '</div></td>';
+        body.appendChild(tr);
 
-      buyBtn.addEventListener('click', function () {
-        handlers.onTrade('buy', a.id, parseFloat(input.value));
-      });
-      sellBtn.addEventListener('click', function () {
-        handlers.onTrade('sell', a.id, parseFloat(input.value));
-      });
-      input.addEventListener('keydown', function (ev) {
-        if (ev.key === 'Enter') handlers.onTrade('buy', a.id, parseFloat(input.value));
-      });
+        const input = tr.querySelector('input');
+        const buyBtn = tr.querySelector('.buy');
+        const sellBtn = tr.querySelector('.sell');
 
-      marketRows[a.id] = {
-        tr: tr,
-        price: tr.querySelector('.c-price'),
-        change: tr.querySelector('.c-change'),
-        holding: tr.querySelector('.c-holding'),
-        spark: tr.querySelector('.spark'),
-        input: input,
-        buy: buyBtn,
-        sell: sellBtn
-      };
+        buyBtn.addEventListener('click', function () {
+          handlers.onTrade('buy', a.id, parseFloat(input.value));
+        });
+        sellBtn.addEventListener('click', function () {
+          handlers.onTrade('sell', a.id, parseFloat(input.value));
+        });
+        input.addEventListener('keydown', function (ev) {
+          if (ev.key === 'Enter') handlers.onTrade('buy', a.id, parseFloat(input.value));
+        });
+
+        marketRows[a.id] = {
+          tr: tr,
+          price: tr.querySelector('.c-price'),
+          change: tr.querySelector('.c-change'),
+          holding: tr.querySelector('.c-holding'),
+          spark: tr.querySelector('.spark'),
+          input: input,
+          buy: buyBtn,
+          sell: sellBtn
+        };
+      });
     });
   }
 
@@ -315,21 +362,24 @@
       const row = marketRows[a.id];
       if (!row) return;
 
-      const price = Portfolio.priceOf(state, a.id);
+      const p = Portfolio.priceOf(state, a.id);
       const change = state.market.returns[a.id][m];
-      row.price.textContent = money(price, 2);
+      row.price.textContent = price(p);
       row.change.textContent = m === 0 ? '—' : pct(change);
       row.change.className = 'c-change ' + (m === 0 ? '' : change >= 0 ? 'up' : 'down');
 
       const value = Portfolio.holdingValue(state, a.id);
       row.holding.innerHTML =
         value > 0.005
-          ? money(value) + '<br><span class="asset-kind">' + state.shares[a.id].toFixed(2) + ' units</span>'
+          ? money(value) +
+            '<br><span class="asset-kind">' +
+            state.shares[a.id].toFixed(state.shares[a.id] < 1 ? 4 : 2) +
+            ' units</span>'
           : '<span class="asset-kind">&mdash;</span>';
 
       // Sparkline shows the run so far, capped so early months stay readable.
       const series = state.market.prices[a.id].slice(0, m + 1);
-      Charts.sparkline(row.spark, series.length > 1 ? series : [price, price], resolveColor(a.color));
+      Charts.sparkline(row.spark, series.length > 1 ? series : [p, p], resolveColor(a.color));
 
       row.buy.disabled = state.finished || Portfolio.maxBuy(state) <= 0;
       row.sell.disabled = state.finished || value <= 0.005;
@@ -346,7 +396,9 @@
       return;
     }
     el.innerHTML =
-      '<div class="banner"><div class="b-head">' +
+      '<div class="banner' +
+      (event.big ? ' big' : '') +
+      '"><div class="b-head">' +
       event.headline +
       '</div><div class="b-why">' +
       event.why +
@@ -380,19 +432,24 @@
     const heldCount = Market.ASSETS.filter(function (a) {
       return Portfolio.holdingValue(state, a.id) > 0.005;
     }).length;
+    const catCount = Market.CATEGORIES.filter(function (c) {
+      return Market.assetsInCategory(c.id).some(function (a) {
+        return Portfolio.holdingValue(state, a.id) > 0.005;
+      });
+    }).length;
     const cashShare = s.nominal > 0 ? state.cash / s.nominal : 0;
 
     if (s.vsBenchmark >= 0) {
       bullets.push(
         'You finished ' +
           money(s.vsBenchmark) +
-          ' ahead of simply buying the index fund and never touching it. That is a real achievement — and worth asking how much of it was skill and how much was the particular path this market took. Change the seed and try the same strategy again.'
+          ' ahead of simply buying the world fund and never touching it. That is a real achievement — and worth asking how much was skill and how much was the particular path this market took. Change the seed and try the same strategy again.'
       );
     } else {
       bullets.push(
-        'Buying the index fund and never touching it would have finished ' +
+        'Buying the world fund and never touching it would have finished ' +
           money(-s.vsBenchmark) +
-          ' ahead of you. This is the single most reliable finding in investing: most active decisions lose to patiently holding a broad fund.'
+          ' ahead of you. This is the most reliable finding in investing: most active decisions lose to patiently holding a broad fund.'
       );
     }
 
@@ -406,27 +463,22 @@
 
     if (s.trades === 0) {
       bullets.push(
-        'You never traded, so you paid nothing in fees beyond your opening purchase. Doing nothing is a strategy, and often a good one.'
+        'You never traded, so you paid nothing in fees at all. Doing nothing is a strategy, and often a good one.'
       );
-    } else if (feeShare > 0.02) {
+    } else {
+      const perTrade = s.fees / s.trades;
       bullets.push(
         'You made ' +
           s.trades +
           ' trades and paid ' +
           money(s.fees, 2) +
-          ' in fees — ' +
+          ' in fees — an average of ' +
+          money(perTrade, 2) +
+          ' each, or ' +
           plainPct(feeShare) +
-          ' of every dollar you put in, gone to costs. At half a percent a trade, activity is expensive.'
-      );
-    } else {
-      bullets.push(
-        'You made ' +
-          s.trades +
-          ' trades for ' +
-          money(s.fees, 2) +
-          ' in fees, about ' +
-          plainPct(feeShare) +
-          ' of the money you put in. Restrained trading kept your costs low.'
+          ' of every dollar you put in. With a ' +
+          money(state.cfg.feeFlat) +
+          ' flat fee on every trade, small frequent trades are far more expensive than they look.'
       );
     }
 
@@ -440,7 +492,9 @@
       bullets.push(
         'You ended with ' +
           plainPct(cashShare, 0) +
-          ' of your money sitting in cash. It earned 2% while prices rose ' +
+          ' of your money sitting in cash. It earned ' +
+          plainPct(state.cfg.savingsRate) +
+          ' while prices rose ' +
           plainPct(s.inflation) +
           ' over the run, so that portion quietly lost buying power.'
       );
@@ -452,11 +506,17 @@
           (heldCount === 0 ? 'no investments at all' : 'a single asset') +
           '. Concentration magnifies both outcomes — it is the reason one piece of bad news could have undone the whole decade.'
       );
-    } else if (heldCount >= 4) {
+    } else if (catCount >= 3) {
       bullets.push(
         'You finished spread across ' +
           heldCount +
-          ' different assets. Because they don’t move in step, that mix gave you a smoother ride than any one of them alone.'
+          ' assets in ' +
+          catCount +
+          ' different categories. Because those categories do not move in step, that mix gave you a smoother ride than any one of them alone.'
+      );
+    } else if (catCount === 1) {
+      bullets.push(
+        'Everything you held was in one category. Owning several things from the same corner of the market is much less diversified than it feels — they tend to fall together.'
       );
     }
 
@@ -486,7 +546,7 @@
       'Seed "' + state.market.seed + '" · ' + state.market.months / 12 + ' years · ' + s.trades + ' trades';
 
     const tiles = [
-      { k: 'Final value', v: money(s.nominal), n: 'In today’s money ' + money(s.real) },
+      { k: 'Final value', v: money(s.nominal), n: 'In today’s money ' + money(s.real), term: 'real-value' },
       { k: 'Money you put in', v: money(s.contributed), n: 'Opening balance plus monthly deposits' },
       {
         k: 'Profit',
@@ -494,23 +554,29 @@
         n: pct(s.totalReturn) + ' overall',
         cls: s.profit >= 0 ? 'up' : 'down'
       },
-      { k: 'Growth per year', v: plainPct(s.annualised), n: 'Benchmark ' + plainPct(s.benchAnnualised) },
+      {
+        k: 'Growth per year',
+        v: plainPct(s.annualised),
+        n: 'Benchmark ' + plainPct(s.benchAnnualised),
+        term: 'annual-return'
+      },
       {
         k: 'Against the benchmark',
         v: signedMoney(s.vsBenchmark),
         n: s.vsBenchmark >= 0 ? 'You came out ahead' : 'Doing nothing would have won',
-        cls: s.vsBenchmark >= 0 ? 'up' : 'down'
+        cls: s.vsBenchmark >= 0 ? 'up' : 'down',
+        term: 'benchmark'
       },
-      { k: 'Fees paid', v: money(s.fees, 2), n: s.trades + ' trades' },
-      { k: 'Worst fall', v: plainPct(Math.abs(s.drawdown)), n: 'Peak to trough' },
-      { k: 'Inflation', v: plainPct(s.inflation), n: 'Over the whole run' }
+      { k: 'Fees paid', v: money(s.fees, 2), n: s.trades + ' trades', term: 'fees' },
+      { k: 'Worst fall', v: plainPct(Math.abs(s.drawdown)), n: 'Peak to trough', term: 'drawdown' },
+      { k: 'Inflation', v: plainPct(s.inflation), n: 'Over the whole run', term: 'inflation' }
     ];
 
     $('results-grid').innerHTML = tiles
       .map(function (t) {
         return (
           '<div class="tile"><div class="k">' +
-          t.k +
+          (t.term ? Glossary.tag(t.term, t.k) : t.k) +
           '</div><div class="v ' +
           (t.cls || '') +
           '">' +
@@ -532,6 +598,7 @@
   global.UI = {
     $: $,
     money: money,
+    price: price,
     signedMoney: signedMoney,
     pct: pct,
     plainPct: plainPct,

@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Market Lab — an investing simulator for the classroom</title>
-<meta name="description" content="A ten-year investing simulator that teaches high school students about risk, return, compounding, diversification and fees.">
+<meta name="description" content="A ten-year investing simulator using real NZ and international companies, funds and crypto, built to teach risk, compounding, diversification and fees.">
 <!-- pwa:start — stripped from the single-file bundle, which has no server to
      resolve these against. -->
 <link rel="manifest" href="manifest.webmanifest">
@@ -13,8 +13,8 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Market Lab">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="theme-color" content="#f9f9f7" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#1a1a19" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#f7f8fa" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#14161a" media="(prefers-color-scheme: dark)">
 <!-- pwa:end -->
 <link rel="stylesheet" href="css/styles.css">
 </head>
@@ -24,7 +24,7 @@
   <header class="topbar">
     <div class="brand">
       <h1>Market Lab</h1>
-      <span class="tag">Ten years. Real trade-offs.</span>
+      <span class="tag">Real companies. Ten years. Your call.</span>
     </div>
     <div class="clock"><span id="clock-text">Start &middot; Year 0</span></div>
     <!-- Revealed only when the browser says the app can actually be installed. -->
@@ -32,7 +32,7 @@
     <button class="icon-btn" id="theme-btn" type="button" aria-label="Switch between light and dark theme">Theme</button>
   </header>
 
-  <!-- Shown only once the ten years are up. -->
+  <!-- Shown only once the run is up. -->
   <section class="card" id="results-card" hidden aria-live="polite">
     <div class="card-head">
       <h2>Ten years later</h2>
@@ -57,48 +57,50 @@
         <div class="hero-row">
           <div>
             <div class="hero-label">Portfolio value</div>
-            <div class="hero-figure" id="hero-value">$10,000</div>
+            <div class="hero-figure" id="hero-value">$1,000</div>
             <div class="hero-delta" id="hero-delta">&mdash;</div>
           </div>
         </div>
 
+        <!-- Every tile label opens its own explanation. These are the four
+             numbers students stare at, so they are the four worth explaining. -->
         <div class="tiles">
           <div class="tile">
-            <div class="k">Cash available</div>
-            <div class="v" id="tile-cash">$10,000</div>
-            <div class="n">Earns 2% a year</div>
+            <div class="k"><button type="button" class="term-link" data-term="cash-interest">Cash available</button></div>
+            <div class="v" id="tile-cash">$1,000</div>
+            <div class="n" id="tile-cash-note">Earns 3.0% a year</div>
           </div>
           <div class="tile">
-            <div class="k">Money put in</div>
-            <div class="v" id="tile-contributed">$10,000</div>
-            <div class="n" id="tile-contributed-note">$200 added monthly</div>
+            <div class="k"><button type="button" class="term-link" data-term="dollar-cost-averaging">Money put in</button></div>
+            <div class="v" id="tile-contributed">$1,000</div>
+            <div class="n" id="tile-contributed-note">$50 added monthly</div>
           </div>
           <div class="tile">
-            <div class="k">Worth in today's money</div>
-            <div class="v" id="tile-real">$10,000</div>
+            <div class="k"><button type="button" class="term-link" data-term="real-value">Worth in today's money</button></div>
+            <div class="v" id="tile-real">$1,000</div>
             <div class="n" id="tile-inflation">Inflation 0.0%</div>
           </div>
           <div class="tile">
-            <div class="k">Fees paid</div>
+            <div class="k"><button type="button" class="term-link" data-term="fees">Fees paid</button></div>
             <div class="v" id="tile-fees">$0.00</div>
             <div class="n" id="tile-trades">0 trades</div>
           </div>
         </div>
 
         <div class="card-head" style="margin-top:22px">
-          <h2>Your portfolio against doing nothing</h2>
-          <span class="sub">The grey line puts every dollar into the index fund and never trades again</span>
+          <h2>You against doing nothing</h2>
+          <span class="sub">The other line buys the world fund on day one and never trades again</span>
           <button class="icon-btn" id="table-toggle" type="button" aria-expanded="false">Show as table</button>
         </div>
 
         <div class="chart-box">
-          <canvas id="main-chart" role="img" aria-label="Line chart comparing your portfolio value against a buy-and-hold index fund portfolio over time"></canvas>
+          <canvas id="main-chart" role="img" aria-label="Line chart comparing your portfolio value against a buy-and-hold world index fund over time"></canvas>
           <div class="tooltip" id="chart-tooltip" role="status"></div>
         </div>
 
         <div class="legend">
           <span class="item"><span class="key" style="background:var(--series-portfolio)"></span>Your portfolio</span>
-          <span class="item"><span class="key" style="background:var(--series-index)"></span>Index fund, bought and held</span>
+          <span class="item"><span class="key" style="background:var(--series-world)"></span><button type="button" class="term-link" data-term="benchmark">Doing nothing</button></span>
         </div>
 
         <!-- Table view: every plotted value is reachable without relying on the
@@ -106,7 +108,7 @@
         <div class="data-table" id="chart-table" hidden>
           <table>
             <thead>
-              <tr><th scope="col">Month</th><th scope="col">Your portfolio</th><th scope="col">Index fund only</th><th scope="col">Difference</th></tr>
+              <tr><th scope="col">Month</th><th scope="col">Your portfolio</th><th scope="col">Doing nothing</th><th scope="col">Difference</th></tr>
             </thead>
             <tbody id="chart-table-body"></tbody>
           </table>
@@ -120,8 +122,11 @@
         </div>
         <div class="setup">
           <div class="field">
+            <!-- The explainer sits beside the label rather than inside it: a
+                 button within a label activates the field as well as itself. -->
             <label for="seed-input">Market seed</label>
-            <input id="seed-input" type="text" value="classroom-182" autocomplete="off">
+            <button type="button" class="term-link field-help" data-term="seed">What is this?</button>
+            <input id="seed-input" type="text" value="classroom-2910" autocomplete="off">
           </div>
           <div class="field">
             <label for="years-input">Years</label>
@@ -146,8 +151,21 @@
           <span class="sub" id="months-left">120 months to go</span>
         </div>
         <div class="controls">
-          <button class="primary" id="next-month" type="button">Next month</button>
+          <button class="primary play" id="play-btn" type="button" aria-pressed="false">
+            <span class="play-icon" aria-hidden="true"></span><span id="play-label">Run the simulation</span>
+          </button>
+        </div>
+        <div class="controls secondary-controls">
+          <button class="ghost" id="next-month" type="button">Next month</button>
           <button class="ghost" id="next-year" type="button">Skip a year</button>
+          <label class="speed">
+            Speed
+            <select id="speed-input" aria-label="Simulation speed">
+              <option value="900">Slow</option>
+              <option value="450" selected>Normal</option>
+              <option value="140">Fast</option>
+            </select>
+          </label>
         </div>
         <div id="news-banner"></div>
       </section>
@@ -155,6 +173,7 @@
       <section class="card">
         <div class="card-head">
           <h2>Where your money is</h2>
+          <span class="sub"><button type="button" class="term-link" data-term="diversification">Why the mix matters</button></span>
         </div>
         <div id="alloc-wrap"></div>
         <div class="legend" id="alloc-legend"></div>
@@ -175,16 +194,20 @@
   <section class="card">
     <div class="card-head">
       <h2>The market</h2>
-      <span class="sub">Buy and sell at this month's prices &middot; 0.5% fee per trade</span>
+      <span class="sub">
+        Real companies, simulated prices &middot; NZD &middot;
+        <button type="button" class="term-link" data-term="fees">$3 + 0.5% per trade</button>
+      </span>
     </div>
     <div class="table-scroll">
       <table class="market-table">
         <thead>
           <tr>
             <th scope="col">Asset</th>
-            <th scope="col">Risk</th>
+            <th scope="col"><button type="button" class="term-link" data-term="risk">Risk</button></th>
             <th scope="col">Price</th>
             <th scope="col">1 month</th>
+            <th scope="col"><button type="button" class="term-link" data-term="past-performance">Past &rarr; expected</button></th>
             <th scope="col" class="col-history">History</th>
             <th scope="col">You hold</th>
             <th scope="col">Trade</th>
@@ -194,42 +217,51 @@
       </table>
     </div>
     <div class="notice" id="trade-notice"></div>
+    <p class="table-foot">
+      The first number is roughly what the real thing returned in the past. The second is what this
+      simulation expects from here — and it is deliberately much lower for the past winners.
+      <button type="button" class="term-link" data-term="past-performance">Here is why that gap exists</button>, and it is
+      the most useful thing on this page.
+    </p>
   </section>
 
   <section class="card">
     <div class="card-head">
       <h2>What this is teaching you</h2>
+      <span class="sub">Tap any underlined word anywhere in the app for a plain-English explanation</span>
     </div>
     <div class="learn">
       <div class="item">
-        <h3>Risk and return travel together</h3>
-        <p>Bitcorn has the highest expected return on the board. It also has the widest range of outcomes by far. Nothing here offers high returns at low risk, because nothing in the real world does either.</p>
+        <h3><button type="button" class="term-link" data-term="past-performance">Last decade's winner is not next decade's</button></h3>
+        <p>Nvidia returned about 33% a year for twenty years. This simulation expects roughly 9% from it. That is not pessimism — a price already reflects how good everyone knows the company is.</p>
       </div>
       <div class="item">
-        <h3>Compounding needs time, not cleverness</h3>
-        <p>Money left alone grows on its own growth. Ten years of an ordinary return usually beats a few brilliant trades, which is why the grey benchmark line is so hard to beat.</p>
+        <h3><button type="button" class="term-link" data-term="risk">Risk and return travel together</button></h3>
+        <p>Ethereum can move 85% in a year. It is not expected to return more than shares over time — you are taking on far more risk for the same expected reward.</p>
       </div>
       <div class="item">
-        <h3>Diversification is the one free lunch</h3>
-        <p>These assets don't move together. Ridgeline often rises when the market falls, and bonds tend to climb during recessions. Holding a mix smooths the ride without giving up much return.</p>
+        <h3><button type="button" class="term-link" data-term="compounding">Compounding needs time, not cleverness</button></h3>
+        <p>Money left alone grows on its own growth. Ten years of an ordinary return usually beats a few brilliant trades, which is why the benchmark line is so hard to beat.</p>
       </div>
       <div class="item">
-        <h3>Fees are small and relentless</h3>
-        <p>Half a percent per trade sounds trivial. Trade every month for ten years and you have handed over a meaningful slice of everything you earned. Watch the fees tile.</p>
+        <h3><button type="button" class="term-link" data-term="correlation">Six NZ shares is not diversified</button></h3>
+        <p>Fisher &amp; Paykel, Mainfreight, Meridian and a2 Milk all ride the same NZ economy. One NZ fund plus one world fund is duller and genuinely safer.</p>
       </div>
       <div class="item">
-        <h3>Cash quietly loses value</h3>
-        <p>Your savings account pays 2% while prices rise about 2.5% a year. The balance goes up and still buys less. Compare the portfolio value with the "today's money" tile.</p>
+        <h3><button type="button" class="term-link" data-term="fees">Small trades are eaten by fees</button></h3>
+        <p>A $3 flat fee on a $50 trade is 6% gone before you own anything. The same fee on a $5,000 trade is 0.06%. Trade small and often and the fees quietly take your returns.</p>
       </div>
       <div class="item">
-        <h3>Single stocks carry risk funds don't</h3>
-        <p>One bad earnings report can take 17% off Nimbus in a month. The index fund holds every company at once, so no single piece of bad news can do that to it.</p>
+        <h3><button type="button" class="term-link" data-term="kiwisaver">This is really about KiwiSaver</button></h3>
+        <p>You will be in it from your first payslip for about 45 years. The fund you pick is the biggest money decision you will ever make, and most people never make it.</p>
       </div>
     </div>
   </section>
 
   <footer>
-    Simulated prices, not investment advice. Built for teaching &mdash; the numbers are calibrated to real long-run averages, but any single ten-year run is one roll of the dice.
+    Simulated prices using real company names, not investment advice. Historical return figures are
+    approximate and included as teaching context. Prices are in NZD and currency movement is not
+    modelled &mdash; <button type="button" class="term-link" data-term="currency">what that leaves out</button>.
   </footer>
 
 </div>
@@ -239,6 +271,7 @@
 <script src="js/portfolio.js"></script>
 <script src="js/charts.js"></script>
 <script src="js/ui.js"></script>
+<script src="js/glossary.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>

@@ -4,76 +4,144 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Market Lab — an investing simulator for the classroom</title>
-<meta name="description" content="A ten-year investing simulator that teaches high school students about risk, return, compounding, diversification and fees.">
+<meta name="description" content="A ten-year investing simulator using real NZ and international companies, funds and crypto, built to teach risk, compounding, diversification and fees.">
 <style>
 /* Design tokens. Every color in the app resolves through these, including the
    canvas charts, which read them at draw time — so light/dark is one swap here
    rather than a branch in the drawing code.
 
-   The categorical series colors were validated for colorblind separation and
-   contrast against both surfaces before being adopted; the dark column is the
-   same hues re-stepped for the dark surface, not an automatic inversion. */
+   Structure: five category hues spaced far apart around the wheel (cyan,
+   indigo, green, pink, orange), then each asset takes a step within its
+   category's hue. Category colour is what the allocation bar and the table
+   groups use, because five things can be told apart at a glance and sixteen
+   cannot. Per-asset colour only ever appears next to that asset's own name, so
+   the six greens never have to be distinguished from each other in isolation.
+
+   The neutrals are cool rather than grey — a faint blue bias that sits under
+   the indigo accent instead of fighting it. */
 :root {
   color-scheme: light;
 
-  --page: #f9f9f7;
-  --surface-1: #fcfcfb;
-  --surface-2: #f2f1ed;
+  --page: #f7f8fa;
+  --surface-1: #ffffff;
+  --surface-2: #eef0f4;
 
-  --text-primary: #0b0b0b;
-  --text-secondary: #52514e;
-  --text-muted: #898781;
+  --text-primary: #0d1117;
+  --text-secondary: #4a5261;
+  --text-muted: #79818f;
 
-  --grid: #e1e0d9;
-  --axis: #c3c2b7;
-  --border: rgba(11, 11, 11, 0.1);
+  --grid: #e4e7ec;
+  --axis: #c2c8d2;
+  --border: rgba(13, 17, 23, 0.11);
 
-  --series-portfolio: #0b0b0b;
-  --series-index: #2a78d6;
-  --series-bonds: #eb6834;
-  --series-nimbus: #1baf7a;
-  --series-ridgeline: #eda100;
-  --series-bitcorn: #e87ba4;
-  --series-cash: #898781;
+  --cat-defensive: #0891b2;
+  --cat-funds: #4f46e5;
+  --cat-nz: #16a34a;
+  --cat-world: #db2777;
+  --cat-crypto: #ea580c;
 
-  --up: #006300;
-  --down: #d03b3b;
-  --accent: #2a78d6;
+  --series-portfolio: #0d1117;
+  --series-cash: #94a3b8;
+
+  --series-nzbond: #0e7490;
+  --series-kiwisaver: #06b6d4;
+
+  --series-nzx50: #6366f1;
+  --series-sp500: #4f46e5;
+  --series-world: #4338ca;
+
+  --series-fph: #15803d;
+  --series-mft: #16a34a;
+  --series-xro: #22c55e;
+  --series-mel: #0d9f6e;
+  --series-atm: #65a30d;
+  --series-air: #4d7c0f;
+
+  --series-aapl: #db2777;
+  --series-nvda: #e11d48;
+  --series-tsla: #a21caf;
+
+  --series-btc: #ea580c;
+  --series-eth: #d97706;
+
+  --up: #15803d;
+  --down: #dc2626;
+  --accent: #4f46e5;
   --accent-ink: #ffffff;
 
+  /* Risk badges: a green-to-red severity ramp. The word inside each badge
+     already states the level, so colour is reinforcement rather than the only
+     channel carrying the meaning. */
+  --risk-1-bg: #d1fae5; --risk-1-ink: #065f46;
+  --risk-2-bg: #dbeafe; --risk-2-ink: #1e40af;
+  --risk-3-bg: #fef3c7; --risk-3-ink: #92400e;
+  --risk-4-bg: #ffedd5; --risk-4-ink: #9a3412;
+  --risk-5-bg: #fee2e2; --risk-5-ink: #991b1b;
+
   --radius: 10px;
-  --shadow: 0 1px 2px rgba(11, 11, 11, 0.05);
+  --shadow: 0 1px 2px rgba(13, 17, 23, 0.06);
   --font: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
 }
 
+/* The dark column is the same hues re-stepped for a dark ground, not an
+   automatic inversion — every value was checked against the dark surface
+   rather than derived from its light counterpart. */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) {
     color-scheme: dark;
 
-    --page: #0d0d0d;
-    --surface-1: #1a1a19;
-    --surface-2: #232321;
+    --page: #0f1115;
+    --surface-1: #14161a;
+    --surface-2: #1c1f26;
 
-    --text-primary: #ffffff;
-    --text-secondary: #c3c2b7;
-    --text-muted: #898781;
+    --text-primary: #f2f4f8;
+    --text-secondary: #b6bec9;
+    --text-muted: #7d8593;
 
-    --grid: #2c2c2a;
-    --axis: #383835;
-    --border: rgba(255, 255, 255, 0.1);
+    --grid: #262a32;
+    --axis: #3a3f4a;
+    --border: rgba(242, 244, 248, 0.12);
+
+    --cat-defensive: #22d3ee;
+    --cat-funds: #818cf8;
+    --cat-nz: #4ade80;
+    --cat-world: #f472b6;
+    --cat-crypto: #fb923c;
 
     --series-portfolio: #ffffff;
-    --series-index: #3987e5;
-    --series-bonds: #d95926;
-    --series-nimbus: #199e70;
-    --series-ridgeline: #c98500;
-    --series-bitcorn: #d55181;
-    --series-cash: #898781;
+    --series-cash: #7d8593;
 
-    --up: #0ca30c;
-    --down: #e66767;
-    --accent: #3987e5;
-    --accent-ink: #0b0b0b;
+    --series-nzbond: #38bdf8;
+    --series-kiwisaver: #22d3ee;
+
+    --series-nzx50: #a5b4fc;
+    --series-sp500: #818cf8;
+    --series-world: #7c8cf8;
+
+    --series-fph: #4ade80;
+    --series-mft: #34d399;
+    --series-xro: #6ee7b7;
+    --series-mel: #2dd4bf;
+    --series-atm: #a3e635;
+    --series-air: #84cc16;
+
+    --series-aapl: #f472b6;
+    --series-nvda: #fb7185;
+    --series-tsla: #e879f9;
+
+    --series-btc: #fb923c;
+    --series-eth: #fbbf24;
+
+    --up: #4ade80;
+    --down: #f87171;
+    --accent: #818cf8;
+    --accent-ink: #0f1115;
+
+    --risk-1-bg: #064e3b; --risk-1-ink: #6ee7b7;
+    --risk-2-bg: #1e3a5f; --risk-2-ink: #93c5fd;
+    --risk-3-bg: #78350f; --risk-3-ink: #fcd34d;
+    --risk-4-bg: #7c2d12; --risk-4-ink: #fdba74;
+    --risk-5-bg: #7f1d1d; --risk-5-ink: #fca5a5;
 
     --shadow: none;
   }
@@ -82,33 +150,62 @@
 :root[data-theme='dark'] {
   color-scheme: dark;
 
-  --page: #0d0d0d;
-  --surface-1: #1a1a19;
-  --surface-2: #232321;
+  --page: #0f1115;
+  --surface-1: #14161a;
+  --surface-2: #1c1f26;
 
-  --text-primary: #ffffff;
-  --text-secondary: #c3c2b7;
-  --text-muted: #898781;
+  --text-primary: #f2f4f8;
+  --text-secondary: #b6bec9;
+  --text-muted: #7d8593;
 
-  --grid: #2c2c2a;
-  --axis: #383835;
-  --border: rgba(255, 255, 255, 0.1);
+  --grid: #262a32;
+  --axis: #3a3f4a;
+  --border: rgba(242, 244, 248, 0.12);
+
+  --cat-defensive: #22d3ee;
+  --cat-funds: #818cf8;
+  --cat-nz: #4ade80;
+  --cat-world: #f472b6;
+  --cat-crypto: #fb923c;
 
   --series-portfolio: #ffffff;
-  --series-index: #3987e5;
-  --series-bonds: #d95926;
-  --series-nimbus: #199e70;
-  --series-ridgeline: #c98500;
-  --series-bitcorn: #d55181;
-  --series-cash: #898781;
+  --series-cash: #7d8593;
 
-  --up: #0ca30c;
-  --down: #e66767;
-  --accent: #3987e5;
-  --accent-ink: #0b0b0b;
+  --series-nzbond: #38bdf8;
+  --series-kiwisaver: #22d3ee;
+
+  --series-nzx50: #a5b4fc;
+  --series-sp500: #818cf8;
+  --series-world: #7c8cf8;
+
+  --series-fph: #4ade80;
+  --series-mft: #34d399;
+  --series-xro: #6ee7b7;
+  --series-mel: #2dd4bf;
+  --series-atm: #a3e635;
+  --series-air: #84cc16;
+
+  --series-aapl: #f472b6;
+  --series-nvda: #fb7185;
+  --series-tsla: #e879f9;
+
+  --series-btc: #fb923c;
+  --series-eth: #fbbf24;
+
+  --up: #4ade80;
+  --down: #f87171;
+  --accent: #818cf8;
+  --accent-ink: #0f1115;
+
+  --risk-1-bg: #064e3b; --risk-1-ink: #6ee7b7;
+  --risk-2-bg: #1e3a5f; --risk-2-ink: #93c5fd;
+  --risk-3-bg: #78350f; --risk-3-ink: #fcd34d;
+  --risk-4-bg: #7c2d12; --risk-4-ink: #fdba74;
+  --risk-5-bg: #7f1d1d; --risk-5-ink: #fca5a5;
 
   --shadow: none;
 }
+
 
 * {
   box-sizing: border-box;
@@ -514,24 +611,28 @@ tbody tr:last-child td {
 /* Ordinal ramp — one hue, light to dark, each step clearing 2:1 on its
    surface. Text color flips by fill luminance so it always reads. */
 .risk-1 {
-  background: #86b6ef;
-  color: #0b0b0b;
+  background: var(--risk-1-bg);
+  color: var(--risk-1-ink);
 }
+
 .risk-2 {
-  background: #5598e7;
-  color: #0b0b0b;
+  background: var(--risk-2-bg);
+  color: var(--risk-2-ink);
 }
+
 .risk-3 {
-  background: #2a78d6;
-  color: #ffffff;
+  background: var(--risk-3-bg);
+  color: var(--risk-3-ink);
 }
+
 .risk-4 {
-  background: #256abf;
-  color: #ffffff;
+  background: var(--risk-4-bg);
+  color: var(--risk-4-ink);
 }
+
 .risk-5 {
-  background: #184f95;
-  color: #ffffff;
+  background: var(--risk-5-bg);
+  color: var(--risk-5-ink);
 }
 
 /* Seven columns cannot fit a phone, and sideways scrolling puts the Buy button
@@ -889,6 +990,351 @@ footer {
   text-align: center;
 }
 
+/* ============================================================
+   Explain-on-click terms
+   ============================================================ */
+
+/* An explainable word looks like a word, not a button — a dotted underline in
+   the accent hue. It has to read as "there is more here" without turning every
+   paragraph into a wall of controls. */
+.term-link {
+  appearance: none;
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: help;
+  border-bottom: 1px dotted var(--accent);
+  transition: color 0.12s ease, border-color 0.12s ease;
+}
+
+.term-link:hover {
+  color: var(--accent);
+  border-bottom-style: solid;
+}
+
+/* The panel is a floating card on desktop and a bottom sheet on a phone, where
+   there is nowhere sensible to anchor it. */
+.term-pop {
+  position: absolute;
+  z-index: 60;
+  width: min(370px, calc(100vw - 24px));
+  max-height: min(70vh, 560px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 10px 30px rgba(13, 17, 23, 0.16);
+  padding: 14px 16px 16px;
+}
+
+.term-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.term-head h3 {
+  margin: 0;
+  font-size: 16px;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+
+.term-close {
+  appearance: none;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 22px;
+  line-height: 1;
+  padding: 0 2px;
+  cursor: pointer;
+}
+
+.term-close:hover {
+  color: var(--text-primary);
+}
+
+.term-body p {
+  margin: 0 0 9px;
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--text-secondary);
+}
+
+.term-body p:last-child {
+  margin-bottom: 0;
+}
+
+.term-body strong {
+  color: var(--text-primary);
+}
+
+/* A worked example students can follow line by line. */
+.term-sum {
+  margin: 10px 0;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.term-sum-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 6px 10px;
+  font-size: 13px;
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--border);
+}
+
+.term-sum-row:last-child {
+  border-bottom: none;
+}
+
+.term-sum-row span:first-child {
+  color: var(--text-secondary);
+}
+
+.term-sum-row span:last-child {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  text-align: right;
+}
+
+.term-sum-row.strong {
+  background: color-mix(in srgb, var(--accent) 12%, var(--surface-2));
+}
+
+.term-sum-row.strong span {
+  color: var(--text-primary);
+}
+
+.term-see {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+}
+
+.term-see-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+
+.term-chip {
+  appearance: none;
+  font: inherit;
+  font-size: 12px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.term-chip:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+@media (max-width: 620px) {
+  .term-pop {
+    position: fixed;
+    left: 0 !important;
+    right: 0;
+    top: auto !important;
+    bottom: 0;
+    width: 100%;
+    max-width: none;
+    max-height: 78vh;
+    border-radius: 14px 14px 0 0;
+    border-bottom: none;
+    padding-bottom: 22px;
+  }
+}
+
+/* ============================================================
+   Auto-play controls
+   ============================================================ */
+
+.primary.play {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+}
+
+/* Drawn rather than typed, so it never depends on a glyph the system may not
+   have and it always matches the button's text colour. */
+.play-icon {
+  width: 0;
+  height: 0;
+  border-left: 9px solid currentColor;
+  border-top: 6px solid transparent;
+  border-bottom: 6px solid transparent;
+}
+
+.play.is-playing .play-icon {
+  width: 10px;
+  height: 12px;
+  border: none;
+  background: linear-gradient(
+    to right,
+    currentColor 0 3px,
+    transparent 3px 7px,
+    currentColor 7px 10px
+  );
+}
+
+.secondary-controls {
+  margin-top: 8px;
+  align-items: center;
+}
+
+.speed {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.speed select {
+  font: inherit;
+  font-size: 12px;
+  padding: 4px 6px;
+  border-radius: 7px;
+  border: 1px solid var(--border);
+  background: var(--surface-1);
+  color: var(--text-primary);
+}
+
+/* A pause-worthy headline gets an accent rail; ordinary news does not. */
+.banner.big {
+  border-left: 3px solid var(--accent);
+}
+
+/* ============================================================
+   Market table: category groups and the two return figures
+   ============================================================ */
+
+.cat-row td {
+  padding: 16px 10px 6px;
+  border-bottom: 1px solid var(--border);
+}
+
+.cat-row:first-child td {
+  padding-top: 4px;
+}
+
+.cat-chip {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  border-radius: 3px;
+  margin-right: 7px;
+  vertical-align: middle;
+}
+
+.cat-name {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-primary);
+}
+
+.cat-blurb {
+  margin-left: 10px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* Past and expected sit side by side because the gap between them is the
+   point. The past figure is deliberately the quieter of the two. */
+.ret-pair {
+  appearance: none;
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 5px;
+  cursor: help;
+  font-variant-numeric: tabular-nums;
+}
+
+.ret-past {
+  color: var(--text-muted);
+  text-decoration: line-through;
+  text-decoration-thickness: 1px;
+}
+
+.ret-sep {
+  color: var(--text-muted);
+  font-size: 11px;
+}
+
+.ret-exp {
+  color: var(--text-primary);
+  font-weight: 700;
+  border-bottom: 1px dotted var(--accent);
+}
+
+.ret-note {
+  display: block;
+  font-size: 10.5px;
+  color: var(--text-muted);
+  margin-top: 1px;
+}
+
+.table-foot {
+  margin: 12px 2px 0;
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--text-muted);
+  max-width: 74ch;
+}
+
+@media (max-width: 660px) {
+  .cat-row td {
+    padding: 14px 0 4px;
+  }
+
+  .cat-blurb {
+    display: block;
+    margin-left: 16px;
+    margin-top: 2px;
+  }
+
+  .ret-note {
+    display: inline;
+    margin-left: 6px;
+  }
+}
+
+.field-help {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin: 2px 0 4px;
+  align-self: flex-start;
+}
+
 </style>
 </head>
 <body>
@@ -897,7 +1343,7 @@ footer {
   <header class="topbar">
     <div class="brand">
       <h1>Market Lab</h1>
-      <span class="tag">Ten years. Real trade-offs.</span>
+      <span class="tag">Real companies. Ten years. Your call.</span>
     </div>
     <div class="clock"><span id="clock-text">Start &middot; Year 0</span></div>
     <!-- Revealed only when the browser says the app can actually be installed. -->
@@ -905,7 +1351,7 @@ footer {
     <button class="icon-btn" id="theme-btn" type="button" aria-label="Switch between light and dark theme">Theme</button>
   </header>
 
-  <!-- Shown only once the ten years are up. -->
+  <!-- Shown only once the run is up. -->
   <section class="card" id="results-card" hidden aria-live="polite">
     <div class="card-head">
       <h2>Ten years later</h2>
@@ -930,48 +1376,50 @@ footer {
         <div class="hero-row">
           <div>
             <div class="hero-label">Portfolio value</div>
-            <div class="hero-figure" id="hero-value">$10,000</div>
+            <div class="hero-figure" id="hero-value">$1,000</div>
             <div class="hero-delta" id="hero-delta">&mdash;</div>
           </div>
         </div>
 
+        <!-- Every tile label opens its own explanation. These are the four
+             numbers students stare at, so they are the four worth explaining. -->
         <div class="tiles">
           <div class="tile">
-            <div class="k">Cash available</div>
-            <div class="v" id="tile-cash">$10,000</div>
-            <div class="n">Earns 2% a year</div>
+            <div class="k"><button type="button" class="term-link" data-term="cash-interest">Cash available</button></div>
+            <div class="v" id="tile-cash">$1,000</div>
+            <div class="n" id="tile-cash-note">Earns 3.0% a year</div>
           </div>
           <div class="tile">
-            <div class="k">Money put in</div>
-            <div class="v" id="tile-contributed">$10,000</div>
-            <div class="n" id="tile-contributed-note">$200 added monthly</div>
+            <div class="k"><button type="button" class="term-link" data-term="dollar-cost-averaging">Money put in</button></div>
+            <div class="v" id="tile-contributed">$1,000</div>
+            <div class="n" id="tile-contributed-note">$50 added monthly</div>
           </div>
           <div class="tile">
-            <div class="k">Worth in today's money</div>
-            <div class="v" id="tile-real">$10,000</div>
+            <div class="k"><button type="button" class="term-link" data-term="real-value">Worth in today's money</button></div>
+            <div class="v" id="tile-real">$1,000</div>
             <div class="n" id="tile-inflation">Inflation 0.0%</div>
           </div>
           <div class="tile">
-            <div class="k">Fees paid</div>
+            <div class="k"><button type="button" class="term-link" data-term="fees">Fees paid</button></div>
             <div class="v" id="tile-fees">$0.00</div>
             <div class="n" id="tile-trades">0 trades</div>
           </div>
         </div>
 
         <div class="card-head" style="margin-top:22px">
-          <h2>Your portfolio against doing nothing</h2>
-          <span class="sub">The grey line puts every dollar into the index fund and never trades again</span>
+          <h2>You against doing nothing</h2>
+          <span class="sub">The other line buys the world fund on day one and never trades again</span>
           <button class="icon-btn" id="table-toggle" type="button" aria-expanded="false">Show as table</button>
         </div>
 
         <div class="chart-box">
-          <canvas id="main-chart" role="img" aria-label="Line chart comparing your portfolio value against a buy-and-hold index fund portfolio over time"></canvas>
+          <canvas id="main-chart" role="img" aria-label="Line chart comparing your portfolio value against a buy-and-hold world index fund over time"></canvas>
           <div class="tooltip" id="chart-tooltip" role="status"></div>
         </div>
 
         <div class="legend">
           <span class="item"><span class="key" style="background:var(--series-portfolio)"></span>Your portfolio</span>
-          <span class="item"><span class="key" style="background:var(--series-index)"></span>Index fund, bought and held</span>
+          <span class="item"><span class="key" style="background:var(--series-world)"></span><button type="button" class="term-link" data-term="benchmark">Doing nothing</button></span>
         </div>
 
         <!-- Table view: every plotted value is reachable without relying on the
@@ -979,7 +1427,7 @@ footer {
         <div class="data-table" id="chart-table" hidden>
           <table>
             <thead>
-              <tr><th scope="col">Month</th><th scope="col">Your portfolio</th><th scope="col">Index fund only</th><th scope="col">Difference</th></tr>
+              <tr><th scope="col">Month</th><th scope="col">Your portfolio</th><th scope="col">Doing nothing</th><th scope="col">Difference</th></tr>
             </thead>
             <tbody id="chart-table-body"></tbody>
           </table>
@@ -993,8 +1441,11 @@ footer {
         </div>
         <div class="setup">
           <div class="field">
+            <!-- The explainer sits beside the label rather than inside it: a
+                 button within a label activates the field as well as itself. -->
             <label for="seed-input">Market seed</label>
-            <input id="seed-input" type="text" value="classroom-182" autocomplete="off">
+            <button type="button" class="term-link field-help" data-term="seed">What is this?</button>
+            <input id="seed-input" type="text" value="classroom-2910" autocomplete="off">
           </div>
           <div class="field">
             <label for="years-input">Years</label>
@@ -1019,8 +1470,21 @@ footer {
           <span class="sub" id="months-left">120 months to go</span>
         </div>
         <div class="controls">
-          <button class="primary" id="next-month" type="button">Next month</button>
+          <button class="primary play" id="play-btn" type="button" aria-pressed="false">
+            <span class="play-icon" aria-hidden="true"></span><span id="play-label">Run the simulation</span>
+          </button>
+        </div>
+        <div class="controls secondary-controls">
+          <button class="ghost" id="next-month" type="button">Next month</button>
           <button class="ghost" id="next-year" type="button">Skip a year</button>
+          <label class="speed">
+            Speed
+            <select id="speed-input" aria-label="Simulation speed">
+              <option value="900">Slow</option>
+              <option value="450" selected>Normal</option>
+              <option value="140">Fast</option>
+            </select>
+          </label>
         </div>
         <div id="news-banner"></div>
       </section>
@@ -1028,6 +1492,7 @@ footer {
       <section class="card">
         <div class="card-head">
           <h2>Where your money is</h2>
+          <span class="sub"><button type="button" class="term-link" data-term="diversification">Why the mix matters</button></span>
         </div>
         <div id="alloc-wrap"></div>
         <div class="legend" id="alloc-legend"></div>
@@ -1048,16 +1513,20 @@ footer {
   <section class="card">
     <div class="card-head">
       <h2>The market</h2>
-      <span class="sub">Buy and sell at this month's prices &middot; 0.5% fee per trade</span>
+      <span class="sub">
+        Real companies, simulated prices &middot; NZD &middot;
+        <button type="button" class="term-link" data-term="fees">$3 + 0.5% per trade</button>
+      </span>
     </div>
     <div class="table-scroll">
       <table class="market-table">
         <thead>
           <tr>
             <th scope="col">Asset</th>
-            <th scope="col">Risk</th>
+            <th scope="col"><button type="button" class="term-link" data-term="risk">Risk</button></th>
             <th scope="col">Price</th>
             <th scope="col">1 month</th>
+            <th scope="col"><button type="button" class="term-link" data-term="past-performance">Past &rarr; expected</button></th>
             <th scope="col" class="col-history">History</th>
             <th scope="col">You hold</th>
             <th scope="col">Trade</th>
@@ -1067,42 +1536,51 @@ footer {
       </table>
     </div>
     <div class="notice" id="trade-notice"></div>
+    <p class="table-foot">
+      The first number is roughly what the real thing returned in the past. The second is what this
+      simulation expects from here — and it is deliberately much lower for the past winners.
+      <button type="button" class="term-link" data-term="past-performance">Here is why that gap exists</button>, and it is
+      the most useful thing on this page.
+    </p>
   </section>
 
   <section class="card">
     <div class="card-head">
       <h2>What this is teaching you</h2>
+      <span class="sub">Tap any underlined word anywhere in the app for a plain-English explanation</span>
     </div>
     <div class="learn">
       <div class="item">
-        <h3>Risk and return travel together</h3>
-        <p>Bitcorn has the highest expected return on the board. It also has the widest range of outcomes by far. Nothing here offers high returns at low risk, because nothing in the real world does either.</p>
+        <h3><button type="button" class="term-link" data-term="past-performance">Last decade's winner is not next decade's</button></h3>
+        <p>Nvidia returned about 33% a year for twenty years. This simulation expects roughly 9% from it. That is not pessimism — a price already reflects how good everyone knows the company is.</p>
       </div>
       <div class="item">
-        <h3>Compounding needs time, not cleverness</h3>
-        <p>Money left alone grows on its own growth. Ten years of an ordinary return usually beats a few brilliant trades, which is why the grey benchmark line is so hard to beat.</p>
+        <h3><button type="button" class="term-link" data-term="risk">Risk and return travel together</button></h3>
+        <p>Ethereum can move 85% in a year. It is not expected to return more than shares over time — you are taking on far more risk for the same expected reward.</p>
       </div>
       <div class="item">
-        <h3>Diversification is the one free lunch</h3>
-        <p>These assets don't move together. Ridgeline often rises when the market falls, and bonds tend to climb during recessions. Holding a mix smooths the ride without giving up much return.</p>
+        <h3><button type="button" class="term-link" data-term="compounding">Compounding needs time, not cleverness</button></h3>
+        <p>Money left alone grows on its own growth. Ten years of an ordinary return usually beats a few brilliant trades, which is why the benchmark line is so hard to beat.</p>
       </div>
       <div class="item">
-        <h3>Fees are small and relentless</h3>
-        <p>Half a percent per trade sounds trivial. Trade every month for ten years and you have handed over a meaningful slice of everything you earned. Watch the fees tile.</p>
+        <h3><button type="button" class="term-link" data-term="correlation">Six NZ shares is not diversified</button></h3>
+        <p>Fisher &amp; Paykel, Mainfreight, Meridian and a2 Milk all ride the same NZ economy. One NZ fund plus one world fund is duller and genuinely safer.</p>
       </div>
       <div class="item">
-        <h3>Cash quietly loses value</h3>
-        <p>Your savings account pays 2% while prices rise about 2.5% a year. The balance goes up and still buys less. Compare the portfolio value with the "today's money" tile.</p>
+        <h3><button type="button" class="term-link" data-term="fees">Small trades are eaten by fees</button></h3>
+        <p>A $3 flat fee on a $50 trade is 6% gone before you own anything. The same fee on a $5,000 trade is 0.06%. Trade small and often and the fees quietly take your returns.</p>
       </div>
       <div class="item">
-        <h3>Single stocks carry risk funds don't</h3>
-        <p>One bad earnings report can take 17% off Nimbus in a month. The index fund holds every company at once, so no single piece of bad news can do that to it.</p>
+        <h3><button type="button" class="term-link" data-term="kiwisaver">This is really about KiwiSaver</button></h3>
+        <p>You will be in it from your first payslip for about 45 years. The fund you pick is the biggest money decision you will ever make, and most people never make it.</p>
       </div>
     </div>
   </section>
 
   <footer>
-    Simulated prices, not investment advice. Built for teaching &mdash; the numbers are calibrated to real long-run averages, but any single ten-year run is one roll of the dice.
+    Simulated prices using real company names, not investment advice. Historical return figures are
+    approximate and included as teaching context. Prices are in NZD and currency movement is not
+    modelled &mdash; <button type="button" class="term-link" data-term="currency">what that leaves out</button>.
   </footer>
 
 </div>
@@ -1173,13 +1651,38 @@ footer {
 /* The market simulation.
  *
  * Prices follow geometric Brownian motion stepped one month at a time. Each
- * asset's shock is split into a shared market factor and an idiosyncratic part,
- * weighted by `rho`. That correlation structure is what makes diversification
- * actually reduce volatility in the sim rather than just appearing to — without
- * it, spreading money across assets would be a lesson the numbers don't support.
+ * asset's shock is split between two shared factors — a world market factor and
+ * a separate New Zealand factor — plus its own idiosyncratic noise. The second
+ * factor is what makes NZ shares move together more than they move with Wall
+ * Street, which is both true and the reason holding Mainfreight and Apple is
+ * genuinely more diversified than holding Mainfreight and Fisher & Paykel.
  *
- * The drift and volatility figures are rough real-world long-run values so the
- * risk/return trade-off students discover here matches the one outside. */
+ * ── The most important design decision in this file ──
+ *
+ * Every asset carries two return figures, and they are deliberately different:
+ *
+ *   `past` is roughly what the real thing actually returned, historically.
+ *   `mu`   is what the simulation assumes it will return from here.
+ *
+ * If the simulation used past returns as future returns, it would teach students
+ * that the winning move is to buy whatever won last decade — Nvidia at 33% a
+ * year, forever. That is precisely the mistake real investors make, and a
+ * simulator that rewards it is worse than no simulator.
+ *
+ * So `mu` is shrunk hard toward an ordinary share-like return, and the
+ * individual companies all sit within about two points of each other regardless
+ * of how spectacular or dismal their history was. What stays different between
+ * them is `sigma` — risk. That asymmetry is real: a company's past *volatility*
+ * predicts its future volatility fairly well, while its past *return* barely
+ * predicts its future return at all. The app shows both numbers side by side and
+ * the glossary explains the gap, because noticing it is the single most valuable
+ * thing a fifteen-year-old can take away from this.
+ *
+ * ── On the numbers ──
+ *
+ * Historical figures are approximate, rounded, and meant as teaching context
+ * rather than data. Prices are all in NZD; currency conversion is not modelled,
+ * which is a real simplification — see the `currency` glossary entry. */
 
 (function (global) {
   'use strict';
@@ -1187,197 +1690,601 @@ footer {
   const MONTHS_PER_YEAR = 12;
   const DT = 1 / MONTHS_PER_YEAR;
 
-  /* Entity colors are fixed here and used by every chart, legend and table row
-   * in the app, so an asset is the same color everywhere it appears. Validated
-   * for colorblind separation in both light and dark mode. */
-  const ASSETS = [
+  /* The fund the benchmark buys and holds. A total world fund is the most
+   * defensible "just do the boring thing" option — it is what the passive
+   * argument actually recommends. */
+  const BENCHMARK_ID = 'world';
+
+  const CATEGORIES = [
     {
-      id: 'bonds',
-      name: 'Government Bond Fund',
-      ticker: 'GOVT',
-      kind: 'Bonds',
-      color: 'var(--series-bonds)',
-      start: 100,
-      mu: 0.04,
-      sigma: 0.06,
-      rho: 0.15,
-      risk: 1,
-      blurb:
-        'A loan to the government. Low return, but it barely moves — and it often rises when stocks fall.'
+      id: 'defensive',
+      name: 'Safe stuff',
+      color: 'var(--cat-defensive)',
+      blurb: 'Barely moves. Low return, but you can count on it being there.'
     },
     {
-      id: 'index',
-      name: 'Total Market Index Fund',
-      ticker: 'TMI',
-      kind: 'Index fund',
-      color: 'var(--series-index)',
-      start: 100,
-      mu: 0.09,
-      sigma: 0.15,
-      rho: 1.0,
-      risk: 2,
-      blurb:
-        'A slice of every company at once. You get the whole market’s average return without picking winners.'
+      id: 'funds',
+      name: 'Index funds',
+      color: 'var(--cat-funds)',
+      blurb: 'One purchase buys a slice of hundreds of companies at once.'
     },
     {
-      id: 'nimbus',
-      name: 'Nimbus Software',
-      ticker: 'NMBS',
-      kind: 'Growth stock',
-      color: 'var(--series-nimbus)',
-      start: 100,
-      mu: 0.12,
-      sigma: 0.34,
-      rho: 0.75,
-      risk: 4,
-      blurb:
-        'One fast-growing tech company. Higher expected return, but a single bad earnings report hits hard.'
+      id: 'nz',
+      name: 'NZ companies',
+      color: 'var(--cat-nz)',
+      blurb: 'Individual businesses listed on the NZX, here in New Zealand.'
     },
     {
-      id: 'ridgeline',
-      name: 'Ridgeline Energy',
-      ticker: 'RDGE',
-      kind: 'Cyclical stock',
-      color: 'var(--series-ridgeline)',
-      start: 100,
-      mu: 0.075,
-      sigma: 0.28,
-      rho: 0.55,
-      risk: 3,
-      blurb:
-        'An oil and gas producer. Swings with energy prices, so it often zigs when the rest of the market zags.'
+      id: 'world',
+      name: 'International companies',
+      color: 'var(--cat-world)',
+      blurb: 'Big overseas companies you have probably heard of.'
     },
     {
-      id: 'bitcorn',
-      name: 'Bitcorn',
-      ticker: 'BTCN',
-      kind: 'Crypto',
-      color: 'var(--series-bitcorn)',
-      start: 100,
-      mu: 0.14,
-      sigma: 0.75,
-      rho: 0.3,
-      risk: 5,
-      blurb:
-        'A cryptocurrency. Enormous swings in both directions — the highest expected return here, and by far the widest range of outcomes.'
+      id: 'crypto',
+      name: 'Crypto',
+      color: 'var(--cat-crypto)',
+      blurb: 'No company, no profits, no floor. Moves further than anything else here.'
     }
   ];
 
-  /* News events apply an extra shock on top of the random walk. They exist to
-   * make the abstract point that prices move when information arrives, and to
-   * guarantee students live through at least one scary drawdown. `weight` is the
-   * relative chance of being chosen once an event fires at all. */
+  /* start   — a plausible current price in NZD, so the numbers feel like a real
+   *           trading screen rather than everything beginning at $100.
+   * past    — approximate real long-run return, as teaching context only.
+   * mu      — expected return the simulation uses (see the header).
+   * sigma   — annual volatility.
+   * rhoW    — correlation with the world market factor.
+   * rhoNz   — correlation with the New Zealand factor.
+   *           rhoW^2 + rhoNz^2 must stay at or below 1. */
+  const ASSETS = [
+    /* ---------------- safe stuff ---------------- */
+    {
+      id: 'nzbond',
+      name: 'NZ Government Bond Fund',
+      ticker: 'NGB',
+      where: 'NZX',
+      category: 'defensive',
+      color: 'var(--series-nzbond)',
+      start: 1.35,
+      past: { ret: 0.045, since: 'past 20 years' },
+      mu: 0.04,
+      sigma: 0.05,
+      rhoW: 0.1,
+      rhoNz: 0.1,
+      risk: 1,
+      what: 'A pile of loans to the New Zealand government.',
+      blurb:
+        'You lend the government money and it pays you interest. About as safe as investing gets, and it often goes up when shares crash.'
+    },
+    {
+      id: 'kiwisaver',
+      name: 'KiwiSaver Balanced Fund',
+      ticker: 'BAL',
+      where: 'Fund',
+      category: 'defensive',
+      color: 'var(--series-kiwisaver)',
+      start: 3.2,
+      past: { ret: 0.065, since: 'since 2007' },
+      mu: 0.055,
+      sigma: 0.08,
+      rhoW: 0.72,
+      rhoNz: 0.25,
+      risk: 1,
+      what: 'A ready-made mix of shares and bonds — the kind of fund your KiwiSaver is in.',
+      blurb:
+        'Somebody else picks the mix: roughly half shares, half bonds. Smoother than pure shares, and lower returns to match. This is what most New Zealanders actually own.'
+    },
+
+    /* ---------------- index funds ---------------- */
+    {
+      id: 'nzx50',
+      name: 'S&P/NZX 50 Fund',
+      ticker: 'FNZ',
+      where: 'NZX',
+      category: 'funds',
+      color: 'var(--series-nzx50)',
+      start: 3.6,
+      past: { ret: 0.095, since: 'past 20 years' },
+      mu: 0.075,
+      sigma: 0.13,
+      rhoW: 0.5,
+      rhoNz: 0.62,
+      risk: 2,
+      what: 'The 50 biggest companies listed in New Zealand, in one purchase.',
+      blurb:
+        'Buys a slice of the 50 largest NZ companies at once. If one of them collapses, the other 49 carry on.'
+    },
+    {
+      id: 'sp500',
+      name: 'S&P 500 Fund',
+      ticker: 'USF',
+      where: 'USA',
+      category: 'funds',
+      color: 'var(--series-sp500)',
+      start: 12.5,
+      past: { ret: 0.105, since: 'past 20 years' },
+      mu: 0.08,
+      sigma: 0.155,
+      rhoW: 0.96,
+      rhoNz: 0,
+      risk: 2,
+      what: 'The 500 biggest companies in the United States.',
+      blurb:
+        'Apple, Microsoft, Amazon and 497 others in a single purchase. The most-owned fund on earth.'
+    },
+    {
+      id: 'world',
+      name: 'Total World Fund',
+      ticker: 'TWF',
+      where: 'Global',
+      category: 'funds',
+      color: 'var(--series-world)',
+      start: 4.8,
+      past: { ret: 0.085, since: 'past 20 years' },
+      mu: 0.08,
+      sigma: 0.145,
+      rhoW: 1.0,
+      rhoNz: 0,
+      risk: 2,
+      what: 'Thousands of companies across every country that has a stock market.',
+      blurb:
+        'The whole world in one purchase. This is the fund the grey benchmark line buys and then never touches again — the thing you have to beat.'
+    },
+
+    /* ---------------- NZ companies ---------------- */
+    {
+      id: 'fph',
+      name: 'Fisher & Paykel Healthcare',
+      ticker: 'FPH',
+      where: 'NZX',
+      category: 'nz',
+      color: 'var(--series-fph)',
+      start: 33.5,
+      past: { ret: 0.16, since: 'past 20 years' },
+      mu: 0.085,
+      sigma: 0.26,
+      rhoW: 0.42,
+      rhoNz: 0.42,
+      risk: 3,
+      what: 'Makes breathing machines and hospital equipment, sold to about 120 countries.',
+      blurb:
+        'One of very few NZ companies that sells to the whole world. A quietly outstanding history — which is exactly why the expected return below looks so much smaller than the past one.'
+    },
+    {
+      id: 'mft',
+      name: 'Mainfreight',
+      ticker: 'MFT',
+      where: 'NZX',
+      category: 'nz',
+      color: 'var(--series-mft)',
+      start: 68.0,
+      past: { ret: 0.15, since: 'past 20 years' },
+      mu: 0.085,
+      sigma: 0.27,
+      rhoW: 0.45,
+      rhoNz: 0.45,
+      risk: 3,
+      what: 'Moves freight around the world by truck, ship and plane.',
+      blurb:
+        'Started with one truck in Auckland in 1978. Boring business, remarkable record. Rises and falls with how much stuff the world is shipping.'
+    },
+    {
+      id: 'xro',
+      name: 'Xero',
+      ticker: 'XRO',
+      where: 'NZX / ASX',
+      category: 'nz',
+      color: 'var(--series-xro)',
+      start: 175.0,
+      past: { ret: 0.22, since: 'since 2007' },
+      mu: 0.09,
+      sigma: 0.42,
+      rhoW: 0.55,
+      rhoNz: 0.35,
+      risk: 4,
+      what: 'Accounting software that small businesses pay for monthly.',
+      blurb:
+        'NZ’s big tech success story. Fast growth, and priced as though the growth will continue — which means it falls hard whenever that gets doubted.'
+    },
+    {
+      id: 'mel',
+      name: 'Meridian Energy',
+      ticker: 'MEL',
+      where: 'NZX',
+      category: 'nz',
+      color: 'var(--series-mel)',
+      start: 5.9,
+      past: { ret: 0.11, since: 'since 2013' },
+      mu: 0.075,
+      sigma: 0.21,
+      rhoW: 0.22,
+      rhoNz: 0.5,
+      risk: 3,
+      what: 'Generates electricity from hydro dams and wind farms.',
+      blurb:
+        'People buy power in good times and bad, so it is steadier than most shares. Its weak spot is a dry year, when the lakes run low.'
+    },
+    {
+      id: 'atm',
+      name: 'a2 Milk',
+      ticker: 'ATM',
+      where: 'NZX',
+      category: 'nz',
+      color: 'var(--series-atm)',
+      start: 7.2,
+      past: { ret: 0.13, since: 'past 20 years' },
+      mu: 0.08,
+      sigma: 0.48,
+      rhoW: 0.25,
+      rhoNz: 0.38,
+      risk: 4,
+      what: 'Sells infant formula and milk, mostly into China.',
+      blurb:
+        'Went up roughly thirty-fold, then lost about 80% of its value in under two years. That average return hides a ride almost nobody actually sat through.'
+    },
+    {
+      id: 'air',
+      name: 'Air New Zealand',
+      ticker: 'AIR',
+      where: 'NZX',
+      category: 'nz',
+      color: 'var(--series-air)',
+      start: 0.62,
+      past: { ret: 0.02, since: 'past 20 years' },
+      mu: 0.07,
+      sigma: 0.36,
+      rhoW: 0.38,
+      rhoNz: 0.45,
+      risk: 4,
+      what: 'The national airline.',
+      blurb:
+        'A famous company and a famously poor long-run investment. Fuel costs, weather, pandemics and price wars all land on the same balance sheet. Being well known is not the same as being a good buy.'
+    },
+
+    /* ---------------- international companies ---------------- */
+    {
+      id: 'aapl',
+      name: 'Apple',
+      ticker: 'AAPL',
+      where: 'USA',
+      category: 'world',
+      color: 'var(--series-aapl)',
+      start: 228.0,
+      past: { ret: 0.24, since: 'past 20 years' },
+      mu: 0.085,
+      sigma: 0.29,
+      rhoW: 0.78,
+      rhoNz: 0,
+      risk: 3,
+      what: 'iPhones, Macs, and a very large services business.',
+      blurb:
+        'One of the most valuable companies ever. Its past return is extraordinary and almost certainly not repeatable — a company this size cannot grow thirty-fold again.'
+    },
+    {
+      id: 'nvda',
+      name: 'Nvidia',
+      ticker: 'NVDA',
+      where: 'USA',
+      category: 'world',
+      color: 'var(--series-nvda)',
+      start: 185.0,
+      past: { ret: 0.33, since: 'past 20 years' },
+      mu: 0.09,
+      sigma: 0.52,
+      rhoW: 0.72,
+      rhoNz: 0,
+      risk: 4,
+      what: 'Designs the chips that AI systems run on.',
+      blurb:
+        'The best-performing large share of the last two decades. Compare its two return figures below — that gap is the whole lesson about chasing winners.'
+    },
+    {
+      id: 'tsla',
+      name: 'Tesla',
+      ticker: 'TSLA',
+      where: 'USA',
+      category: 'world',
+      color: 'var(--series-tsla)',
+      start: 330.0,
+      past: { ret: 0.35, since: 'since 2010' },
+      mu: 0.085,
+      sigma: 0.6,
+      rhoW: 0.62,
+      rhoNz: 0,
+      risk: 5,
+      what: 'Electric cars, batteries, and a lot of investor argument.',
+      blurb:
+        'Has repeatedly halved and repeatedly doubled. Its price depends heavily on belief about the future, which can change faster than any factory can.'
+    },
+
+    /* ---------------- crypto ---------------- */
+    {
+      id: 'btc',
+      name: 'Bitcoin',
+      ticker: 'BTC',
+      where: 'Crypto',
+      category: 'crypto',
+      color: 'var(--series-btc)',
+      start: 178000,
+      past: { ret: 0.6, since: 'since 2013' },
+      mu: 0.09,
+      sigma: 0.7,
+      rhoW: 0.32,
+      rhoNz: 0,
+      risk: 5,
+      what: 'A digital currency with no company, no profits and no government behind it.',
+      blurb:
+        'You can buy a fraction — nobody buys a whole one. Has fallen more than 70% four separate times and recovered each time so far. "So far" is doing a lot of work in that sentence.'
+    },
+    {
+      id: 'eth',
+      name: 'Ethereum',
+      ticker: 'ETH',
+      where: 'Crypto',
+      category: 'crypto',
+      color: 'var(--series-eth)',
+      start: 6500,
+      past: { ret: 0.45, since: 'since 2015' },
+      mu: 0.09,
+      sigma: 0.85,
+      rhoW: 0.35,
+      rhoNz: 0,
+      risk: 5,
+      what: 'A network other crypto projects are built on top of.',
+      blurb:
+        'The most volatile thing on this board. Expected to do no better than shares over time, while moving roughly six times as much along the way.'
+    }
+  ];
+
+  /* News events apply an extra shock on top of the random walk, so students see
+   * prices move because something happened rather than for no visible reason.
+   *
+   * `cat` applies to a whole category, `effects` to named assets; both compose
+   * multiplicatively, so a global crash can hit every share at once and still
+   * hit the riskiest ones harder. `weight` is the relative chance of being
+   * picked once an event fires at all. `big` marks the ones worth pausing
+   * auto-play for. */
   const EVENTS = [
     {
-      id: 'rate-hike',
-      headline: 'Central bank raises interest rates',
+      id: 'ocr-hike',
+      headline: 'Reserve Bank raises the OCR to cool inflation',
       why:
-        'Borrowing gets more expensive, so future company profits are worth less today. Existing bonds paying the old lower rate become less attractive too.',
+        'The Official Cash Rate is the interest rate the Reserve Bank sets. Push it up and every mortgage and business loan gets dearer, so people spend less and companies earn less. Money also earns more sitting safely in the bank, which makes risky things look less worth it.',
       weight: 10,
-      effects: { bonds: -0.03, index: -0.04, nimbus: -0.07, ridgeline: -0.03, bitcorn: -0.09 }
+      cat: { funds: -0.03, nz: -0.04, world: -0.03, crypto: -0.07 },
+      effects: { nzbond: -0.02, kiwisaver: -0.015, mel: 0.01 }
     },
     {
-      id: 'rate-cut',
-      headline: 'Central bank cuts interest rates',
+      id: 'ocr-cut',
+      headline: 'Reserve Bank cuts the OCR',
       why:
-        'Cheaper borrowing tends to lift company profits and asset prices. Bonds issued at the old higher rate gain value.',
+        'Cheaper borrowing means people spend more and companies borrow to grow, so share prices usually rise. Bonds bought back when rates were higher become more valuable, because they still pay the old better rate.',
       weight: 10,
-      effects: { bonds: 0.025, index: 0.035, nimbus: 0.06, ridgeline: 0.025, bitcorn: 0.08 }
+      cat: { funds: 0.03, nz: 0.035, world: 0.03, crypto: 0.06 },
+      effects: { nzbond: 0.02, kiwisaver: 0.015 }
     },
     {
-      id: 'jobs-strong',
-      headline: 'Jobs report beats expectations',
-      why: 'More people working means more spending, which usually means higher company earnings.',
-      weight: 12,
-      effects: { index: 0.025, nimbus: 0.03, ridgeline: 0.02 }
+      id: 'dairy-slump',
+      headline: 'Dairy prices fall sharply at the global auction',
+      why:
+        'Dairy is one of New Zealand’s biggest exports. When the price drops, farmers earn less, they spend less in town, and the whole NZ economy feels it — not just the dairy companies.',
+      weight: 8,
+      cat: { nz: -0.02 },
+      effects: { atm: -0.09, nzx50: -0.015 }
+    },
+    {
+      id: 'dairy-strong',
+      headline: 'Dairy auction prices jump on strong demand',
+      why: 'Higher export earnings flow through the NZ economy, from farm suppliers to small-town businesses.',
+      weight: 8,
+      cat: { nz: 0.018 },
+      effects: { atm: 0.1, nzx50: 0.014 }
+    },
+    {
+      id: 'china-weak',
+      headline: 'Chinese demand for NZ exports weakens',
+      why:
+        'China is New Zealand’s largest trading partner. When Chinese shoppers buy less formula, meat and wool, NZ companies that sell there earn less — which is the risk of depending heavily on one customer.',
+      weight: 7,
+      cat: { nz: -0.03 },
+      effects: { atm: -0.14, air: -0.05 }
+    },
+    {
+      id: 'tourism-record',
+      headline: 'Visitor numbers hit a record high',
+      why: 'More tourists means fuller planes, busier hotels and more spending across the country.',
+      weight: 7,
+      cat: { nz: 0.02 },
+      effects: { air: 0.13 }
+    },
+    {
+      id: 'oil-spike',
+      headline: 'Oil price spikes after supply disruption',
+      why:
+        'Jet fuel is one of an airline’s largest costs, so airlines are hit hardest. Freight companies pay more for diesel too. Almost everyone else just pays more at the pump.',
+      weight: 7,
+      cat: { nz: -0.01 },
+      effects: { air: -0.12, mft: -0.05 }
+    },
+    {
+      id: 'dry-year',
+      headline: 'Dry winter leaves South Island hydro lakes low',
+      why:
+        'Most NZ electricity comes from water stored in lakes. A dry year means less generation and expensive imported power, which squeezes electricity companies.',
+      weight: 6,
+      effects: { mel: -0.11, nzx50: -0.01 }
+    },
+    {
+      id: 'fph-approval',
+      headline: 'Fisher & Paykel Healthcare wins a major hospital contract',
+      why:
+        'A single contract can move one company sharply while the rest of the market does not budge. That is company-specific risk — the thing an index fund spreads out and a single share does not.',
+      weight: 7,
+      effects: { fph: 0.13 }
+    },
+    {
+      id: 'fph-recall',
+      headline: 'Fisher & Paykel Healthcare recalls a product line',
+      why:
+        'Bad company news falls on that company alone. If you owned only this share you would feel all of it; inside a fund you would barely notice.',
+      weight: 6,
+      effects: { fph: -0.14 }
+    },
+    {
+      id: 'xero-beat',
+      headline: 'Xero signs up subscribers faster than forecast',
+      why:
+        'Software companies are valued on how fast they are growing. Beat the forecast and the price jumps, because investors extend that growth years into the future.',
+      weight: 7,
+      effects: { xro: 0.16 }
+    },
+    {
+      id: 'xero-miss',
+      headline: 'Xero growth slows and the share price drops',
+      why:
+        'When a company is priced for fast growth, merely growing slower is enough to knock a fifth off it. Nothing went wrong exactly — the future just got re-priced.',
+      weight: 7,
+      effects: { xro: -0.19 }
+    },
+    {
+      id: 'ai-boom',
+      headline: 'AI spending surge lifts chipmakers',
+      why:
+        'When every large company rushes to buy the same thing at once, whoever sells it earns enormous amounts very quickly. Booms like this are real — and they are also how bubbles start.',
+      weight: 8,
+      cat: { world: 0.03 },
+      effects: { nvda: 0.21, sp500: 0.02 }
+    },
+    {
+      id: 'ai-doubt',
+      headline: 'Investors question whether AI spending will pay off',
+      why:
+        'Prices reflect expectations, not just current profits. Nvidia still sold the same chips this month — what changed is how confident people are about next year.',
+      weight: 8,
+      cat: { world: -0.025 },
+      effects: { nvda: -0.22, sp500: -0.02 }
+    },
+    {
+      id: 'apple-launch',
+      headline: 'Apple’s new product sells better than expected',
+      why: 'Strong sales lift profits, and a company this large drags the whole US index up with it.',
+      weight: 6,
+      effects: { aapl: 0.09, sp500: 0.012 }
+    },
+    {
+      id: 'tesla-miss',
+      headline: 'Tesla delivers fewer cars than promised',
+      why:
+        'Tesla’s price rests heavily on belief about the future. Miss a target and some of that belief evaporates immediately.',
+      weight: 7,
+      effects: { tsla: -0.18 }
+    },
+    {
+      id: 'tesla-beat',
+      headline: 'Tesla beats delivery targets',
+      why: 'Beating expectations restores confidence, and this share moves violently in both directions.',
+      weight: 6,
+      effects: { tsla: 0.19 }
+    },
+    {
+      id: 'crypto-etf',
+      headline: 'Regulator approves a major crypto fund',
+      why:
+        'Easier access means more buyers. Crypto has no profits or dividends underneath it, so its price is driven almost entirely by how many people want in.',
+      weight: 6,
+      cat: { crypto: 0.24 }
+    },
+    {
+      id: 'crypto-collapse',
+      headline: 'Large crypto exchange collapses overnight',
+      why:
+        'There is no government guarantee and no company to sue. When a crypto exchange fails, people who kept coins there can lose everything, and the price of everything crypto falls with it.',
+      weight: 6,
+      big: true,
+      cat: { crypto: -0.32 }
+    },
+    {
+      id: 'nz-recession',
+      headline: 'New Zealand enters recession',
+      why:
+        'A recession means the economy shrank two quarters running. NZ companies feel it most; overseas ones barely notice. This is why holding only NZ shares is riskier than it looks.',
+      weight: 5,
+      big: true,
+      cat: { nz: -0.11 },
+      effects: { nzx50: -0.06, nzbond: 0.03, air: -0.06 }
+    },
+    {
+      id: 'global-recession',
+      headline: 'Major economies slide into recession',
+      why:
+        'In a real downturn almost everything risky falls together, and government bonds usually rise as people run for safety. This is the moment diversification either earns its keep or does not.',
+      weight: 4,
+      big: true,
+      cat: { funds: -0.12, nz: -0.13, world: -0.15, crypto: -0.25 },
+      effects: { nzbond: 0.04, kiwisaver: -0.05 }
+    },
+    {
+      id: 'recovery',
+      headline: 'Economy rebounds faster than expected',
+      why:
+        'Recoveries lift the riskiest things the most — which is exactly why selling during a crash hurts twice: you take the fall, then miss the bounce.',
+      weight: 5,
+      big: true,
+      cat: { funds: 0.08, nz: 0.09, world: 0.1, crypto: 0.18 },
+      effects: { nzbond: -0.01, kiwisaver: 0.04 }
+    },
+    {
+      id: 'bank-stress',
+      headline: 'Banking sector under stress',
+      why: 'Banks lend to everyone else, so trouble there spreads to every other business quickly.',
+      weight: 5,
+      cat: { funds: -0.07, nz: -0.07, world: -0.08, crypto: -0.12 },
+      effects: { nzbond: 0.025 }
     },
     {
       id: 'inflation-hot',
       headline: 'Inflation comes in higher than forecast',
       why:
-        'Rising prices eat into what your money can buy, and raise the odds the central bank hikes rates to cool things down.',
-      weight: 9,
-      effects: { bonds: -0.025, index: -0.03, nimbus: -0.045, ridgeline: 0.02, bitcorn: -0.05 }
-    },
-    {
-      id: 'nimbus-beat',
-      headline: 'Nimbus Software crushes earnings forecast',
-      why:
-        'Company-specific news moves that company far more than the market. This is the risk you take on when you buy a single stock instead of a fund.',
-      weight: 9,
-      effects: { nimbus: 0.15, index: 0.005 }
-    },
-    {
-      id: 'nimbus-miss',
-      headline: 'Nimbus Software warns on slowing sales',
-      why:
-        'A single company can fall hard on its own news while the rest of the market barely notices. A fund would have spread this out.',
-      weight: 9,
-      effects: { nimbus: -0.17, index: -0.005 }
-    },
-    {
-      id: 'oil-shock',
-      headline: 'Supply disruption sends oil prices soaring',
-      why:
-        'Energy producers profit from higher oil prices, while everyone who buys fuel pays more. This is why Ridgeline often moves opposite the market.',
+        'Prices rising faster means your money buys less, and it makes an OCR hike more likely. Both are bad for shares, and worse for bonds already locked in at lower rates.',
       weight: 8,
-      effects: { ridgeline: 0.14, index: -0.02, nimbus: -0.03 }
+      cat: { funds: -0.025, nz: -0.03, world: -0.025, crypto: -0.04 },
+      effects: { nzbond: -0.025 }
     },
     {
-      id: 'oil-glut',
-      headline: 'Oil prices slump on oversupply',
-      why: 'Cheap energy squeezes producers but lowers costs for almost every other business.',
-      weight: 8,
-      effects: { ridgeline: -0.13, index: 0.01 }
-    },
-    {
-      id: 'crypto-crackdown',
-      headline: 'Major economy announces crypto crackdown',
-      why:
-        'Crypto prices depend heavily on what regulators allow. There is no underlying business producing profits to fall back on.',
-      weight: 7,
-      effects: { bitcorn: -0.33 }
-    },
-    {
-      id: 'crypto-adoption',
-      headline: 'Large payment network adds Bitcorn support',
-      why: 'Wider acceptance raises demand. Crypto swings this violently in both directions.',
-      weight: 7,
-      effects: { bitcorn: 0.38 }
-    },
-    {
-      id: 'recession',
-      headline: 'Economy officially enters recession',
-      why:
-        'In a downturn almost everything risky falls together — and government bonds usually rise as investors look for safety. This is diversification earning its keep.',
-      weight: 4,
-      effects: { bonds: 0.035, index: -0.13, nimbus: -0.19, ridgeline: -0.16, bitcorn: -0.24 }
-    },
-    {
-      id: 'recovery',
-      headline: 'Economy rebounds faster than expected',
-      why: 'Recoveries lift risky assets the most, which is why selling during a crash can be so costly.',
-      weight: 5,
-      effects: { bonds: -0.01, index: 0.09, nimbus: 0.14, ridgeline: 0.12, bitcorn: 0.2 }
-    },
-    {
-      id: 'bank-stress',
-      headline: 'Banking sector under stress',
-      why: 'Worry about the financial system spreads quickly, because banks lend to everyone else.',
-      weight: 5,
-      effects: { bonds: 0.02, index: -0.08, nimbus: -0.1, ridgeline: -0.07, bitcorn: -0.14 }
-    },
-    {
-      id: 'productivity',
-      headline: 'New technology drives a productivity boom',
-      why: 'Companies producing more with the same resources earn more, and tech companies benefit first.',
-      weight: 6,
-      effects: { index: 0.05, nimbus: 0.11 }
+      id: 'jobs-strong',
+      headline: 'Employment figures beat expectations',
+      why: 'More people in work means more spending, which usually means higher company profits.',
+      weight: 9,
+      cat: { funds: 0.02, nz: 0.022, world: 0.02 }
     }
   ];
 
-  const EVENT_CHANCE_PER_MONTH = 0.3;
+  const EVENT_CHANCE_PER_MONTH = 0.32;
   const BASE_INFLATION = 0.025;
+
+  function byId(id) {
+    for (let i = 0; i < ASSETS.length; i++) {
+      if (ASSETS[i].id === id) return ASSETS[i];
+    }
+    return null;
+  }
+
+  function categoryById(id) {
+    for (let i = 0; i < CATEGORIES.length; i++) {
+      if (CATEGORIES[i].id === id) return CATEGORIES[i];
+    }
+    return null;
+  }
+
+  /* Combined shock an event applies to one asset: the category-wide part and the
+   * asset-specific part compound rather than add, so a global crash plus a
+   * company disaster lands as one coherent fall instead of double-counting. */
+  function effectFor(event, asset) {
+    const catPart = event.cat && typeof event.cat[asset.category] === 'number' ? event.cat[asset.category] : 0;
+    const ownPart = event.effects && typeof event.effects[asset.id] === 'number' ? event.effects[asset.id] : 0;
+    if (catPart === 0 && ownPart === 0) return 0;
+    return (1 + catPart) * (1 + ownPart) - 1;
+  }
 
   function totalEventWeight() {
     return EVENTS.reduce(function (sum, e) {
@@ -1396,20 +2303,18 @@ footer {
 
   /* Expected monthly log drag the news events impose on an asset.
    *
-   * Percentage shocks don't cancel: a -33% crash followed by a +38% rally leaves
-   * you down 7.5%, not up 5%. Left uncorrected that asymmetry would quietly push
+   * Percentage shocks don't cancel: a -32% crash followed by a +24% rally leaves
+   * you down 16%, not down 8%. Left uncorrected that asymmetry quietly pushes
    * every asset's long-run return below its stated figure — worst for crypto,
-   * which has the biggest shocks. Subtracting this from the drift lets events
+   * which has the biggest headlines. Subtracting this from the drift lets events
    * add drama without secretly rewriting the risk/return table students are
    * being asked to reason about. */
-  function eventLogDrag(assetId) {
+  function eventLogDrag(asset) {
     const total = totalEventWeight();
     let sum = 0;
     EVENTS.forEach(function (e) {
-      const effect = e.effects[assetId];
-      if (typeof effect === 'number') {
-        sum += (e.weight / total) * Math.log(1 + effect);
-      }
+      const effect = effectFor(e, asset);
+      if (effect !== 0) sum += (e.weight / total) * Math.log(1 + effect);
     });
     return EVENT_CHANCE_PER_MONTH * sum;
   }
@@ -1433,40 +2338,51 @@ footer {
 
     const drag = {};
     ASSETS.forEach(function (a) {
-      drag[a.id] = eventLogDrag(a.id);
+      drag[a.id] = eventLogDrag(a);
     });
 
     for (let m = 1; m <= months; m++) {
-      const marketShock = rng.normal();
+      // Two shared factors: one global, one local to New Zealand.
+      const worldShock = rng.normal();
+      const nzShock = rng.normal();
 
       let event = null;
-      if (rng.next() < EVENT_CHANCE_PER_MONTH) {
-        event = chooseEvent(rng);
-      }
+      if (rng.next() < EVENT_CHANCE_PER_MONTH) event = chooseEvent(rng);
       events.push(event);
 
       ASSETS.forEach(function (a) {
         const own = rng.normal();
-        const z = a.rho * marketShock + Math.sqrt(1 - a.rho * a.rho) * own;
-        /* `mu` is the compound growth rate a typical path actually achieves, so
-         * it goes straight into the log drift. Using the textbook
-         * `mu - sigma^2/2` here would make it the *arithmetic* mean instead, and
-         * volatility drag would pull the typical outcome far below it — at
-         * Bitcorn's 75% volatility that alone costs 28 points a year, which
-         * would teach students that crypto is a certain loss rather than a wide
-         * spread of outcomes. */
-        const drift = a.mu * DT - drag[a.id];
+        const systematic = a.rhoW * a.rhoW + a.rhoNz * a.rhoNz;
+        const idiosyncratic = Math.sqrt(Math.max(0, 1 - systematic));
+        const z = a.rhoW * worldShock + a.rhoNz * nzShock + idiosyncratic * own;
+
+        /* `mu` is the compound growth rate a typical path actually achieves.
+         *
+         * Two things have to be right for that to be true. First, the textbook
+         * `mu - sigma^2/2` is not used: that would make `mu` the *arithmetic*
+         * mean, and volatility drag would pull the typical outcome far below it
+         * — at Ethereum's 85% volatility that alone costs 36 points a year,
+         * teaching students that crypto is a certain loss rather than a wide
+         * spread of outcomes.
+         *
+         * Second, the drift is `log(1 + mu)` rather than `mu`, because drift
+         * accumulates in log space: feeding in 0.08 directly would compound to
+         * exp(0.08) - 1 = 8.33%, so a table promising 8% would quietly deliver
+         * a third of a point more. Small, but the whole point of showing an
+         * expected return next to a past one is that the numbers are honest. */
+        const drift = Math.log(1 + a.mu) * DT - drag[a.id];
         const diffusion = a.sigma * Math.sqrt(DT) * z;
         let r = Math.exp(drift + diffusion) - 1;
 
-        if (event && typeof event.effects[a.id] === 'number') {
-          r = (1 + r) * (1 + event.effects[a.id]) - 1;
+        if (event) {
+          const shock = effectFor(event, a);
+          if (shock !== 0) r = (1 + r) * (1 + shock) - 1;
         }
 
         const prev = prices[a.id][m - 1];
-        // Floor at a cent so a catastrophic run can never produce a
-        // non-positive price and break the share math downstream.
-        const next = Math.max(0.01, prev * (1 + r));
+        // Floored so a catastrophic run can never produce a non-positive price
+        // and break the share math downstream.
+        const next = Math.max(prev * 0.0001, prev * (1 + r));
         prices[a.id].push(next);
         returns[a.id].push(next / prev - 1);
       });
@@ -1475,19 +2391,30 @@ footer {
       cpi.push(cpi[m - 1] * (1 + Math.max(-0.01, infl)));
     }
 
-    return { seed: seedText, months: months, prices: prices, returns: returns, events: events, cpi: cpi };
+    return {
+      seed: seedText,
+      months: months,
+      prices: prices,
+      returns: returns,
+      events: events,
+      cpi: cpi
+    };
   }
 
   global.Market = {
     ASSETS: ASSETS,
+    CATEGORIES: CATEGORIES,
     EVENTS: EVENTS,
     MONTHS_PER_YEAR: MONTHS_PER_YEAR,
     BASE_INFLATION: BASE_INFLATION,
+    BENCHMARK_ID: BENCHMARK_ID,
     generate: generate,
-    byId: function (id) {
+    byId: byId,
+    categoryById: categoryById,
+    assetsInCategory: function (categoryId) {
       return ASSETS.filter(function (a) {
-        return a.id === id;
-      })[0];
+        return a.category === categoryId;
+      });
     }
   };
 })(window);
@@ -1505,12 +2432,25 @@ footer {
 (function (global) {
   'use strict';
 
+  /* Scaled to a fifteen-year-old's actual life: a bit saved up, and some of a
+   * part-time wage going in each month. The lesson lands harder at $50 a month
+   * than at a sum no student has ever held.
+   *
+   * Fees copy how NZ investing platforms really charge — a flat fee per trade
+   * plus a small percentage. The flat part is the point: it is invisible on a
+   * $5,000 trade and brutal on a $50 one, which is exactly the trap a beginner
+   * making small frequent trades falls into. */
   const DEFAULTS = {
-    startingCash: 10000,
-    monthlyContribution: 200,
-    savingsRate: 0.02, // annual interest paid on uninvested cash
-    feeRate: 0.005 // charged on the value of every buy and every sell
+    startingCash: 1000,
+    monthlyContribution: 50,
+    savingsRate: 0.03, // annual interest paid on uninvested cash
+    feeFlat: 3, // charged on every buy and every sell, regardless of size
+    feeRate: 0.005 // plus this share of the trade's value
   };
+
+  function feeOn(state, amount) {
+    return state.cfg.feeFlat + amount * state.cfg.feeRate;
+  }
 
   function create(market, opts) {
     const cfg = Object.assign({}, DEFAULTS, opts || {});
@@ -1561,19 +2501,25 @@ footer {
   }
 
   function benchValue(state) {
-    return state.benchShares * priceOf(state, 'index');
+    return state.benchShares * priceOf(state, Market.BENCHMARK_ID);
   }
 
   function realValue(state, nominal) {
     return nominal / state.market.cpi[state.month];
   }
 
+  /* The benchmark pays the percentage fee but not the flat one, because it
+   * represents an automatic monthly investment plan — which is how NZ platforms
+   * and KiwiSaver actually work, and they do not charge a per-trade fee on a
+   * scheduled contribution. Charging the flat $3 on a $50 auto-contribution
+   * would hand the player a 6%-a-month head start that no real investor enjoys,
+   * and the whole value of the benchmark is that it is honest. */
   function benchInvest(state, dollars) {
     if (dollars <= 0) return;
     const fee = dollars * state.cfg.feeRate;
     const net = dollars - fee;
     state.benchFees += fee;
-    state.benchShares += net / priceOf(state, 'index');
+    state.benchShares += net / priceOf(state, Market.BENCHMARK_ID);
   }
 
   function record(state) {
@@ -1596,10 +2542,17 @@ footer {
    * next to the trade controls instead of failing silently. */
   function buy(state, assetId, dollars) {
     if (state.finished) return { ok: false, reason: 'The simulation has finished.' };
+    if (state.cash <= state.cfg.feeFlat) {
+      return {
+        ok: false,
+        reason:
+          'You need more than ' + money(state.cfg.feeFlat) + ' in cash — that is the flat fee on any trade.'
+      };
+    }
     const amount = Math.min(dollars, maxBuy(state));
     if (!(amount > 0)) return { ok: false, reason: 'Not enough cash for that trade.' };
 
-    const fee = amount * state.cfg.feeRate;
+    const fee = feeOn(state, amount);
     const asset = Market.byId(assetId);
     state.cash -= amount + fee;
     state.shares[assetId] += amount / priceOf(state, assetId);
@@ -1615,7 +2568,19 @@ footer {
     const amount = Math.min(dollars, available);
     if (!(amount > 0)) return { ok: false, reason: 'You do not own any of that.' };
 
-    const fee = amount * state.cfg.feeRate;
+    const fee = feeOn(state, amount);
+    if (fee >= amount) {
+      return {
+        ok: false,
+        reason:
+          'The fee on that sale would be ' +
+          money(fee) +
+          ', which is more than the ' +
+          money(amount) +
+          ' you would get back. Selling tiny amounts costs more than it is worth.'
+      };
+    }
+
     const asset = Market.byId(assetId);
     state.shares[assetId] -= amount / priceOf(state, assetId);
     if (state.shares[assetId] < 1e-9) state.shares[assetId] = 0;
@@ -1626,9 +2591,10 @@ footer {
     return { ok: true, amount: amount, fee: fee };
   }
 
-  // Largest amount investable once the fee charged on top is covered.
+  /* Largest amount investable once both parts of the fee are covered:
+   * cash = amount + flat + amount * rate, solved for amount. */
   function maxBuy(state) {
-    return Math.max(0, state.cash / (1 + state.cfg.feeRate));
+    return Math.max(0, (state.cash - state.cfg.feeFlat) / (1 + state.cfg.feeRate));
   }
 
   function advance(state) {
@@ -2098,7 +3064,11 @@ footer {
  *
  * The market table's rows are built once and then updated in place rather than
  * re-created each month — rebuilding would wipe whatever amount the student had
- * typed into a trade box mid-decision. */
+ * typed into a trade box mid-decision.
+ *
+ * With sixteen assets the table is grouped by category, and the allocation
+ * summary aggregates by category too: sixteen distinguishable colours is beyond
+ * what anyone can actually read, and five is comfortable. */
 
 (function (global) {
   'use strict';
@@ -2115,6 +3085,14 @@ footer {
       '$' +
       Math.abs(n).toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d })
     );
+  }
+
+  /* Prices span $0.62 (Air NZ) to $178,000 (bitcoin), so a fixed number of
+   * decimals is wrong at one end or the other. */
+  function price(n) {
+    if (n >= 10000) return money(n, 0);
+    if (n >= 100) return money(n, 2);
+    return money(n, 2);
   }
 
   function signedMoney(n, dp) {
@@ -2163,6 +3141,7 @@ footer {
     $('months-left').textContent = left === 0 ? 'Finished' : left + ' months to go';
     $('next-month').disabled = state.finished;
     $('next-year').disabled = state.finished;
+    $('play-btn').disabled = state.finished;
   }
 
   function renderHero(state) {
@@ -2180,6 +3159,7 @@ footer {
   function renderTiles(state) {
     const total = Portfolio.totalValue(state);
     $('tile-cash').textContent = money(state.cash);
+    $('tile-cash-note').textContent = 'Earns ' + plainPct(state.cfg.savingsRate) + ' a year';
     $('tile-contributed').textContent = money(state.totalContributed);
     $('tile-contributed-note').textContent = money(state.cfg.monthlyContribution) + ' added monthly';
     $('tile-real').textContent = money(Portfolio.realValue(state, total));
@@ -2203,8 +3183,8 @@ footer {
       },
       {
         key: 'benchmark',
-        name: 'Index fund, bought and held',
-        color: resolveColor('var(--series-index)'),
+        name: 'World fund, bought and held',
+        color: resolveColor('var(--series-world)'),
         values: state.history.map(function (h) {
           return h.benchmark;
         })
@@ -2251,7 +3231,7 @@ footer {
       '<div class="t-row"><span class="key dot" style="background:var(--series-portfolio)"></span>Your portfolio<span class="v">' +
       money(h.total) +
       '</span></div>' +
-      '<div class="t-row"><span class="key dot" style="background:var(--series-index)"></span>Index only<span class="v">' +
+      '<div class="t-row"><span class="key dot" style="background:var(--series-world)"></span>Doing nothing<span class="v">' +
       money(h.benchmark) +
       '</span></div>' +
       '<div class="t-row" style="margin-top:4px">Difference<span class="v ' +
@@ -2276,11 +3256,16 @@ footer {
 
   /* ---------------- allocation ---------------- */
 
+  /* Aggregated by category rather than by asset: a student holding eight things
+   * wants to know "how much of me is crypto", not to decode eight shades. */
   function allocationParts(state) {
     const parts = [];
-    Market.ASSETS.forEach(function (a) {
-      const v = Portfolio.holdingValue(state, a.id);
-      if (v > 0.005) parts.push({ id: a.id, name: a.name, color: a.color, value: v });
+    Market.CATEGORIES.forEach(function (cat) {
+      let value = 0;
+      Market.assetsInCategory(cat.id).forEach(function (a) {
+        value += Portfolio.holdingValue(state, a.id);
+      });
+      if (value > 0.005) parts.push({ id: cat.id, name: cat.name, color: cat.color, value: value });
     });
     if (state.cash > 0.005) {
       parts.push({ id: 'cash', name: 'Cash', color: 'var(--series-cash)', value: state.cash });
@@ -2348,60 +3333,88 @@ footer {
       delete marketRows[k];
     });
 
-    Market.ASSETS.forEach(function (a) {
-      const tr = document.createElement('tr');
-      tr.innerHTML =
-        '<td><div class="asset-cell"><span class="key dot" style="background:' +
-        a.color +
-        '"></span><span><span class="asset-name">' +
-        a.name +
-        '</span><br><span class="asset-kind">' +
-        a.kind +
-        ' · ' +
-        a.ticker +
-        '</span></span></div></td>' +
-        '<td data-label="Risk"><span class="risk risk-' +
-        a.risk +
-        '">' +
-        RISK_WORDS[a.risk] +
-        '</span></td>' +
-        '<td class="c-price" data-label="Price"></td>' +
-        '<td class="c-change" data-label="1 month"></td>' +
-        '<td class="col-history"><canvas class="spark"></canvas></td>' +
-        '<td class="c-holding" data-label="You hold"></td>' +
-        '<td data-label="Trade"><div class="trade-cell">' +
-        '<input type="number" min="0" step="50" placeholder="$" aria-label="Amount in dollars to trade in ' +
-        a.name +
-        '">' +
-        '<button class="mini buy" type="button">Buy</button>' +
-        '<button class="mini sell" type="button">Sell</button>' +
-        '</div></td>';
-      body.appendChild(tr);
+    Market.CATEGORIES.forEach(function (cat) {
+      const head = document.createElement('tr');
+      head.className = 'cat-row';
+      head.innerHTML =
+        '<td colspan="8"><span class="cat-chip" style="background:' +
+        cat.color +
+        '"></span><span class="cat-name">' +
+        cat.name +
+        '</span><span class="cat-blurb">' +
+        cat.blurb +
+        '</span></td>';
+      body.appendChild(head);
 
-      const input = tr.querySelector('input');
-      const buyBtn = tr.querySelector('.buy');
-      const sellBtn = tr.querySelector('.sell');
+      Market.assetsInCategory(cat.id).forEach(function (a) {
+        const tr = document.createElement('tr');
+        tr.innerHTML =
+          '<td><div class="asset-cell"><span class="key dot" style="background:' +
+          a.color +
+          '"></span><span><span class="asset-name">' +
+          a.name +
+          '</span><br><span class="asset-kind">' +
+          a.ticker +
+          ' · ' +
+          a.where +
+          '</span></span></div></td>' +
+          '<td data-label="Risk"><span class="risk risk-' +
+          a.risk +
+          '">' +
+          RISK_WORDS[a.risk] +
+          '</span></td>' +
+          '<td class="c-price" data-label="Price"></td>' +
+          '<td class="c-change" data-label="1 month"></td>' +
+          /* The two return figures sit side by side deliberately — the gap
+             between them is the lesson, and it only works if you see both. */
+          '<td class="c-returns" data-label="Past / expected">' +
+          '<button type="button" class="ret-pair" data-term="past-performance" aria-label="Past and expected return for ' +
+          a.name +
+          ' — what does this mean?">' +
+          '<span class="ret-past">' +
+          plainPct(a.past.ret, 0) +
+          '</span><span class="ret-sep">→</span><span class="ret-exp">' +
+          plainPct(a.mu, 1) +
+          '</span></button>' +
+          '<span class="ret-note">' +
+          a.past.since +
+          '</span></td>' +
+          '<td class="col-history"><canvas class="spark"></canvas></td>' +
+          '<td class="c-holding" data-label="You hold"></td>' +
+          '<td data-label="Trade"><div class="trade-cell">' +
+          '<input type="number" min="0" step="10" placeholder="$" aria-label="Amount in dollars to trade in ' +
+          a.name +
+          '">' +
+          '<button class="mini buy" type="button">Buy</button>' +
+          '<button class="mini sell" type="button">Sell</button>' +
+          '</div></td>';
+        body.appendChild(tr);
 
-      buyBtn.addEventListener('click', function () {
-        handlers.onTrade('buy', a.id, parseFloat(input.value));
-      });
-      sellBtn.addEventListener('click', function () {
-        handlers.onTrade('sell', a.id, parseFloat(input.value));
-      });
-      input.addEventListener('keydown', function (ev) {
-        if (ev.key === 'Enter') handlers.onTrade('buy', a.id, parseFloat(input.value));
-      });
+        const input = tr.querySelector('input');
+        const buyBtn = tr.querySelector('.buy');
+        const sellBtn = tr.querySelector('.sell');
 
-      marketRows[a.id] = {
-        tr: tr,
-        price: tr.querySelector('.c-price'),
-        change: tr.querySelector('.c-change'),
-        holding: tr.querySelector('.c-holding'),
-        spark: tr.querySelector('.spark'),
-        input: input,
-        buy: buyBtn,
-        sell: sellBtn
-      };
+        buyBtn.addEventListener('click', function () {
+          handlers.onTrade('buy', a.id, parseFloat(input.value));
+        });
+        sellBtn.addEventListener('click', function () {
+          handlers.onTrade('sell', a.id, parseFloat(input.value));
+        });
+        input.addEventListener('keydown', function (ev) {
+          if (ev.key === 'Enter') handlers.onTrade('buy', a.id, parseFloat(input.value));
+        });
+
+        marketRows[a.id] = {
+          tr: tr,
+          price: tr.querySelector('.c-price'),
+          change: tr.querySelector('.c-change'),
+          holding: tr.querySelector('.c-holding'),
+          spark: tr.querySelector('.spark'),
+          input: input,
+          buy: buyBtn,
+          sell: sellBtn
+        };
+      });
     });
   }
 
@@ -2411,21 +3424,24 @@ footer {
       const row = marketRows[a.id];
       if (!row) return;
 
-      const price = Portfolio.priceOf(state, a.id);
+      const p = Portfolio.priceOf(state, a.id);
       const change = state.market.returns[a.id][m];
-      row.price.textContent = money(price, 2);
+      row.price.textContent = price(p);
       row.change.textContent = m === 0 ? '—' : pct(change);
       row.change.className = 'c-change ' + (m === 0 ? '' : change >= 0 ? 'up' : 'down');
 
       const value = Portfolio.holdingValue(state, a.id);
       row.holding.innerHTML =
         value > 0.005
-          ? money(value) + '<br><span class="asset-kind">' + state.shares[a.id].toFixed(2) + ' units</span>'
+          ? money(value) +
+            '<br><span class="asset-kind">' +
+            state.shares[a.id].toFixed(state.shares[a.id] < 1 ? 4 : 2) +
+            ' units</span>'
           : '<span class="asset-kind">&mdash;</span>';
 
       // Sparkline shows the run so far, capped so early months stay readable.
       const series = state.market.prices[a.id].slice(0, m + 1);
-      Charts.sparkline(row.spark, series.length > 1 ? series : [price, price], resolveColor(a.color));
+      Charts.sparkline(row.spark, series.length > 1 ? series : [p, p], resolveColor(a.color));
 
       row.buy.disabled = state.finished || Portfolio.maxBuy(state) <= 0;
       row.sell.disabled = state.finished || value <= 0.005;
@@ -2442,7 +3458,9 @@ footer {
       return;
     }
     el.innerHTML =
-      '<div class="banner"><div class="b-head">' +
+      '<div class="banner' +
+      (event.big ? ' big' : '') +
+      '"><div class="b-head">' +
       event.headline +
       '</div><div class="b-why">' +
       event.why +
@@ -2476,19 +3494,24 @@ footer {
     const heldCount = Market.ASSETS.filter(function (a) {
       return Portfolio.holdingValue(state, a.id) > 0.005;
     }).length;
+    const catCount = Market.CATEGORIES.filter(function (c) {
+      return Market.assetsInCategory(c.id).some(function (a) {
+        return Portfolio.holdingValue(state, a.id) > 0.005;
+      });
+    }).length;
     const cashShare = s.nominal > 0 ? state.cash / s.nominal : 0;
 
     if (s.vsBenchmark >= 0) {
       bullets.push(
         'You finished ' +
           money(s.vsBenchmark) +
-          ' ahead of simply buying the index fund and never touching it. That is a real achievement — and worth asking how much of it was skill and how much was the particular path this market took. Change the seed and try the same strategy again.'
+          ' ahead of simply buying the world fund and never touching it. That is a real achievement — and worth asking how much was skill and how much was the particular path this market took. Change the seed and try the same strategy again.'
       );
     } else {
       bullets.push(
-        'Buying the index fund and never touching it would have finished ' +
+        'Buying the world fund and never touching it would have finished ' +
           money(-s.vsBenchmark) +
-          ' ahead of you. This is the single most reliable finding in investing: most active decisions lose to patiently holding a broad fund.'
+          ' ahead of you. This is the most reliable finding in investing: most active decisions lose to patiently holding a broad fund.'
       );
     }
 
@@ -2502,27 +3525,22 @@ footer {
 
     if (s.trades === 0) {
       bullets.push(
-        'You never traded, so you paid nothing in fees beyond your opening purchase. Doing nothing is a strategy, and often a good one.'
+        'You never traded, so you paid nothing in fees at all. Doing nothing is a strategy, and often a good one.'
       );
-    } else if (feeShare > 0.02) {
+    } else {
+      const perTrade = s.fees / s.trades;
       bullets.push(
         'You made ' +
           s.trades +
           ' trades and paid ' +
           money(s.fees, 2) +
-          ' in fees — ' +
+          ' in fees — an average of ' +
+          money(perTrade, 2) +
+          ' each, or ' +
           plainPct(feeShare) +
-          ' of every dollar you put in, gone to costs. At half a percent a trade, activity is expensive.'
-      );
-    } else {
-      bullets.push(
-        'You made ' +
-          s.trades +
-          ' trades for ' +
-          money(s.fees, 2) +
-          ' in fees, about ' +
-          plainPct(feeShare) +
-          ' of the money you put in. Restrained trading kept your costs low.'
+          ' of every dollar you put in. With a ' +
+          money(state.cfg.feeFlat) +
+          ' flat fee on every trade, small frequent trades are far more expensive than they look.'
       );
     }
 
@@ -2536,7 +3554,9 @@ footer {
       bullets.push(
         'You ended with ' +
           plainPct(cashShare, 0) +
-          ' of your money sitting in cash. It earned 2% while prices rose ' +
+          ' of your money sitting in cash. It earned ' +
+          plainPct(state.cfg.savingsRate) +
+          ' while prices rose ' +
           plainPct(s.inflation) +
           ' over the run, so that portion quietly lost buying power.'
       );
@@ -2548,11 +3568,17 @@ footer {
           (heldCount === 0 ? 'no investments at all' : 'a single asset') +
           '. Concentration magnifies both outcomes — it is the reason one piece of bad news could have undone the whole decade.'
       );
-    } else if (heldCount >= 4) {
+    } else if (catCount >= 3) {
       bullets.push(
         'You finished spread across ' +
           heldCount +
-          ' different assets. Because they don’t move in step, that mix gave you a smoother ride than any one of them alone.'
+          ' assets in ' +
+          catCount +
+          ' different categories. Because those categories do not move in step, that mix gave you a smoother ride than any one of them alone.'
+      );
+    } else if (catCount === 1) {
+      bullets.push(
+        'Everything you held was in one category. Owning several things from the same corner of the market is much less diversified than it feels — they tend to fall together.'
       );
     }
 
@@ -2582,7 +3608,7 @@ footer {
       'Seed "' + state.market.seed + '" · ' + state.market.months / 12 + ' years · ' + s.trades + ' trades';
 
     const tiles = [
-      { k: 'Final value', v: money(s.nominal), n: 'In today’s money ' + money(s.real) },
+      { k: 'Final value', v: money(s.nominal), n: 'In today’s money ' + money(s.real), term: 'real-value' },
       { k: 'Money you put in', v: money(s.contributed), n: 'Opening balance plus monthly deposits' },
       {
         k: 'Profit',
@@ -2590,23 +3616,29 @@ footer {
         n: pct(s.totalReturn) + ' overall',
         cls: s.profit >= 0 ? 'up' : 'down'
       },
-      { k: 'Growth per year', v: plainPct(s.annualised), n: 'Benchmark ' + plainPct(s.benchAnnualised) },
+      {
+        k: 'Growth per year',
+        v: plainPct(s.annualised),
+        n: 'Benchmark ' + plainPct(s.benchAnnualised),
+        term: 'annual-return'
+      },
       {
         k: 'Against the benchmark',
         v: signedMoney(s.vsBenchmark),
         n: s.vsBenchmark >= 0 ? 'You came out ahead' : 'Doing nothing would have won',
-        cls: s.vsBenchmark >= 0 ? 'up' : 'down'
+        cls: s.vsBenchmark >= 0 ? 'up' : 'down',
+        term: 'benchmark'
       },
-      { k: 'Fees paid', v: money(s.fees, 2), n: s.trades + ' trades' },
-      { k: 'Worst fall', v: plainPct(Math.abs(s.drawdown)), n: 'Peak to trough' },
-      { k: 'Inflation', v: plainPct(s.inflation), n: 'Over the whole run' }
+      { k: 'Fees paid', v: money(s.fees, 2), n: s.trades + ' trades', term: 'fees' },
+      { k: 'Worst fall', v: plainPct(Math.abs(s.drawdown)), n: 'Peak to trough', term: 'drawdown' },
+      { k: 'Inflation', v: plainPct(s.inflation), n: 'Over the whole run', term: 'inflation' }
     ];
 
     $('results-grid').innerHTML = tiles
       .map(function (t) {
         return (
           '<div class="tile"><div class="k">' +
-          t.k +
+          (t.term ? Glossary.tag(t.term, t.k) : t.k) +
           '</div><div class="v ' +
           (t.cls || '') +
           '">' +
@@ -2628,6 +3660,7 @@ footer {
   global.UI = {
     $: $,
     money: money,
+    price: price,
     signedMoney: signedMoney,
     pct: pct,
     plainPct: plainPct,
@@ -2650,6 +3683,820 @@ footer {
 
 </script>
 <script>
+/* Click-to-explain definitions.
+ *
+ * Every one of these is written for someone who has never heard the word before
+ * and is not yet convinced they care. That means: short, concrete, second
+ * person, and wherever possible using the numbers from the student's own run
+ * rather than a made-up example. "You have paid $34 in fees across 11 trades"
+ * lands; "fees reduce returns" does not.
+ *
+ * A term appears in the UI as `data-term="fees"` on any element. Clicking it —
+ * or reaching it by keyboard — opens the panel. */
+
+(function (global) {
+  'use strict';
+
+  function money(n, dp) {
+    return UI.money(n, dp);
+  }
+
+  function pct(n, dp) {
+    return UI.plainPct(n, dp);
+  }
+
+  function p(text) {
+    return '<p>' + text + '</p>';
+  }
+
+  /* A worked example, set apart from the prose because a number students can
+   * follow line by line does more work here than another paragraph. */
+  function sum(rows) {
+    return (
+      '<div class="term-sum">' +
+      rows
+        .map(function (r) {
+          return (
+            '<div class="term-sum-row' +
+            (r.strong ? ' strong' : '') +
+            '"><span>' +
+            r.k +
+            '</span><span>' +
+            r.v +
+            '</span></div>'
+          );
+        })
+        .join('') +
+      '</div>'
+    );
+  }
+
+  const TERMS = {
+    fees: {
+      title: 'Fees',
+      hint: 'What you get charged to trade',
+      body: function (state) {
+        const flat = state.cfg.feeFlat;
+        const rate = state.cfg.feeRate;
+        const small = 50;
+        const smallFee = flat + small * rate;
+        return (
+          p(
+            'Every time you buy or sell, the platform takes a cut. Here that is <strong>' +
+              money(flat) +
+              ' flat, plus ' +
+              pct(rate, 1) +
+              ' of the trade</strong> — close to what real NZ investing apps charge.'
+          ) +
+          p(
+            'The flat part is the one that gets beginners. It is the same ' +
+              money(flat) +
+              ' whether you trade ' +
+              money(small) +
+              ' or ' +
+              money(5000) +
+              ', so on small trades it is enormous:'
+          ) +
+          sum([
+            { k: 'You invest', v: money(small) },
+            { k: 'Fee', v: money(smallFee, 2) },
+            { k: 'That is', v: pct(smallFee / small, 1) + ' gone instantly', strong: true }
+          ]) +
+          p(
+            'Your investment has to gain ' +
+              pct(smallFee / small, 1) +
+              ' just to break even. Trading ' +
+              money(5000) +
+              ' at once costs ' +
+              pct((flat + 5000 * rate) / 5000, 2) +
+              ' — the same fee, spread over a hundred times more money.'
+          ) +
+          p(
+            'So far you have made <strong>' +
+              state.tradeCount +
+              (state.tradeCount === 1 ? ' trade' : ' trades') +
+              '</strong> and paid <strong>' +
+              money(state.totalFees, 2) +
+              '</strong>. That money is gone no matter what the market does.'
+          )
+        );
+      },
+      see: ['benchmark']
+    },
+
+    inflation: {
+      title: 'Inflation',
+      hint: 'Why the same money buys less each year',
+      body: function (state) {
+        const cpi = state.market.cpi[state.month];
+        const risen = cpi - 1;
+        const then = 100;
+        return (
+          p(
+            'Inflation means prices go up over time. A pie that costs ' +
+              money(5) +
+              ' today might cost ' +
+              money(6.5) +
+              ' in ten years. Your money did not shrink — it just buys less.'
+          ) +
+          p(
+            'In this run prices have risen <strong>' +
+              pct(risen) +
+              '</strong> since the start. So ' +
+              money(then) +
+              ' of your money now buys what ' +
+              money(then / cpi, 2) +
+              ' used to.'
+          ) +
+          p(
+            'This is why leaving everything in a bank account is not actually safe. If your savings earn ' +
+              pct(state.cfg.savingsRate) +
+              ' and prices rise ' +
+              pct(0.025) +
+              ', you are quietly going backwards every year even though the balance goes up.'
+          ) +
+          p(
+            'The "worth in today\'s money" tile strips inflation out, so you can see what your pile is <em>really</em> worth.'
+          )
+        );
+      },
+      see: ['real-value', 'cash-interest']
+    },
+
+    'real-value': {
+      title: "Worth in today's money",
+      hint: 'Your balance with inflation taken out',
+      body: function (state) {
+        const total = Portfolio.totalValue(state);
+        const real = Portfolio.realValue(state, total);
+        return (
+          p(
+            'Your balance says ' +
+              money(total) +
+              '. But prices have risen since you started, so those dollars do not stretch as far as they did.'
+          ) +
+          p(
+            'In what money was worth on day one, you actually have <strong>' +
+              money(real) +
+              '</strong>.'
+          ) +
+          p(
+            'Always check this number. An investment that "went up 3%" in a year when prices rose 4% actually lost you buying power — the gain was an illusion created by the shrinking dollar.'
+          )
+        );
+      },
+      see: ['inflation']
+    },
+
+    compounding: {
+      title: 'Compounding',
+      hint: 'Growth that grows on itself',
+      body: function () {
+        return (
+          p(
+            'When your money earns a return, that return then earns its own return next year. Growth stacks on top of growth.'
+          ) +
+          p(money(1000) + ' growing at 8% a year, with nothing added:') +
+          sum([
+            { k: 'After 1 year', v: money(1080) },
+            { k: 'After 10 years', v: money(2159) },
+            { k: 'After 30 years', v: money(10063), strong: true }
+          ]) +
+          p(
+            'The first ten years add about ' +
+              money(1159) +
+              '. The last ten add roughly ' +
+              money(5400) +
+              ' — from the same 8%, on a much bigger pile.'
+          ) +
+          p(
+            'This is why starting at 15 is worth so much more than starting at 35. Time is doing the heavy lifting, not cleverness.'
+          )
+        );
+      },
+      see: ['annual-return']
+    },
+
+    diversification: {
+      title: 'Diversification',
+      hint: 'Not putting it all in one thing',
+      body: function () {
+        return (
+          p(
+            'Spreading your money across different things so that no single disaster wipes you out.'
+          ) +
+          p(
+            'If everything you own is a2 Milk and China stops buying infant formula, you lose a lot. If a2 Milk is one of twelve things you own, it stings and you carry on.'
+          ) +
+          p(
+            'The clever part: things here do not all move together. NZ shares follow the NZ economy, US shares follow the US one, and bonds often go <em>up</em> when shares crash. Mixing things that move differently gives you a smoother ride without giving up much return.'
+          ) +
+          p(
+            'It is the closest thing to a free lunch in investing — less risk, roughly the same return, just for not betting on one horse.'
+          )
+        );
+      },
+      see: ['correlation', 'index-fund']
+    },
+
+    correlation: {
+      title: 'Moving together',
+      hint: 'Why the mix matters, not just the number of things',
+      body: function () {
+        return (
+          p(
+            'Owning ten things is only real diversification if those ten things do not all fall on the same day.'
+          ) +
+          p(
+            'Buying Fisher & Paykel, Mainfreight, Meridian and a2 Milk sounds spread out, but they are all NZ companies riding the same NZ economy. A recession here hits all four at once.'
+          ) +
+          p(
+            'Buying one NZ fund and one world fund is <em>less</em> exciting and <em>more</em> diversified, because those two do not rise and fall in step.'
+          ) +
+          p(
+            'This simulator models that properly: NZ shares share a hidden "NZ economy" factor, so a mix of NZ names is genuinely riskier than it looks on the surface.'
+          )
+        );
+      },
+      see: ['diversification']
+    },
+
+    volatility: {
+      title: 'Volatility',
+      hint: 'How wildly the price swings',
+      body: function () {
+        return (
+          p(
+            'How much something jumps around. Not whether it goes up or down overall — how bumpy the trip is.'
+          ) +
+          p(
+            'The NZ bond fund moves about 5% a year. Ethereum moves about 85%. Same idea, wildly different rides.'
+          ) +
+          p(
+            'High volatility matters for two reasons. First, you have to actually live through it — a 60% fall is easy to shrug at on a chart and very hard to sit through when it is your money. Second, most people sell at the bottom, which turns a temporary drop into a permanent loss.'
+          ) +
+          p(
+            'Volatility is the one number that carries over from the past reasonably well. Something that has always been wild will probably stay wild.'
+          )
+        );
+      },
+      see: ['risk', 'past-performance', 'drawdown']
+    },
+
+    risk: {
+      title: 'The risk rating',
+      hint: 'What the coloured label means',
+      body: function () {
+        return (
+          p(
+            'A quick 1-to-5 summary of how bumpy each thing is, based on its volatility.'
+          ) +
+          sum([
+            { k: 'Very low', v: 'Barely moves. Bonds, balanced funds.' },
+            { k: 'Low', v: 'Index funds. Real falls, but they recover.' },
+            { k: 'Medium', v: 'Solid single companies.' },
+            { k: 'High', v: 'Can halve. Xero, a2 Milk, Nvidia.' },
+            { k: 'Extreme', v: 'Can lose most of its value. Tesla, crypto.' }
+          ]) +
+          p(
+            'Higher risk does <strong>not</strong> mean higher return. It means a wider spread of possible outcomes — the good ones better, the bad ones much worse.'
+          )
+        );
+      },
+      see: ['volatility', 'expected-return']
+    },
+
+    'index-fund': {
+      title: 'Index fund',
+      hint: 'Buying every company at once',
+      body: function () {
+        return (
+          p(
+            'Instead of picking which company will do well, you buy a tiny slice of all of them.'
+          ) +
+          p(
+            'The S&P/NZX 50 fund holds the 50 biggest NZ companies. Buy ' +
+              money(50) +
+              ' of it and you own a sliver of Fisher & Paykel, Mainfreight, Meridian and 47 others.'
+          ) +
+          p(
+            'You will never beat the market this way — you <em>are</em> the market. But you also cannot be wrecked by one company collapsing, and you pay far less in fees than someone trading constantly.'
+          ) +
+          p(
+            'Decades of evidence say most professional investors, paid full-time to pick winners, do worse than this over long periods. That is not a small finding.'
+          )
+        );
+      },
+      see: ['benchmark', 'diversification']
+    },
+
+    benchmark: {
+      title: 'The benchmark',
+      hint: 'The "do nothing" strategy you are racing',
+      body: function (state) {
+        const bench = Portfolio.benchValue(state);
+        const you = Portfolio.totalValue(state);
+        const diff = you - bench;
+        return (
+          p(
+            'The grey line is an imaginary investor who put every dollar into the Total World Fund on day one, invests every ' +
+              money(state.cfg.monthlyContribution) +
+              ' the moment it arrives, and then <strong>never does anything again</strong>. No trading, no checking, no news.'
+          ) +
+          p(
+            'It faces the exact same prices and the same crashes as you, so the only difference between the two lines is your decisions.'
+          ) +
+          sum([
+            { k: 'You', v: money(you) },
+            { k: 'Doing nothing', v: money(bench) },
+            {
+              k: 'Difference',
+              v: (diff >= 0 ? '+' : '') + money(diff),
+              strong: true
+            }
+          ]) +
+          p(
+            'One fairness note: the benchmark pays the percentage fee but not the ' +
+              money(state.cfg.feeFlat) +
+              ' flat fee, because an automatic monthly investment plan does not get charged per trade in real life — KiwiSaver works the same way. Charging it would hand you an unearned head start.'
+          )
+        );
+      },
+      see: ['index-fund', 'fees']
+    },
+
+    'annual-return': {
+      title: 'Growth per year',
+      hint: 'Your real rate, not a rough average',
+      body: function () {
+        return (
+          p(
+            'The rate your money actually grew at, per year, once the timing of your deposits is accounted for.'
+          ) +
+          p(
+            'The obvious way to work this out is wrong. If you divide your final balance by everything you put in, you treat the ' +
+              money(50) +
+              ' you deposited last month as though it had been growing for ten years. It had not — it had been there for four weeks.'
+          ) +
+          p(
+            'That mistake makes investing look far worse than it is, sometimes by several percentage points. This app instead solves for the rate that makes all your actual deposit dates add up — the same method used to compare real funds.'
+          ) +
+          p(
+            'A gap of even 1% a year matters enormously over a lifetime. 7% versus 8% on ' +
+              money(1000) +
+              ' over 40 years is roughly ' +
+              money(15000) +
+              ' versus ' +
+              money(21700) +
+              '.'
+          )
+        );
+      },
+      see: ['compounding']
+    },
+
+    'expected-return': {
+      title: 'Expected return',
+      hint: 'A best guess, not a promise',
+      body: function () {
+        return (
+          p(
+            'The return this simulation assumes something will average over the long run. It is an estimate, not a schedule.'
+          ) +
+          p(
+            'An expected return of 8% does not mean 8% every year. It means a lot of years somewhere between -25% and +35%, which happen to average out near 8% if you wait long enough.'
+          ) +
+          p(
+            'Notice that the individual companies here all have <em>similar</em> expected returns, but wildly different risk. That is deliberate, and it is close to what the evidence actually says: picking a single company does not reliably raise your return, it just widens the range of things that can happen to you.'
+          )
+        );
+      },
+      see: ['past-performance', 'risk']
+    },
+
+    'past-performance': {
+      title: 'Why past returns are not future returns',
+      hint: 'The most important idea here',
+      body: function () {
+        return (
+          p(
+            'Look at any company in the table and you will see two numbers that disagree. Nvidia returned about 33% a year for twenty years. This simulator expects it to return about 9% from here.'
+          ) +
+          p('That is not a bug. It is the entire lesson.') +
+          p(
+            'A share price already reflects what everyone knows about how good the company is. Nvidia being brilliant is not a secret — it is priced in. To make 33% a year again, it would have to keep beating expectations that are already sky-high.'
+          ) +
+          p(
+            'The graveyard is full of "obvious" winners. In 2007 the safest company in NZ looked like a finance firm; dozens of them collapsed. a2 Milk rose about thirty-fold and then fell around 80%. Anyone who bought after reading about the rise caught the fall.'
+          ) +
+          p(
+            'Past <em>volatility</em> does carry over — wild things stay wild. Past <em>returns</em> mostly do not. Chasing last decade\'s winner is the single most common way beginners lose money.'
+          )
+        );
+      },
+      see: ['expected-return', 'volatility']
+    },
+
+    bonds: {
+      title: 'Bonds',
+      hint: 'Lending instead of owning',
+      body: function () {
+        return (
+          p(
+            'When you buy a share you own a piece of a company. When you buy a bond you have <em>lent</em> money — to a government or a company — and they pay you interest and give it back later.'
+          ) +
+          p(
+            'Lending is safer than owning. You get paid before shareholders do, and a government bond is about as close to a sure thing as exists. In exchange you get less: around 4% a year instead of 8%.'
+          ) +
+          p(
+            'Bonds earn their place by often rising when shares crash, as people run for safety. That is what makes a mix steadier than shares alone.'
+          )
+        );
+      },
+      see: ['diversification', 'ocr']
+    },
+
+    shares: {
+      title: 'Shares',
+      hint: 'What you actually own',
+      body: function () {
+        return (
+          p(
+            'A share is a small piece of a real company. Own one Mainfreight share and you genuinely own a sliver of the trucks, the warehouses and the profits.'
+          ) +
+          p(
+            'The price moves because people are constantly re-guessing what those future profits are worth. Good news raises the guess, bad news lowers it.'
+          ) +
+          p(
+            'You can own fractions here — a ' +
+              money(50) +
+              ' purchase of a ' +
+              money(178000) +
+              ' bitcoin gets you a tiny slice, and the same works for shares. Real NZ platforms let you do this too.'
+          )
+        );
+      },
+      see: ['index-fund', 'units']
+    },
+
+    units: {
+      title: 'Units',
+      hint: 'Owning a fraction',
+      body: function () {
+        return (
+          p(
+            'How many shares or slices you hold. It is almost never a whole number, and that is fine.'
+          ) +
+          p(
+            'If Mainfreight costs ' +
+              money(68) +
+              ' and you invest ' +
+              money(50) +
+              ', you get about 0.74 units. You still get 0.74 units\' worth of every rise and fall.'
+          ) +
+          p(
+            'This is why you can start investing with ' +
+              money(50) +
+              ' rather than needing enough for a whole bitcoin.'
+          )
+        );
+      },
+      see: ['shares']
+    },
+
+    crypto: {
+      title: 'Crypto',
+      hint: 'What is actually underneath it',
+      body: function () {
+        return (
+          p(
+            'Bitcoin and Ethereum are not companies. There are no profits, no products being sold, no staff, and nobody legally responsible for the value.'
+          ) +
+          p(
+            'A share is worth something because the company earns money. Crypto is worth exactly what the next person will pay, which is why it can move 30% on a rumour.'
+          ) +
+          p(
+            'It has fallen more than 70% four separate times and recovered each time so far. "So far" is the important part — a recovery is not a rule.'
+          ) +
+          p(
+            'It is included here because it is real, plenty of people your age own it, and pretending otherwise would be silly. Just be honest with yourself that you are betting on demand, not on a business.'
+          )
+        );
+      },
+      see: ['volatility', 'risk']
+    },
+
+    kiwisaver: {
+      title: 'KiwiSaver',
+      hint: 'The one you will actually have',
+      body: function () {
+        return (
+          p(
+            'A government-backed savings scheme almost every working New Zealander is in. Money comes out of your pay, your employer adds some, and the government chips in a bit each year.'
+          ) +
+          p(
+            'You cannot touch it until 65, with two exceptions: buying your first home, and serious hardship. That lock is the point — it stops you panic-selling in a crash.'
+          ) +
+          p(
+            'Your KiwiSaver is invested in a fund much like the balanced fund here. The fund you pick matters enormously over 45 years: a "conservative" fund feels safer and will very likely leave you with far less at 65 than a growth fund would have.'
+          ) +
+          p(
+            'When you get your first job, this is the single most valuable financial decision you will make — and most people never make it at all, just taking whatever default they are put in.'
+          )
+        );
+      },
+      see: ['compounding', 'index-fund']
+    },
+
+    'cash-interest': {
+      title: 'Interest on cash',
+      hint: 'What idle money earns',
+      body: function (state) {
+        return (
+          p(
+            'Money you have not invested sits as cash and earns ' +
+              pct(state.cfg.savingsRate) +
+              ' a year, like a savings account.'
+          ) +
+          p(
+            'That sounds fine until you compare it to inflation at about ' +
+              pct(0.025) +
+              '. Your balance grows and your buying power shrinks at the same time.'
+          ) +
+          p(
+            'Cash is genuinely useful for money you need soon — next year\'s laptop, an emergency. It is a poor place for money you will not touch for thirty years.'
+          )
+        );
+      },
+      see: ['inflation']
+    },
+
+    'dollar-cost-averaging': {
+      title: 'Investing a bit each month',
+      hint: 'Why the monthly deposit helps',
+      body: function (state) {
+        return (
+          p(
+            'You add ' +
+              money(state.cfg.monthlyContribution) +
+              ' every month, no matter what the market is doing. That is the same habit as money going into KiwiSaver from every payslip.'
+          ) +
+          p(
+            'It quietly does something clever: the same ' +
+              money(state.cfg.monthlyContribution) +
+              ' buys more units when prices are low and fewer when prices are high. You automatically buy more of the crash.'
+          ) +
+          p(
+            'It also removes the hardest question in investing — "is now a good time?" — which almost nobody answers correctly, including professionals.'
+          )
+        );
+      },
+      see: ['compounding', 'benchmark']
+    },
+
+    drawdown: {
+      title: 'Worst fall',
+      hint: 'The deepest hole along the way',
+      body: function () {
+        return (
+          p(
+            'The largest drop from a high point to a low point during the run. It tells you what you had to sit through, which the final number completely hides.'
+          ) +
+          p(
+            'Two portfolios can both finish at ' +
+              money(15000) +
+              ' when one dipped 10% and the other fell 55% on the way. They are not the same investment, and you are not the same person at the bottom of each.'
+          ) +
+          p(
+            'This is the number to look at when deciding how much risk you can actually handle — not how much you would <em>like</em> to handle.'
+          )
+        );
+      },
+      see: ['volatility']
+    },
+
+    ocr: {
+      title: 'The OCR',
+      hint: 'The lever the Reserve Bank pulls',
+      body: function () {
+        return (
+          p(
+            'The Official Cash Rate is the interest rate the Reserve Bank of New Zealand sets. Nearly every other rate — mortgages, savings, business loans — follows it.'
+          ) +
+          p(
+            'Raise it and borrowing gets dearer, people spend less, and inflation cools. It also makes shares less attractive: why take the risk if a bank deposit pays well?'
+          ) +
+          p(
+            'Cut it and the opposite happens, which is why share prices usually jump on a cut. When you hear the OCR mentioned on the news, this is what is being decided.'
+          )
+        );
+      },
+      see: ['inflation', 'bonds']
+    },
+
+    currency: {
+      title: 'The exchange rate',
+      hint: 'A real risk this app leaves out',
+      body: function () {
+        return (
+          p(
+            'All prices here are in NZ dollars, including the overseas ones. In real life, owning US shares means you are also holding US dollars.'
+          ) +
+          p(
+            'So your Apple shares can rise 10% in America while the NZ dollar strengthens 10%, and you end up with nothing. It works pleasantly in reverse too.'
+          ) +
+          p(
+            '<strong>This simulator does not model that.</strong> It is a genuine simplification, and worth knowing about before you invest overseas for real.'
+          )
+        );
+      },
+      see: ['diversification']
+    },
+
+    seed: {
+      title: 'Market seed',
+      hint: 'Why everyone can get the same market',
+      body: function (state) {
+        return (
+          p(
+            'The seed is the starting point for every random number in the simulation. Type the same seed and you get exactly the same ten years — the same crash in the same month, the same headlines.'
+          ) +
+          p(
+            'That is what makes comparing worthwhile. If the whole class runs seed "' +
+              state.market.seed +
+              '", then whoever finishes ahead genuinely made better decisions, rather than just getting a kinder market.'
+          ) +
+          p(
+            'Change the seed and run the same strategy again to see the opposite point: how much of any single result was simply luck.'
+          )
+        );
+      }
+    }
+  };
+
+  /* ---------------- the panel ---------------- */
+
+  let panel = null;
+  let lastAnchor = null;
+  let getState = null;
+
+  function build() {
+    panel = document.createElement('div');
+    panel.className = 'term-pop';
+    panel.setAttribute('role', 'dialog');
+    panel.setAttribute('aria-labelledby', 'term-pop-title');
+    panel.hidden = true;
+    panel.innerHTML =
+      '<div class="term-head">' +
+      '<h3 id="term-pop-title"></h3>' +
+      '<button type="button" class="term-close" aria-label="Close">&times;</button>' +
+      '</div>' +
+      '<div class="term-body"></div>' +
+      '<div class="term-see"></div>';
+    document.body.appendChild(panel);
+
+    panel.querySelector('.term-close').addEventListener('click', close);
+    panel.addEventListener('click', function (ev) {
+      const link = ev.target.closest('[data-goto]');
+      if (link) open(link.getAttribute('data-goto'), lastAnchor);
+    });
+  }
+
+  function close() {
+    if (!panel || panel.hidden) return;
+    panel.hidden = true;
+    const anchor = lastAnchor;
+    lastAnchor = null;
+    // Send focus back where it came from, or the panel becomes a keyboard trap.
+    if (anchor && document.contains(anchor)) anchor.focus();
+  }
+
+  function place(anchor) {
+    /* On a phone the panel is a bottom sheet pinned by CSS, so there is nothing
+     * to position — measuring here would fight the stylesheet. */
+    if (window.matchMedia('(max-width: 620px)').matches) {
+      panel.style.left = '';
+      panel.style.top = '';
+      return;
+    }
+
+    const box = anchor.getBoundingClientRect();
+    const width = panel.offsetWidth;
+    const height = panel.offsetHeight;
+    const margin = 10;
+
+    let left = box.left + window.scrollX;
+    if (left + width > window.scrollX + document.documentElement.clientWidth - margin) {
+      left = window.scrollX + document.documentElement.clientWidth - width - margin;
+    }
+
+    // Prefer below; flip above when there is no room and more space up top.
+    let top = box.bottom + window.scrollY + 8;
+    const spaceBelow = window.innerHeight - box.bottom;
+    if (spaceBelow < height + margin && box.top > spaceBelow) {
+      top = box.top + window.scrollY - height - 8;
+    }
+
+    panel.style.left = Math.max(margin, left) + 'px';
+    panel.style.top = Math.max(margin, top) + 'px';
+  }
+
+  function open(termId, anchor) {
+    const term = TERMS[termId];
+    if (!term) return;
+    if (!panel) build();
+
+    const state = getState && getState();
+    if (!state) return;
+
+    panel.querySelector('#term-pop-title').textContent = term.title;
+    panel.querySelector('.term-body').innerHTML =
+      typeof term.body === 'function' ? term.body(state) : term.body;
+
+    const see = panel.querySelector('.term-see');
+    if (term.see && term.see.length) {
+      see.innerHTML =
+        '<span class="term-see-label">See also</span>' +
+        term.see
+          .map(function (id) {
+            return TERMS[id]
+              ? '<button type="button" class="term-chip" data-goto="' + id + '">' + TERMS[id].title + '</button>'
+              : '';
+          })
+          .join('');
+      see.hidden = false;
+    } else {
+      see.innerHTML = '';
+      see.hidden = true;
+    }
+
+    lastAnchor = anchor || lastAnchor;
+    panel.hidden = false;
+    place(lastAnchor);
+    panel.querySelector('.term-close').focus();
+  }
+
+  /* One delegated listener on the document, so terms rendered later — market
+   * rows, results tiles — work without being re-wired every render. */
+  function attach(stateGetter) {
+    getState = stateGetter;
+    if (!panel) build();
+
+    document.addEventListener('click', function (ev) {
+      const trigger = ev.target.closest('[data-term]');
+      if (trigger) {
+        ev.preventDefault();
+        open(trigger.getAttribute('data-term'), trigger);
+        return;
+      }
+      if (!panel.hidden && !ev.target.closest('.term-pop')) close();
+    });
+
+    document.addEventListener('keydown', function (ev) {
+      if (ev.key === 'Escape') close();
+    });
+
+    window.addEventListener('resize', function () {
+      if (!panel.hidden && lastAnchor) place(lastAnchor);
+    });
+
+    // A scrolled-away panel is just clutter, and re-anchoring on scroll is worse.
+    window.addEventListener(
+      'scroll',
+      function () {
+        if (!panel.hidden) close();
+      },
+      { passive: true }
+    );
+  }
+
+  /* Markup helper: wraps a label in a button that opens its explanation. Used
+   * everywhere a term appears so the affordance is identical each time. */
+  function tag(termId, label) {
+    const term = TERMS[termId];
+    const text = label || (term ? term.title : termId);
+    return (
+      '<button type="button" class="term-link" data-term="' +
+      termId +
+      '" aria-label="' +
+      text +
+      ' — what does this mean?">' +
+      text +
+      '</button>'
+    );
+  }
+
+  global.Glossary = {
+    TERMS: TERMS,
+    attach: attach,
+    open: open,
+    close: close,
+    tag: tag
+  };
+})(window);
+
+</script>
+<script>
 /* Bootstrap and event wiring. */
 
 (function () {
@@ -2657,19 +4504,29 @@ footer {
 
   const $ = UI.$;
 
-  /* Picked by scanning seeds for a representative first run rather than a
-   * flattering one: the index compounds at 9.3% (its median decade), bonds at
-   * 4.4%, and there is a 36% crash in the middle to sit through. Bitcorn manages
-   * 10.5% — ahead of the index but barely, despite five times the volatility,
-   * which is a more honest lesson than a decade where the risky bet paid off.
-   * An earlier candidate was rejected for ending with Bitcorn at $0.06, a
-   * roughly 1-in-4000 draw that reads as a broken simulation rather than a tail. */
-  const DEFAULT_SEED = 'classroom-182';
+  /* The one seed out of 6,000 that satisfied every constraint below, chosen for
+   * being representative rather than flattering.
+   *
+   * Required: the world fund lands near its 8% expectation (7.0% here), there is
+   * a real crash to sit through (-33%), bonds and the NZX 50 behave, at least
+   * three headline events fire, no asset finishes at an absurd rate, and nothing
+   * falls further than about 87% — deeper than crypto has ever actually gone
+   * reads as a broken simulation rather than a fair tail.
+   *
+   * What makes this decade worth teaching is how it turned out. The boring NZX
+   * 50 fund returns 10.6% and beats almost everything. Nvidia, Xero and a2 Milk
+   * all finish *negative*. Bitcoin manages 6.2% — below the world fund, after an
+   * 87% fall on the way. And the single best performer is Air New Zealand at
+   * 18.9%: the company with the worst real history on the board, which no
+   * student would ever have picked. A decade where the exciting bets paid off
+   * would teach the precise opposite of what this app is for. */
+  const DEFAULT_SEED = 'classroom-2910';
 
   let state = null;
   let chart = null;
 
   function newGame(seed, years) {
+    stopPlaying();
     const months = years * Market.MONTHS_PER_YEAR;
     const market = Market.generate(seed, months);
     state = Portfolio.create(market);
@@ -2677,6 +4534,7 @@ footer {
     UI.renderBanner(state, null);
     setNotice('');
     renderAll();
+    reflectPlayState();
   }
 
   function renderAll() {
@@ -2711,6 +4569,8 @@ footer {
   }
 
   function onTrade(kind, assetId, amount) {
+    // Deciding to trade means you want to look at this month, not the next one.
+    stopPlaying();
     if (!isFinite(amount) || amount <= 0) {
       setNotice('Enter an amount in dollars first.');
       return;
@@ -2732,17 +4592,77 @@ footer {
 
   function step(count) {
     let lastEvent = null;
+    let sawBigEvent = false;
     for (let i = 0; i < count; i++) {
       if (state.finished) break;
       const ev = Portfolio.advance(state);
-      if (ev) lastEvent = ev;
+      if (ev) {
+        lastEvent = ev;
+        if (ev.big) sawBigEvent = true;
+      }
     }
     UI.renderBanner(state, lastEvent);
     setNotice('');
     renderAll();
     if (state.finished) {
+      stopPlaying();
       $('results-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
+    return sawBigEvent;
+  }
+
+  /* ---------------- auto-play ---------------- */
+
+  /* Runs the simulation on its own so a student can watch ten years happen
+   * rather than clicking 120 times. It pauses itself on a crash or a recovery:
+   * those are the moments worth reacting to, and sailing past them unnoticed
+   * would waste the most interesting thing that happens in a run. */
+  let timer = null;
+
+  function isPlaying() {
+    return timer !== null;
+  }
+
+  function currentSpeed() {
+    return parseInt($('speed-input').value, 10) || 450;
+  }
+
+  function tick() {
+    if (state.finished) {
+      stopPlaying();
+      return;
+    }
+    const big = step(1);
+    if (big) {
+      stopPlaying();
+      setNotice('Paused — something big just happened. Read the headline, then decide what to do.');
+    }
+  }
+
+  function startPlaying() {
+    if (isPlaying() || state.finished) return;
+    timer = setInterval(tick, currentSpeed());
+    reflectPlayState();
+  }
+
+  function stopPlaying() {
+    if (!isPlaying()) return;
+    clearInterval(timer);
+    timer = null;
+    reflectPlayState();
+  }
+
+  function togglePlaying() {
+    if (isPlaying()) stopPlaying();
+    else startPlaying();
+  }
+
+  function reflectPlayState() {
+    const btn = $('play-btn');
+    const playing = isPlaying();
+    btn.classList.toggle('is-playing', playing);
+    btn.setAttribute('aria-pressed', String(playing));
+    $('play-label').textContent = playing ? 'Pause' : state.month > 0 ? 'Keep going' : 'Run the simulation';
   }
 
   /* ---------------- theme ---------------- */
@@ -2846,10 +4766,26 @@ footer {
     restoreTheme();
     setupInstall();
 
+    Glossary.attach(function () {
+      return state;
+    });
+
+    $('play-btn').addEventListener('click', togglePlaying);
+
+    // Changing speed mid-run should take effect now, not after a pause.
+    $('speed-input').addEventListener('change', function () {
+      if (isPlaying()) {
+        stopPlaying();
+        startPlaying();
+      }
+    });
+
     $('next-month').addEventListener('click', function () {
+      stopPlaying();
       step(1);
     });
     $('next-year').addEventListener('click', function () {
+      stopPlaying();
       step(12);
     });
     $('restart-btn').addEventListener('click', restart);
@@ -2866,6 +4802,12 @@ footer {
       table.hidden = showing;
       this.textContent = showing ? 'Show as table' : 'Hide table';
       this.setAttribute('aria-expanded', String(!showing));
+    });
+
+    /* Switching tabs should not silently burn through the decade — the student
+     * comes back to a finished run they never saw. */
+    document.addEventListener('visibilitychange', function () {
+      if (document.hidden) stopPlaying();
     });
 
     let resizeTimer = null;

@@ -12,7 +12,7 @@
  *
  * Bump CACHE when the shell changes; the old cache is deleted on activate. */
 
-const CACHE = 'market-lab-v1';
+const CACHE = 'market-lab-v2';
 
 const SHELL = [
   './',
@@ -23,6 +23,7 @@ const SHELL = [
   'js/portfolio.js',
   'js/charts.js',
   'js/ui.js',
+  'js/glossary.js',
   'js/app.js',
   'manifest.webmanifest',
   'icons/icon-192.png',

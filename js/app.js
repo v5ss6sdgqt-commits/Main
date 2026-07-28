@@ -5,19 +5,29 @@
 
   const $ = UI.$;
 
-  /* Picked by scanning seeds for a representative first run rather than a
-   * flattering one: the index compounds at 9.3% (its median decade), bonds at
-   * 4.4%, and there is a 36% crash in the middle to sit through. Bitcorn manages
-   * 10.5% — ahead of the index but barely, despite five times the volatility,
-   * which is a more honest lesson than a decade where the risky bet paid off.
-   * An earlier candidate was rejected for ending with Bitcorn at $0.06, a
-   * roughly 1-in-4000 draw that reads as a broken simulation rather than a tail. */
-  const DEFAULT_SEED = 'classroom-182';
+  /* The one seed out of 6,000 that satisfied every constraint below, chosen for
+   * being representative rather than flattering.
+   *
+   * Required: the world fund lands near its 8% expectation (7.0% here), there is
+   * a real crash to sit through (-33%), bonds and the NZX 50 behave, at least
+   * three headline events fire, no asset finishes at an absurd rate, and nothing
+   * falls further than about 87% — deeper than crypto has ever actually gone
+   * reads as a broken simulation rather than a fair tail.
+   *
+   * What makes this decade worth teaching is how it turned out. The boring NZX
+   * 50 fund returns 10.6% and beats almost everything. Nvidia, Xero and a2 Milk
+   * all finish *negative*. Bitcoin manages 6.2% — below the world fund, after an
+   * 87% fall on the way. And the single best performer is Air New Zealand at
+   * 18.9%: the company with the worst real history on the board, which no
+   * student would ever have picked. A decade where the exciting bets paid off
+   * would teach the precise opposite of what this app is for. */
+  const DEFAULT_SEED = 'classroom-2910';
 
   let state = null;
   let chart = null;
 
   function newGame(seed, years) {
+    stopPlaying();
     const months = years * Market.MONTHS_PER_YEAR;
     const market = Market.generate(seed, months);
     state = Portfolio.create(market);
@@ -25,6 +35,7 @@
     UI.renderBanner(state, null);
     setNotice('');
     renderAll();
+    reflectPlayState();
   }
 
   function renderAll() {
@@ -59,6 +70,8 @@
   }
 
   function onTrade(kind, assetId, amount) {
+    // Deciding to trade means you want to look at this month, not the next one.
+    stopPlaying();
     if (!isFinite(amount) || amount <= 0) {
       setNotice('Enter an amount in dollars first.');
       return;
@@ -80,17 +93,77 @@
 
   function step(count) {
     let lastEvent = null;
+    let sawBigEvent = false;
     for (let i = 0; i < count; i++) {
       if (state.finished) break;
       const ev = Portfolio.advance(state);
-      if (ev) lastEvent = ev;
+      if (ev) {
+        lastEvent = ev;
+        if (ev.big) sawBigEvent = true;
+      }
     }
     UI.renderBanner(state, lastEvent);
     setNotice('');
     renderAll();
     if (state.finished) {
+      stopPlaying();
       $('results-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
+    return sawBigEvent;
+  }
+
+  /* ---------------- auto-play ---------------- */
+
+  /* Runs the simulation on its own so a student can watch ten years happen
+   * rather than clicking 120 times. It pauses itself on a crash or a recovery:
+   * those are the moments worth reacting to, and sailing past them unnoticed
+   * would waste the most interesting thing that happens in a run. */
+  let timer = null;
+
+  function isPlaying() {
+    return timer !== null;
+  }
+
+  function currentSpeed() {
+    return parseInt($('speed-input').value, 10) || 450;
+  }
+
+  function tick() {
+    if (state.finished) {
+      stopPlaying();
+      return;
+    }
+    const big = step(1);
+    if (big) {
+      stopPlaying();
+      setNotice('Paused — something big just happened. Read the headline, then decide what to do.');
+    }
+  }
+
+  function startPlaying() {
+    if (isPlaying() || state.finished) return;
+    timer = setInterval(tick, currentSpeed());
+    reflectPlayState();
+  }
+
+  function stopPlaying() {
+    if (!isPlaying()) return;
+    clearInterval(timer);
+    timer = null;
+    reflectPlayState();
+  }
+
+  function togglePlaying() {
+    if (isPlaying()) stopPlaying();
+    else startPlaying();
+  }
+
+  function reflectPlayState() {
+    const btn = $('play-btn');
+    const playing = isPlaying();
+    btn.classList.toggle('is-playing', playing);
+    btn.setAttribute('aria-pressed', String(playing));
+    $('play-label').textContent = playing ? 'Pause' : state.month > 0 ? 'Keep going' : 'Run the simulation';
   }
 
   /* ---------------- theme ---------------- */
@@ -194,10 +267,26 @@
     restoreTheme();
     setupInstall();
 
+    Glossary.attach(function () {
+      return state;
+    });
+
+    $('play-btn').addEventListener('click', togglePlaying);
+
+    // Changing speed mid-run should take effect now, not after a pause.
+    $('speed-input').addEventListener('change', function () {
+      if (isPlaying()) {
+        stopPlaying();
+        startPlaying();
+      }
+    });
+
     $('next-month').addEventListener('click', function () {
+      stopPlaying();
       step(1);
     });
     $('next-year').addEventListener('click', function () {
+      stopPlaying();
       step(12);
     });
     $('restart-btn').addEventListener('click', restart);
@@ -214,6 +303,12 @@
       table.hidden = showing;
       this.textContent = showing ? 'Show as table' : 'Hide table';
       this.setAttribute('aria-expanded', String(!showing));
+    });
+
+    /* Switching tabs should not silently burn through the decade — the student
+     * comes back to a finished run they never saw. */
+    document.addEventListener('visibilitychange', function () {
+      if (document.hidden) stopPlaying();
     });
 
     let resizeTimer = null;

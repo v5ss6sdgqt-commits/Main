@@ -2,70 +2,138 @@
    canvas charts, which read them at draw time — so light/dark is one swap here
    rather than a branch in the drawing code.
 
-   The categorical series colors were validated for colorblind separation and
-   contrast against both surfaces before being adopted; the dark column is the
-   same hues re-stepped for the dark surface, not an automatic inversion. */
+   Structure: five category hues spaced far apart around the wheel (cyan,
+   indigo, green, pink, orange), then each asset takes a step within its
+   category's hue. Category colour is what the allocation bar and the table
+   groups use, because five things can be told apart at a glance and sixteen
+   cannot. Per-asset colour only ever appears next to that asset's own name, so
+   the six greens never have to be distinguished from each other in isolation.
+
+   The neutrals are cool rather than grey — a faint blue bias that sits under
+   the indigo accent instead of fighting it. */
 :root {
   color-scheme: light;
 
-  --page: #f9f9f7;
-  --surface-1: #fcfcfb;
-  --surface-2: #f2f1ed;
+  --page: #f7f8fa;
+  --surface-1: #ffffff;
+  --surface-2: #eef0f4;
 
-  --text-primary: #0b0b0b;
-  --text-secondary: #52514e;
-  --text-muted: #898781;
+  --text-primary: #0d1117;
+  --text-secondary: #4a5261;
+  --text-muted: #79818f;
 
-  --grid: #e1e0d9;
-  --axis: #c3c2b7;
-  --border: rgba(11, 11, 11, 0.1);
+  --grid: #e4e7ec;
+  --axis: #c2c8d2;
+  --border: rgba(13, 17, 23, 0.11);
 
-  --series-portfolio: #0b0b0b;
-  --series-index: #2a78d6;
-  --series-bonds: #eb6834;
-  --series-nimbus: #1baf7a;
-  --series-ridgeline: #eda100;
-  --series-bitcorn: #e87ba4;
-  --series-cash: #898781;
+  --cat-defensive: #0891b2;
+  --cat-funds: #4f46e5;
+  --cat-nz: #16a34a;
+  --cat-world: #db2777;
+  --cat-crypto: #ea580c;
 
-  --up: #006300;
-  --down: #d03b3b;
-  --accent: #2a78d6;
+  --series-portfolio: #0d1117;
+  --series-cash: #94a3b8;
+
+  --series-nzbond: #0e7490;
+  --series-kiwisaver: #06b6d4;
+
+  --series-nzx50: #6366f1;
+  --series-sp500: #4f46e5;
+  --series-world: #4338ca;
+
+  --series-fph: #15803d;
+  --series-mft: #16a34a;
+  --series-xro: #22c55e;
+  --series-mel: #0d9f6e;
+  --series-atm: #65a30d;
+  --series-air: #4d7c0f;
+
+  --series-aapl: #db2777;
+  --series-nvda: #e11d48;
+  --series-tsla: #a21caf;
+
+  --series-btc: #ea580c;
+  --series-eth: #d97706;
+
+  --up: #15803d;
+  --down: #dc2626;
+  --accent: #4f46e5;
   --accent-ink: #ffffff;
 
+  /* Risk badges: a green-to-red severity ramp. The word inside each badge
+     already states the level, so colour is reinforcement rather than the only
+     channel carrying the meaning. */
+  --risk-1-bg: #d1fae5; --risk-1-ink: #065f46;
+  --risk-2-bg: #dbeafe; --risk-2-ink: #1e40af;
+  --risk-3-bg: #fef3c7; --risk-3-ink: #92400e;
+  --risk-4-bg: #ffedd5; --risk-4-ink: #9a3412;
+  --risk-5-bg: #fee2e2; --risk-5-ink: #991b1b;
+
   --radius: 10px;
-  --shadow: 0 1px 2px rgba(11, 11, 11, 0.05);
+  --shadow: 0 1px 2px rgba(13, 17, 23, 0.06);
   --font: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
 }
 
+/* The dark column is the same hues re-stepped for a dark ground, not an
+   automatic inversion — every value was checked against the dark surface
+   rather than derived from its light counterpart. */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) {
     color-scheme: dark;
 
-    --page: #0d0d0d;
-    --surface-1: #1a1a19;
-    --surface-2: #232321;
+    --page: #0f1115;
+    --surface-1: #14161a;
+    --surface-2: #1c1f26;
 
-    --text-primary: #ffffff;
-    --text-secondary: #c3c2b7;
-    --text-muted: #898781;
+    --text-primary: #f2f4f8;
+    --text-secondary: #b6bec9;
+    --text-muted: #7d8593;
 
-    --grid: #2c2c2a;
-    --axis: #383835;
-    --border: rgba(255, 255, 255, 0.1);
+    --grid: #262a32;
+    --axis: #3a3f4a;
+    --border: rgba(242, 244, 248, 0.12);
+
+    --cat-defensive: #22d3ee;
+    --cat-funds: #818cf8;
+    --cat-nz: #4ade80;
+    --cat-world: #f472b6;
+    --cat-crypto: #fb923c;
 
     --series-portfolio: #ffffff;
-    --series-index: #3987e5;
-    --series-bonds: #d95926;
-    --series-nimbus: #199e70;
-    --series-ridgeline: #c98500;
-    --series-bitcorn: #d55181;
-    --series-cash: #898781;
+    --series-cash: #7d8593;
 
-    --up: #0ca30c;
-    --down: #e66767;
-    --accent: #3987e5;
-    --accent-ink: #0b0b0b;
+    --series-nzbond: #38bdf8;
+    --series-kiwisaver: #22d3ee;
+
+    --series-nzx50: #a5b4fc;
+    --series-sp500: #818cf8;
+    --series-world: #7c8cf8;
+
+    --series-fph: #4ade80;
+    --series-mft: #34d399;
+    --series-xro: #6ee7b7;
+    --series-mel: #2dd4bf;
+    --series-atm: #a3e635;
+    --series-air: #84cc16;
+
+    --series-aapl: #f472b6;
+    --series-nvda: #fb7185;
+    --series-tsla: #e879f9;
+
+    --series-btc: #fb923c;
+    --series-eth: #fbbf24;
+
+    --up: #4ade80;
+    --down: #f87171;
+    --accent: #818cf8;
+    --accent-ink: #0f1115;
+
+    --risk-1-bg: #064e3b; --risk-1-ink: #6ee7b7;
+    --risk-2-bg: #1e3a5f; --risk-2-ink: #93c5fd;
+    --risk-3-bg: #78350f; --risk-3-ink: #fcd34d;
+    --risk-4-bg: #7c2d12; --risk-4-ink: #fdba74;
+    --risk-5-bg: #7f1d1d; --risk-5-ink: #fca5a5;
 
     --shadow: none;
   }
@@ -74,33 +142,62 @@
 :root[data-theme='dark'] {
   color-scheme: dark;
 
-  --page: #0d0d0d;
-  --surface-1: #1a1a19;
-  --surface-2: #232321;
+  --page: #0f1115;
+  --surface-1: #14161a;
+  --surface-2: #1c1f26;
 
-  --text-primary: #ffffff;
-  --text-secondary: #c3c2b7;
-  --text-muted: #898781;
+  --text-primary: #f2f4f8;
+  --text-secondary: #b6bec9;
+  --text-muted: #7d8593;
 
-  --grid: #2c2c2a;
-  --axis: #383835;
-  --border: rgba(255, 255, 255, 0.1);
+  --grid: #262a32;
+  --axis: #3a3f4a;
+  --border: rgba(242, 244, 248, 0.12);
+
+  --cat-defensive: #22d3ee;
+  --cat-funds: #818cf8;
+  --cat-nz: #4ade80;
+  --cat-world: #f472b6;
+  --cat-crypto: #fb923c;
 
   --series-portfolio: #ffffff;
-  --series-index: #3987e5;
-  --series-bonds: #d95926;
-  --series-nimbus: #199e70;
-  --series-ridgeline: #c98500;
-  --series-bitcorn: #d55181;
-  --series-cash: #898781;
+  --series-cash: #7d8593;
 
-  --up: #0ca30c;
-  --down: #e66767;
-  --accent: #3987e5;
-  --accent-ink: #0b0b0b;
+  --series-nzbond: #38bdf8;
+  --series-kiwisaver: #22d3ee;
+
+  --series-nzx50: #a5b4fc;
+  --series-sp500: #818cf8;
+  --series-world: #7c8cf8;
+
+  --series-fph: #4ade80;
+  --series-mft: #34d399;
+  --series-xro: #6ee7b7;
+  --series-mel: #2dd4bf;
+  --series-atm: #a3e635;
+  --series-air: #84cc16;
+
+  --series-aapl: #f472b6;
+  --series-nvda: #fb7185;
+  --series-tsla: #e879f9;
+
+  --series-btc: #fb923c;
+  --series-eth: #fbbf24;
+
+  --up: #4ade80;
+  --down: #f87171;
+  --accent: #818cf8;
+  --accent-ink: #0f1115;
+
+  --risk-1-bg: #064e3b; --risk-1-ink: #6ee7b7;
+  --risk-2-bg: #1e3a5f; --risk-2-ink: #93c5fd;
+  --risk-3-bg: #78350f; --risk-3-ink: #fcd34d;
+  --risk-4-bg: #7c2d12; --risk-4-ink: #fdba74;
+  --risk-5-bg: #7f1d1d; --risk-5-ink: #fca5a5;
 
   --shadow: none;
 }
+
 
 * {
   box-sizing: border-box;
@@ -506,24 +603,28 @@ tbody tr:last-child td {
 /* Ordinal ramp — one hue, light to dark, each step clearing 2:1 on its
    surface. Text color flips by fill luminance so it always reads. */
 .risk-1 {
-  background: #86b6ef;
-  color: #0b0b0b;
+  background: var(--risk-1-bg);
+  color: var(--risk-1-ink);
 }
+
 .risk-2 {
-  background: #5598e7;
-  color: #0b0b0b;
+  background: var(--risk-2-bg);
+  color: var(--risk-2-ink);
 }
+
 .risk-3 {
-  background: #2a78d6;
-  color: #ffffff;
+  background: var(--risk-3-bg);
+  color: var(--risk-3-ink);
 }
+
 .risk-4 {
-  background: #256abf;
-  color: #ffffff;
+  background: var(--risk-4-bg);
+  color: var(--risk-4-ink);
 }
+
 .risk-5 {
-  background: #184f95;
-  color: #ffffff;
+  background: var(--risk-5-bg);
+  color: var(--risk-5-ink);
 }
 
 /* Seven columns cannot fit a phone, and sideways scrolling puts the Buy button
@@ -879,4 +980,349 @@ footer {
   color: var(--text-muted);
   font-size: 12.5px;
   text-align: center;
+}
+
+/* ============================================================
+   Explain-on-click terms
+   ============================================================ */
+
+/* An explainable word looks like a word, not a button — a dotted underline in
+   the accent hue. It has to read as "there is more here" without turning every
+   paragraph into a wall of controls. */
+.term-link {
+  appearance: none;
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: help;
+  border-bottom: 1px dotted var(--accent);
+  transition: color 0.12s ease, border-color 0.12s ease;
+}
+
+.term-link:hover {
+  color: var(--accent);
+  border-bottom-style: solid;
+}
+
+/* The panel is a floating card on desktop and a bottom sheet on a phone, where
+   there is nowhere sensible to anchor it. */
+.term-pop {
+  position: absolute;
+  z-index: 60;
+  width: min(370px, calc(100vw - 24px));
+  max-height: min(70vh, 560px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 10px 30px rgba(13, 17, 23, 0.16);
+  padding: 14px 16px 16px;
+}
+
+.term-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.term-head h3 {
+  margin: 0;
+  font-size: 16px;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+
+.term-close {
+  appearance: none;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 22px;
+  line-height: 1;
+  padding: 0 2px;
+  cursor: pointer;
+}
+
+.term-close:hover {
+  color: var(--text-primary);
+}
+
+.term-body p {
+  margin: 0 0 9px;
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--text-secondary);
+}
+
+.term-body p:last-child {
+  margin-bottom: 0;
+}
+
+.term-body strong {
+  color: var(--text-primary);
+}
+
+/* A worked example students can follow line by line. */
+.term-sum {
+  margin: 10px 0;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.term-sum-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 6px 10px;
+  font-size: 13px;
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--border);
+}
+
+.term-sum-row:last-child {
+  border-bottom: none;
+}
+
+.term-sum-row span:first-child {
+  color: var(--text-secondary);
+}
+
+.term-sum-row span:last-child {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  text-align: right;
+}
+
+.term-sum-row.strong {
+  background: color-mix(in srgb, var(--accent) 12%, var(--surface-2));
+}
+
+.term-sum-row.strong span {
+  color: var(--text-primary);
+}
+
+.term-see {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+}
+
+.term-see-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+
+.term-chip {
+  appearance: none;
+  font: inherit;
+  font-size: 12px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.term-chip:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+@media (max-width: 620px) {
+  .term-pop {
+    position: fixed;
+    left: 0 !important;
+    right: 0;
+    top: auto !important;
+    bottom: 0;
+    width: 100%;
+    max-width: none;
+    max-height: 78vh;
+    border-radius: 14px 14px 0 0;
+    border-bottom: none;
+    padding-bottom: 22px;
+  }
+}
+
+/* ============================================================
+   Auto-play controls
+   ============================================================ */
+
+.primary.play {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+}
+
+/* Drawn rather than typed, so it never depends on a glyph the system may not
+   have and it always matches the button's text colour. */
+.play-icon {
+  width: 0;
+  height: 0;
+  border-left: 9px solid currentColor;
+  border-top: 6px solid transparent;
+  border-bottom: 6px solid transparent;
+}
+
+.play.is-playing .play-icon {
+  width: 10px;
+  height: 12px;
+  border: none;
+  background: linear-gradient(
+    to right,
+    currentColor 0 3px,
+    transparent 3px 7px,
+    currentColor 7px 10px
+  );
+}
+
+.secondary-controls {
+  margin-top: 8px;
+  align-items: center;
+}
+
+.speed {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.speed select {
+  font: inherit;
+  font-size: 12px;
+  padding: 4px 6px;
+  border-radius: 7px;
+  border: 1px solid var(--border);
+  background: var(--surface-1);
+  color: var(--text-primary);
+}
+
+/* A pause-worthy headline gets an accent rail; ordinary news does not. */
+.banner.big {
+  border-left: 3px solid var(--accent);
+}
+
+/* ============================================================
+   Market table: category groups and the two return figures
+   ============================================================ */
+
+.cat-row td {
+  padding: 16px 10px 6px;
+  border-bottom: 1px solid var(--border);
+}
+
+.cat-row:first-child td {
+  padding-top: 4px;
+}
+
+.cat-chip {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  border-radius: 3px;
+  margin-right: 7px;
+  vertical-align: middle;
+}
+
+.cat-name {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-primary);
+}
+
+.cat-blurb {
+  margin-left: 10px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* Past and expected sit side by side because the gap between them is the
+   point. The past figure is deliberately the quieter of the two. */
+.ret-pair {
+  appearance: none;
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 5px;
+  cursor: help;
+  font-variant-numeric: tabular-nums;
+}
+
+.ret-past {
+  color: var(--text-muted);
+  text-decoration: line-through;
+  text-decoration-thickness: 1px;
+}
+
+.ret-sep {
+  color: var(--text-muted);
+  font-size: 11px;
+}
+
+.ret-exp {
+  color: var(--text-primary);
+  font-weight: 700;
+  border-bottom: 1px dotted var(--accent);
+}
+
+.ret-note {
+  display: block;
+  font-size: 10.5px;
+  color: var(--text-muted);
+  margin-top: 1px;
+}
+
+.table-foot {
+  margin: 12px 2px 0;
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--text-muted);
+  max-width: 74ch;
+}
+
+@media (max-width: 660px) {
+  .cat-row td {
+    padding: 14px 0 4px;
+  }
+
+  .cat-blurb {
+    display: block;
+    margin-left: 16px;
+    margin-top: 2px;
+  }
+
+  .ret-note {
+    display: inline;
+    margin-left: 6px;
+  }
+}
+
+.field-help {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin: 2px 0 4px;
+  align-self: flex-start;
 }

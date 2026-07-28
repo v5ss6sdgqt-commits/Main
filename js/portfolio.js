@@ -9,12 +9,25 @@
 (function (global) {
   'use strict';
 
+  /* Scaled to a fifteen-year-old's actual life: a bit saved up, and some of a
+   * part-time wage going in each month. The lesson lands harder at $50 a month
+   * than at a sum no student has ever held.
+   *
+   * Fees copy how NZ investing platforms really charge — a flat fee per trade
+   * plus a small percentage. The flat part is the point: it is invisible on a
+   * $5,000 trade and brutal on a $50 one, which is exactly the trap a beginner
+   * making small frequent trades falls into. */
   const DEFAULTS = {
-    startingCash: 10000,
-    monthlyContribution: 200,
-    savingsRate: 0.02, // annual interest paid on uninvested cash
-    feeRate: 0.005 // charged on the value of every buy and every sell
+    startingCash: 1000,
+    monthlyContribution: 50,
+    savingsRate: 0.03, // annual interest paid on uninvested cash
+    feeFlat: 3, // charged on every buy and every sell, regardless of size
+    feeRate: 0.005 // plus this share of the trade's value
   };
+
+  function feeOn(state, amount) {
+    return state.cfg.feeFlat + amount * state.cfg.feeRate;
+  }
 
   function create(market, opts) {
     const cfg = Object.assign({}, DEFAULTS, opts || {});
@@ -65,19 +78,25 @@
   }
 
   function benchValue(state) {
-    return state.benchShares * priceOf(state, 'index');
+    return state.benchShares * priceOf(state, Market.BENCHMARK_ID);
   }
 
   function realValue(state, nominal) {
     return nominal / state.market.cpi[state.month];
   }
 
+  /* The benchmark pays the percentage fee but not the flat one, because it
+   * represents an automatic monthly investment plan — which is how NZ platforms
+   * and KiwiSaver actually work, and they do not charge a per-trade fee on a
+   * scheduled contribution. Charging the flat $3 on a $50 auto-contribution
+   * would hand the player a 6%-a-month head start that no real investor enjoys,
+   * and the whole value of the benchmark is that it is honest. */
   function benchInvest(state, dollars) {
     if (dollars <= 0) return;
     const fee = dollars * state.cfg.feeRate;
     const net = dollars - fee;
     state.benchFees += fee;
-    state.benchShares += net / priceOf(state, 'index');
+    state.benchShares += net / priceOf(state, Market.BENCHMARK_ID);
   }
 
   function record(state) {
@@ -100,10 +119,17 @@
    * next to the trade controls instead of failing silently. */
   function buy(state, assetId, dollars) {
     if (state.finished) return { ok: false, reason: 'The simulation has finished.' };
+    if (state.cash <= state.cfg.feeFlat) {
+      return {
+        ok: false,
+        reason:
+          'You need more than ' + money(state.cfg.feeFlat) + ' in cash — that is the flat fee on any trade.'
+      };
+    }
     const amount = Math.min(dollars, maxBuy(state));
     if (!(amount > 0)) return { ok: false, reason: 'Not enough cash for that trade.' };
 
-    const fee = amount * state.cfg.feeRate;
+    const fee = feeOn(state, amount);
     const asset = Market.byId(assetId);
     state.cash -= amount + fee;
     state.shares[assetId] += amount / priceOf(state, assetId);
@@ -119,7 +145,19 @@
     const amount = Math.min(dollars, available);
     if (!(amount > 0)) return { ok: false, reason: 'You do not own any of that.' };
 
-    const fee = amount * state.cfg.feeRate;
+    const fee = feeOn(state, amount);
+    if (fee >= amount) {
+      return {
+        ok: false,
+        reason:
+          'The fee on that sale would be ' +
+          money(fee) +
+          ', which is more than the ' +
+          money(amount) +
+          ' you would get back. Selling tiny amounts costs more than it is worth.'
+      };
+    }
+
     const asset = Market.byId(assetId);
     state.shares[assetId] -= amount / priceOf(state, assetId);
     if (state.shares[assetId] < 1e-9) state.shares[assetId] = 0;
@@ -130,9 +168,10 @@
     return { ok: true, amount: amount, fee: fee };
   }
 
-  // Largest amount investable once the fee charged on top is covered.
+  /* Largest amount investable once both parts of the fee are covered:
+   * cash = amount + flat + amount * rate, solved for amount. */
   function maxBuy(state) {
-    return Math.max(0, state.cash / (1 + state.cfg.feeRate));
+    return Math.max(0, (state.cash - state.cfg.feeFlat) / (1 + state.cfg.feeRate));
   }
 
   function advance(state) {
