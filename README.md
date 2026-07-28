@@ -14,11 +14,37 @@ watched them happen to your own money.
 
 Open `index.html` in a browser. That is the entire setup.
 
+```
+git clone https://github.com/v5ss6sdgqt-commits/Main.git
+cd Main
+git checkout claude/student-life-improvement-ideas-jnhfwr
+open index.html          # macOS — use `start` on Windows, `xdg-open` on Linux
+```
+
 There is no build step, no package install and no network access — plain HTML,
 CSS and JavaScript with no dependencies. It runs from a USB stick, off a school
 network share, or from GitHub Pages, and it works offline on a locked-down
 Chromebook. Nothing is transmitted anywhere and no data is stored beyond a
 light/dark theme preference.
+
+### Handing it out as a single file
+
+`dist/market-lab.html` is the whole app inlined into one 77 KB file. Email it to
+a class, drop it on a shared drive, or put it on a USB stick — there is no
+folder structure to keep intact and nothing to load over the network.
+
+Rebuild it after changing any source file:
+
+```
+node build.js
+```
+
+### Publishing it for a class
+
+Enabling GitHub Pages on this branch serves the app at a URL students can open
+on a phone, with no install and no accounts. In the repository: **Settings →
+Pages → Source: Deploy from a branch**, then pick this branch and the root
+folder.
 
 ## Using it in a lesson
 
@@ -96,6 +122,7 @@ instead.
 
 ```
 index.html        layout and copy
+build.js          bundles everything into dist/market-lab.html
 css/styles.css    design tokens, light/dark themes, responsive layout
 js/rng.js         seeded PRNG and normal variates
 js/market.js      assets, price engine, news events, inflation

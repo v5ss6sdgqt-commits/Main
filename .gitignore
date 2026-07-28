@@ -1,0 +1,2 @@
+# Only needed by hosts that supply their own document shell; not worth tracking.
+dist/market-lab.fragment.html
