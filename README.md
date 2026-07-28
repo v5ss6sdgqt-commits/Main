@@ -95,8 +95,10 @@ Some things that work well:
 - Run it twice with the same seed and a different strategy each time.
 - Change the seed and re-run the *same* strategy, to show how much of any single
   result was chance.
-- Set the run to 20 years and watch how much harder the benchmark becomes to
-  beat as the time horizon grows.
+- Set the run to 20 or 30 years and watch how much harder the benchmark becomes
+  to beat as the time horizon grows. The spread of outcomes narrows sharply too:
+  Ethereum's 10th-percentile return is -23.5% a year over ten years and -11.6%
+  over thirty. Time does not reduce risk to zero, but it does reduce it.
 
 ## The assets
 
@@ -222,6 +224,14 @@ What makes it worth teaching is how it turns out. The boring NZX 50 fund returns
 **negative**. Bitcoin manages 6.2%, below the world fund, after an 87% fall along
 the way. And the best performer is Air New Zealand at 18.9% — the company with the
 worst real history on the board, which no student would ever have picked.
+
+Those figures describe the **ten-year** run, which is what the seed was selected
+against. Stretch the same seed to 30 years and it keeps drawing from where it
+left off, into a notably poor stretch: the world fund compounds at 3.1% over the
+full thirty, below the bond fund. That is a legitimate draw rather than a bug —
+one run is one roll of the dice — but if you are teaching a 30-year lesson about
+long-horizon growth, pick a different seed rather than the default, or the market
+will argue against you.
 
 ## Files
 

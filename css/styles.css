@@ -33,6 +33,9 @@
   --cat-crypto: #ea580c;
 
   --series-portfolio: #0d1117;
+  /* The portfolio line is near-black so it reads as "you"; its area fill needs
+     its own hue, well away from the benchmark indigo. */
+  --series-portfolio-fill: #059669;
   --series-cash: #94a3b8;
 
   --series-nzbond: #0e7490;
@@ -101,6 +104,7 @@
     --cat-crypto: #fb923c;
 
     --series-portfolio: #ffffff;
+    --series-portfolio-fill: #34d399;
     --series-cash: #7d8593;
 
     --series-nzbond: #38bdf8;
@@ -161,6 +165,7 @@
   --cat-crypto: #fb923c;
 
   --series-portfolio: #ffffff;
+  --series-portfolio-fill: #34d399;
   --series-cash: #7d8593;
 
   --series-nzbond: #38bdf8;
@@ -1325,4 +1330,27 @@ footer {
   color: var(--text-muted);
   margin: 2px 0 4px;
   align-self: flex-start;
+}
+
+/* A soft wash behind the headline figure, bleeding to the card's edges. Card
+   padding is 18px, so the negative margin pulls it flush and the padding puts
+   the content back where it was. Purely decorative — it sits under the text and
+   carries no meaning, which is why it is this faint. */
+.hero-row {
+  position: relative;
+  margin: -18px -18px 0;
+  padding: 18px 18px 14px;
+  border-radius: var(--radius) var(--radius) 0 0;
+  background: linear-gradient(
+    160deg,
+    color-mix(in srgb, var(--series-portfolio-fill) 13%, transparent),
+    color-mix(in srgb, var(--accent) 7%, transparent) 55%,
+    transparent 90%
+  );
+}
+
+/* Tabular figures so the headline does not jitter horizontally while auto-play
+   is running and the number changes every few hundred milliseconds. */
+.hero-figure {
+  font-variant-numeric: tabular-nums;
 }

@@ -25,6 +25,29 @@
     };
   }
 
+  /* Series colours arrive as resolved hex from the CSS tokens. Area fills need
+   * the same hue at a low alpha, so this converts rather than adding a second
+   * token per series that could drift out of step with the line colour. */
+  function withAlpha(color, alpha) {
+    const hex = String(color).trim();
+    const short = /^#([0-9a-f])([0-9a-f])([0-9a-f])$/i.exec(hex);
+    const long = /^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(hex);
+    let r, g, b;
+    if (long) {
+      r = parseInt(long[1], 16);
+      g = parseInt(long[2], 16);
+      b = parseInt(long[3], 16);
+    } else if (short) {
+      r = parseInt(short[1] + short[1], 16);
+      g = parseInt(short[2] + short[2], 16);
+      b = parseInt(short[3] + short[3], 16);
+    } else {
+      // Not a hex we can read — skip the fill rather than paint something wrong.
+      return null;
+    }
+    return 'rgba(' + r + ',' + g + ',' + b + ',' + alpha + ')';
+  }
+
   function setupCanvas(canvas) {
     const dpr = window.devicePixelRatio || 1;
     const rect = canvas.getBoundingClientRect();
@@ -145,6 +168,32 @@
       ctx.moveTo(padL, Math.round(padT + plotH) + 0.5);
       ctx.lineTo(padL + plotW, Math.round(padT + plotH) + 0.5);
       ctx.stroke();
+
+      /* Area fills, drawn under every line so the strokes stay crisp on top.
+       * Kept faint — at this alpha two overlapping fills still read as two
+       * distinct washes rather than turning the plot into mud. */
+      series.forEach(function (s) {
+        const top = withAlpha(s.fill || s.color, 0.17);
+        const bottom = withAlpha(s.fill || s.color, 0);
+        if (!top || !bottom) return;
+
+        const grad = ctx.createLinearGradient(0, padT, 0, padT + plotH);
+        grad.addColorStop(0, top);
+        grad.addColorStop(1, bottom);
+
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        s.values.forEach(function (v, i) {
+          const px = x(i);
+          const py = y(v);
+          if (i === 0) ctx.moveTo(px, py);
+          else ctx.lineTo(px, py);
+        });
+        ctx.lineTo(x(n - 1), padT + plotH);
+        ctx.lineTo(x(0), padT + plotH);
+        ctx.closePath();
+        ctx.fill();
+      });
 
       // Series lines.
       series.forEach(function (s) {
@@ -299,6 +348,25 @@
     const y = function (v) {
       return padY + (c.h - padY * 2) * (1 - (v - lo) / (hi - lo));
     };
+
+    // Same treatment as the main chart, so sixteen tiny charts read as one set.
+    const top = withAlpha(color, 0.24);
+    const bottom = withAlpha(color, 0);
+    if (top && bottom) {
+      const grad = ctx.createLinearGradient(0, 0, 0, c.h);
+      grad.addColorStop(0, top);
+      grad.addColorStop(1, bottom);
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      values.forEach(function (v, i) {
+        if (i === 0) ctx.moveTo(x(i), y(v));
+        else ctx.lineTo(x(i), y(v));
+      });
+      ctx.lineTo(x(values.length - 1), c.h);
+      ctx.lineTo(x(0), c.h);
+      ctx.closePath();
+      ctx.fill();
+    }
 
     ctx.strokeStyle = color;
     ctx.lineWidth = 1.75;

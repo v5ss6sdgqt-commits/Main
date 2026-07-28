@@ -634,7 +634,9 @@
       body: function (state) {
         return (
           p(
-            'The seed is the starting point for every random number in the simulation. Type the same seed and you get exactly the same ten years — the same crash in the same month, the same headlines.'
+            'The seed is the starting point for every random number in the simulation. Type the same seed and you get exactly the same ' +
+              state.market.months / 12 +
+              ' years — the same crash in the same month, the same headlines.'
           ) +
           p(
             'That is what makes comparing worthwhile. If the whole class runs seed "' +

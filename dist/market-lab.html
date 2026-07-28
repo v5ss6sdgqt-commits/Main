@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Market Lab — an investing simulator for the classroom</title>
-<meta name="description" content="A ten-year investing simulator using real NZ and international companies, funds and crypto, built to teach risk, compounding, diversification and fees.">
+<meta name="description" content="An investing simulator using real NZ and international companies, funds and crypto, built to teach risk, compounding, diversification and fees.">
 <style>
 /* Design tokens. Every color in the app resolves through these, including the
    canvas charts, which read them at draw time — so light/dark is one swap here
@@ -41,6 +41,9 @@
   --cat-crypto: #ea580c;
 
   --series-portfolio: #0d1117;
+  /* The portfolio line is near-black so it reads as "you"; its area fill needs
+     its own hue, well away from the benchmark indigo. */
+  --series-portfolio-fill: #059669;
   --series-cash: #94a3b8;
 
   --series-nzbond: #0e7490;
@@ -109,6 +112,7 @@
     --cat-crypto: #fb923c;
 
     --series-portfolio: #ffffff;
+    --series-portfolio-fill: #34d399;
     --series-cash: #7d8593;
 
     --series-nzbond: #38bdf8;
@@ -169,6 +173,7 @@
   --cat-crypto: #fb923c;
 
   --series-portfolio: #ffffff;
+  --series-portfolio-fill: #34d399;
   --series-cash: #7d8593;
 
   --series-nzbond: #38bdf8;
@@ -1335,6 +1340,29 @@ footer {
   align-self: flex-start;
 }
 
+/* A soft wash behind the headline figure, bleeding to the card's edges. Card
+   padding is 18px, so the negative margin pulls it flush and the padding puts
+   the content back where it was. Purely decorative — it sits under the text and
+   carries no meaning, which is why it is this faint. */
+.hero-row {
+  position: relative;
+  margin: -18px -18px 0;
+  padding: 18px 18px 14px;
+  border-radius: var(--radius) var(--radius) 0 0;
+  background: linear-gradient(
+    160deg,
+    color-mix(in srgb, var(--series-portfolio-fill) 13%, transparent),
+    color-mix(in srgb, var(--accent) 7%, transparent) 55%,
+    transparent 90%
+  );
+}
+
+/* Tabular figures so the headline does not jitter horizontally while auto-play
+   is running and the number changes every few hundred milliseconds. */
+.hero-figure {
+  font-variant-numeric: tabular-nums;
+}
+
 </style>
 </head>
 <body>
@@ -1343,7 +1371,7 @@ footer {
   <header class="topbar">
     <div class="brand">
       <h1>Market Lab</h1>
-      <span class="tag">Real companies. Ten years. Your call.</span>
+      <span class="tag">Real companies. Real trade-offs. Your call.</span>
     </div>
     <div class="clock"><span id="clock-text">Start &middot; Year 0</span></div>
     <!-- Revealed only when the browser says the app can actually be installed. -->
@@ -1354,7 +1382,7 @@ footer {
   <!-- Shown only once the run is up. -->
   <section class="card" id="results-card" hidden aria-live="polite">
     <div class="card-head">
-      <h2>Ten years later</h2>
+      <h2 id="results-title">Ten years later</h2>
       <span class="sub" id="results-sub"></span>
     </div>
     <div class="result-grid" id="results-grid"></div>
@@ -1453,6 +1481,7 @@ footer {
               <option value="5">5</option>
               <option value="10" selected>10</option>
               <option value="20">20</option>
+              <option value="30">30</option>
             </select>
           </div>
           <button class="ghost" id="restart-btn" type="button">Start over</button>
@@ -2758,6 +2787,29 @@ footer {
     };
   }
 
+  /* Series colours arrive as resolved hex from the CSS tokens. Area fills need
+   * the same hue at a low alpha, so this converts rather than adding a second
+   * token per series that could drift out of step with the line colour. */
+  function withAlpha(color, alpha) {
+    const hex = String(color).trim();
+    const short = /^#([0-9a-f])([0-9a-f])([0-9a-f])$/i.exec(hex);
+    const long = /^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(hex);
+    let r, g, b;
+    if (long) {
+      r = parseInt(long[1], 16);
+      g = parseInt(long[2], 16);
+      b = parseInt(long[3], 16);
+    } else if (short) {
+      r = parseInt(short[1] + short[1], 16);
+      g = parseInt(short[2] + short[2], 16);
+      b = parseInt(short[3] + short[3], 16);
+    } else {
+      // Not a hex we can read — skip the fill rather than paint something wrong.
+      return null;
+    }
+    return 'rgba(' + r + ',' + g + ',' + b + ',' + alpha + ')';
+  }
+
   function setupCanvas(canvas) {
     const dpr = window.devicePixelRatio || 1;
     const rect = canvas.getBoundingClientRect();
@@ -2878,6 +2930,32 @@ footer {
       ctx.moveTo(padL, Math.round(padT + plotH) + 0.5);
       ctx.lineTo(padL + plotW, Math.round(padT + plotH) + 0.5);
       ctx.stroke();
+
+      /* Area fills, drawn under every line so the strokes stay crisp on top.
+       * Kept faint — at this alpha two overlapping fills still read as two
+       * distinct washes rather than turning the plot into mud. */
+      series.forEach(function (s) {
+        const top = withAlpha(s.fill || s.color, 0.17);
+        const bottom = withAlpha(s.fill || s.color, 0);
+        if (!top || !bottom) return;
+
+        const grad = ctx.createLinearGradient(0, padT, 0, padT + plotH);
+        grad.addColorStop(0, top);
+        grad.addColorStop(1, bottom);
+
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        s.values.forEach(function (v, i) {
+          const px = x(i);
+          const py = y(v);
+          if (i === 0) ctx.moveTo(px, py);
+          else ctx.lineTo(px, py);
+        });
+        ctx.lineTo(x(n - 1), padT + plotH);
+        ctx.lineTo(x(0), padT + plotH);
+        ctx.closePath();
+        ctx.fill();
+      });
 
       // Series lines.
       series.forEach(function (s) {
@@ -3033,6 +3111,25 @@ footer {
       return padY + (c.h - padY * 2) * (1 - (v - lo) / (hi - lo));
     };
 
+    // Same treatment as the main chart, so sixteen tiny charts read as one set.
+    const top = withAlpha(color, 0.24);
+    const bottom = withAlpha(color, 0);
+    if (top && bottom) {
+      const grad = ctx.createLinearGradient(0, 0, 0, c.h);
+      grad.addColorStop(0, top);
+      grad.addColorStop(1, bottom);
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      values.forEach(function (v, i) {
+        if (i === 0) ctx.moveTo(x(i), y(v));
+        else ctx.lineTo(x(i), y(v));
+      });
+      ctx.lineTo(x(values.length - 1), c.h);
+      ctx.lineTo(x(0), c.h);
+      ctx.closePath();
+      ctx.fill();
+    }
+
     ctx.strokeStyle = color;
     ctx.lineWidth = 1.75;
     ctx.lineJoin = 'round';
@@ -3177,6 +3274,7 @@ footer {
         key: 'portfolio',
         name: 'Your portfolio',
         color: resolveColor('var(--series-portfolio)'),
+        fill: resolveColor('var(--series-portfolio-fill)'),
         values: state.history.map(function (h) {
           return h.total;
         })
@@ -3566,7 +3664,7 @@ footer {
       bullets.push(
         'You finished holding ' +
           (heldCount === 0 ? 'no investments at all' : 'a single asset') +
-          '. Concentration magnifies both outcomes — it is the reason one piece of bad news could have undone the whole decade.'
+          '. Concentration magnifies both outcomes — it is the reason one piece of bad news could have undone the whole run.'
       );
     } else if (catCount >= 3) {
       bullets.push(
@@ -3603,6 +3701,10 @@ footer {
     }
     const s = Portfolio.summarise(state);
     card.hidden = false;
+
+    const years = state.market.months / Market.MONTHS_PER_YEAR;
+    const YEAR_WORDS = { 5: 'Five', 10: 'Ten', 20: 'Twenty', 30: 'Thirty' };
+    $('results-title').textContent = (YEAR_WORDS[years] || years) + ' years later';
 
     $('results-sub').textContent =
       'Seed "' + state.market.seed + '" · ' + state.market.months / 12 + ' years · ' + s.trades + ' trades';
@@ -4319,7 +4421,9 @@ footer {
       body: function (state) {
         return (
           p(
-            'The seed is the starting point for every random number in the simulation. Type the same seed and you get exactly the same ten years — the same crash in the same month, the same headlines.'
+            'The seed is the starting point for every random number in the simulation. Type the same seed and you get exactly the same ' +
+              state.market.months / 12 +
+              ' years — the same crash in the same month, the same headlines.'
           ) +
           p(
             'That is what makes comparing worthwhile. If the whole class runs seed "' +

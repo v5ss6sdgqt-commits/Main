@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Market Lab — an investing simulator for the classroom</title>
-<meta name="description" content="A ten-year investing simulator using real NZ and international companies, funds and crypto, built to teach risk, compounding, diversification and fees.">
+<meta name="description" content="An investing simulator using real NZ and international companies, funds and crypto, built to teach risk, compounding, diversification and fees.">
 <!-- pwa:start — stripped from the single-file bundle, which has no server to
      resolve these against. -->
 <link rel="manifest" href="manifest.webmanifest">
@@ -24,7 +24,7 @@
   <header class="topbar">
     <div class="brand">
       <h1>Market Lab</h1>
-      <span class="tag">Real companies. Ten years. Your call.</span>
+      <span class="tag">Real companies. Real trade-offs. Your call.</span>
     </div>
     <div class="clock"><span id="clock-text">Start &middot; Year 0</span></div>
     <!-- Revealed only when the browser says the app can actually be installed. -->
@@ -35,7 +35,7 @@
   <!-- Shown only once the run is up. -->
   <section class="card" id="results-card" hidden aria-live="polite">
     <div class="card-head">
-      <h2>Ten years later</h2>
+      <h2 id="results-title">Ten years later</h2>
       <span class="sub" id="results-sub"></span>
     </div>
     <div class="result-grid" id="results-grid"></div>
@@ -134,6 +134,7 @@
               <option value="5">5</option>
               <option value="10" selected>10</option>
               <option value="20">20</option>
+              <option value="30">30</option>
             </select>
           </div>
           <button class="ghost" id="restart-btn" type="button">Start over</button>

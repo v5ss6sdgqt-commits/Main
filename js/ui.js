@@ -115,6 +115,7 @@
         key: 'portfolio',
         name: 'Your portfolio',
         color: resolveColor('var(--series-portfolio)'),
+        fill: resolveColor('var(--series-portfolio-fill)'),
         values: state.history.map(function (h) {
           return h.total;
         })
@@ -504,7 +505,7 @@
       bullets.push(
         'You finished holding ' +
           (heldCount === 0 ? 'no investments at all' : 'a single asset') +
-          '. Concentration magnifies both outcomes — it is the reason one piece of bad news could have undone the whole decade.'
+          '. Concentration magnifies both outcomes — it is the reason one piece of bad news could have undone the whole run.'
       );
     } else if (catCount >= 3) {
       bullets.push(
@@ -541,6 +542,10 @@
     }
     const s = Portfolio.summarise(state);
     card.hidden = false;
+
+    const years = state.market.months / Market.MONTHS_PER_YEAR;
+    const YEAR_WORDS = { 5: 'Five', 10: 'Ten', 20: 'Twenty', 30: 'Thirty' };
+    $('results-title').textContent = (YEAR_WORDS[years] || years) + ' years later';
 
     $('results-sub').textContent =
       'Seed "' + state.market.seed + '" · ' + state.market.months / 12 + ' years · ' + s.trades + ' trades';
