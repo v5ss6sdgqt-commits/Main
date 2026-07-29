@@ -140,6 +140,10 @@
     const fee = feeOn(state, amount);
     const asset = Market.byId(assetId);
     state.cash -= amount + fee;
+    /* A max-size buy spends the balance exactly, so rounding can leave a few
+     * billionths of a negative cent behind — enough to render the cash tile as
+     * "-$0", which reads as a bug to a student. */
+    if (state.cash < 0 && state.cash > -0.01) state.cash = 0;
     state.shares[assetId] += amount / priceOf(state, assetId);
     state.totalFees += fee;
     state.tradeCount += 1;

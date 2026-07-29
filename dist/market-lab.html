@@ -2968,6 +2968,10 @@ footer {
     const fee = feeOn(state, amount);
     const asset = Market.byId(assetId);
     state.cash -= amount + fee;
+    /* A max-size buy spends the balance exactly, so rounding can leave a few
+     * billionths of a negative cent behind — enough to render the cash tile as
+     * "-$0", which reads as a bug to a student. */
+    if (state.cash < 0 && state.cash > -0.01) state.cash = 0;
     state.shares[assetId] += amount / priceOf(state, assetId);
     state.totalFees += fee;
     state.tradeCount += 1;
@@ -4027,14 +4031,25 @@ footer {
     }).length;
     const sellFees = held * state.cfg.feeFlat + damage.after * state.cfg.feeRate;
     const spare = Math.max(0, Portfolio.maxBuy(state));
+    const buyFee = spare > 0 ? Portfolio.feeOn(state, spare) : 0;
+
+    /* Offering to invest a trivial amount is a trap, not a choice: with $4 of
+     * cash the honest maths is "put $1 in and pay $3 for the privilege", a 75%
+     * instant loss the button would be inviting them into. Anything where the
+     * fee would eat more than a tenth of the trade is refused outright and says
+     * why — which is the fee lesson stated up front rather than after the fact. */
+    const worthIt = spare > 0 && buyFee / spare <= 0.1;
 
     const sellBtn = modal.querySelector('.d-choice.sell');
     const buyBtn = modal.querySelector('.d-choice.buy');
     sellBtn.querySelector('small').textContent =
       'Cash out ' + (held === 1 ? 'your holding' : 'all ' + held + ' holdings') + ' · about ' + money(sellFees, 2) + ' in fees';
-    buyBtn.querySelector('small').textContent =
-      spare > 0 ? 'Put your ' + money(spare) + ' cash in at lower prices' : 'You have no spare cash';
-    buyBtn.disabled = spare <= 0;
+    buyBtn.querySelector('small').textContent = worthIt
+      ? 'Put your ' + money(spare) + ' cash in at lower prices'
+      : spare > 0
+        ? 'Only ' + money(spare) + ' spare — the ' + money(buyFee, 2) + ' fee would eat it'
+        : 'You have no spare cash';
+    buyBtn.disabled = !worthIt;
 
     modal.hidden = false;
 
