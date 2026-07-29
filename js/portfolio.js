@@ -309,19 +309,31 @@
     });
   }
 
-  /* How each crash decision turned out, judged the same way for all three
-   * choices: what the portfolio was worth right after the decision, against
-   * what it is worth now. */
+  /* How each crash decision turned out.
+   *
+   * This used to compare the portfolio right after the decision against its
+   * final value, and that number was worthless: it measured elapsed time, not
+   * judgement. Every month of the run adds another deposit, so the earliest
+   * decision always looked like the best one. In one twenty-year test the run
+   * ended down 31% overall and the month-16 decision was still reported as
+   * "+378.9%" — nineteen years of $50 deposits, credited to the click.
+   *
+   * What answers the actual question — was reacting to that headline a good
+   * idea? — is what the market did next. It is a pure price ratio, so no
+   * deposit can contaminate it, and it is the same yardstick whichever choice
+   * was made. Twelve months, or whatever is left if the run ends sooner. */
   function decisionAnalysis(state) {
-    const finalValue = totalValue(state);
+    const prices = state.market.prices[Market.BENCHMARK_ID];
     return state.decisions.map(function (d) {
+      const until = Math.min(d.month + Market.MONTHS_PER_YEAR, state.month);
+      const monthsAfter = until - d.month;
       return {
         month: d.month,
         headline: d.headline,
         choice: d.choice,
         after: d.after,
-        finalValue: finalValue,
-        change: d.after > 0 ? finalValue / d.after - 1 : 0
+        monthsAfter: monthsAfter,
+        marketChange: monthsAfter > 0 ? prices[until] / prices[d.month] - 1 : 0
       };
     });
   }

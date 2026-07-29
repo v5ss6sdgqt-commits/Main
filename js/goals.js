@@ -4,18 +4,31 @@
  * prefer one number over another. With one, "should I put it all in crypto"
  * stops being idle curiosity and becomes a real question with a consequence.
  *
- * Targets scale with the length of the run rather than being fixed dollar
- * amounts. A fixed $11,000 car is a stretch over ten years and trivial over
- * twenty, which would quietly switch the feature off for longer runs. Scaling by
- * total contributions keeps each goal about as hard whichever length is chosen,
- * and the multipliers below are the actual difficulty dial:
+ * Targets are priced off the annual return they demand, not off a multiple of
+ * what the student puts in. That distinction is the whole feature working or
+ * not, because compounding is not linear in time: a flat multiple of
+ * contributions is a completely different challenge at each run length.
  *
- *   1.25x — reachable with modest investing, out of reach for pure cash
- *   1.55x — needs real exposure to shares
- *   2.00x — needs either a strong decade or genuine risk-taking
+ * The old multiples (1.25x / 1.55x / 2.0x of contributions) demanded this:
  *
- * Pure cash at 3% turns $7,000 of contributions into about $8,100 over ten
- * years, so even the easiest goal cannot be saved into. That is deliberate. */
+ *              5 years   10 years   20 years
+ *   Moving out   7.0%      4.3%       2.1%
+ *   First car   12.5%      7.5%       3.8%
+ *   Big OE      20.8%     11.2%       5.9%
+ *
+ * So over twenty years every goal was below the world fund's own expectation
+ * and effectively automatic, while over five years the Big OE needed 20.8% a
+ * year and could not be reached by any strategy in this market. The feature
+ * only worked at the ten-year length it was designed at.
+ *
+ * Pricing by rate makes each tier mean the same thing everywhere:
+ *
+ *   4%  — beats cash in the bank, out of reach for pure saving
+ *   8%  — roughly what a broad share fund is expected to do
+ *   12% — needs a strong run or genuine risk-taking, and often will not happen
+ *
+ * Cash at 3% cannot reach even the easiest one at any length. That is
+ * deliberate: the point of a goal is that saving alone will not get you there. */
 
 (function (global) {
   'use strict';
@@ -24,25 +37,25 @@
     {
       id: 'flat',
       name: 'Moving out',
-      multiple: 1.25,
+      rate: 0.04,
       blurb: 'Bond, a few weeks of rent up front, and something to sleep on.'
     },
     {
       id: 'car',
       name: 'First car',
-      multiple: 1.55,
+      rate: 0.08,
       blurb: 'A tidy second-hand car, on the road with a warrant and rego.'
     },
     {
       id: 'oe',
       name: 'Big OE',
-      multiple: 2.0,
+      rate: 0.12,
       blurb: 'Flights out, and enough left to land on your feet overseas.'
     },
     {
       id: 'none',
       name: 'No goal',
-      multiple: 0,
+      rate: 0,
       blurb: 'Just see what happens.'
     }
   ];
@@ -54,18 +67,23 @@
     return GOALS[0];
   }
 
-  /* What the student will have put in by the end of the run, which is what the
-   * target is priced against. */
+  /* What the student will have put in by the end of the run. Not the target any
+   * more, but still worth having: the results screen sets the final value
+   * against it, and the goal card uses it to say how much of the target has to
+   * come from growth rather than from deposits. */
   function totalContributions(cfg, months) {
     return cfg.startingCash + cfg.monthlyContribution * months;
   }
 
-  // Rounded to something that reads like a real price rather than a computation.
+  /* The target is where the opening balance and every monthly deposit end up if
+   * the whole lot grows at the goal's rate. Rounded to something that reads like
+   * a real price rather than a computation. */
   function targetFor(goalId, cfg, months) {
     const goal = byId(goalId);
-    if (!goal.multiple) return 0;
-    const raw = totalContributions(cfg, months) * goal.multiple;
-    return Math.round(raw / 500) * 500;
+    if (!goal.rate) return 0;
+    const raw = project(cfg.startingCash, cfg.monthlyContribution, months, goal.rate);
+    const step = raw > 20000 ? 500 : 250;
+    return Math.round(raw / step) * step;
   }
 
   /* Value of the portfolio at the end of the run if it grew at `annualRate` from

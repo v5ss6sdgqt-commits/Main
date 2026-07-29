@@ -268,12 +268,30 @@ the headline figure with a live "needs about 7.5% a year from here" that
 recalculates every month. Without a target the app grows a number and there is no
 reason to prefer one number to another.
 
-Targets scale with the length of the run rather than being fixed dollar amounts,
-because a fixed $11,000 car is a stretch over ten years and trivial over twenty,
-which would quietly switch the feature off for longer runs. The multipliers in
-`js/goals.js` are the difficulty dial. Pure cash at 3% turns $7,000 of
-contributions into about $8,100 over ten years, so even the easiest goal cannot
-be saved into — deliberately.
+Targets are priced off **the annual return they demand**, not off a fixed dollar
+amount and not off a multiple of what the student pays in. Both of the simpler
+options are broken by the same thing: compounding is not linear in time, so the
+same target means something completely different at each run length.
+
+Targets used to be a flat multiple of total contributions — 1.25x, 1.55x and
+2.0x — and the difficulty that actually produced was this:
+
+| | 5 years | 10 years | 20 years |
+|---|---|---|---|
+| Moving out | 7.0% a year | 4.3% a year | **2.1% a year** |
+| First car | **12.5% a year** | 7.5% a year | **3.8% a year** |
+| Big OE | **20.8% a year** | 11.2% a year | **5.9% a year** |
+
+Over twenty years every goal sat below the world fund's own expectation and was
+effectively automatic; over five years the Big OE needed 20.8% a year and could
+not be reached by any strategy in this market. The feature only worked at the
+ten-year length it was designed at.
+
+Pricing by rate makes each tier mean the same thing everywhere — **4%** beats
+cash and cannot be saved into, **8%** is roughly what a broad share fund is
+expected to do, and **12%** needs a strong run or genuine risk-taking and often
+will not happen. Cash at 3% cannot reach even the easiest one at any length,
+which is the point: a goal you can save your way to teaches nothing.
 
 **A crash stops the run and makes them choose.** When a recession or a crypto
 collapse lands and the student actually holds investments, the simulation freezes
@@ -469,26 +487,41 @@ an automatic monthly investment plan, and NZ platforms and KiwiSaver do not char
 per-trade fees on scheduled contributions. Charging $3 on a $50 auto-contribution
 would hand the player a 6%-a-month head start that no real investor enjoys.
 
-### The default seed
+### The default seeds
 
-`classroom-4019` was re-picked after the business cycle and the volatility
-recalibration rewrote every price path. Chosen from 8,000 candidates for being
-representative rather than flattering: the world fund lands on its 8%
-expectation, there is a real crash to sit through, twelve months of recession,
-and three crashes that each ask the student what to do.
+There is one per run length, and the reason is worth stating plainly, because
+for a while there was only one and it was wrong at two of the three lengths.
 
-| | Over ten years |
-|---|---|
-| Total World Fund | **+7.9%** a year |
-| S&P/NZX 50 Fund | +8.6% a year |
-| NZ Government Bonds | +3.8% a year |
-| Bitcoin | **-9.6%** a year |
-| Best single company | Fisher & Paykel, +9.3% |
+`classroom-4019` was chosen as a ten-year market, and it is a good one. Used as
+a twenty-year market it was a disaster: it sits at the **97th percentile** of
+markets by benchmark return, **every one of the sixteen assets beat its own
+stated expected return**, and Nvidia returned 20.7% a year against a stated 4%.
+A student who chose "20 years" was shown a decade and a half where the wildest
+thing on the board won by miles — the exact opposite of what this app is for.
+The fault was not the seed; it was reusing a seed picked at one horizon for
+another, where a fixed random draw means something completely different.
 
-What makes it worth teaching is the ending: the boring diversified fund beat
-almost everything, the exciting bet lost money, and the best single company only
-just edged out the fund while carrying several times the risk. Nobody was
-rewarded for excitement, which is the entire point of the app.
+Each of the three was chosen from 4,000 candidates on identical criteria: the
+world fund lands near its stated 8%, no speculative asset beats it, bitcoin
+loses to it, there is a fall of at least a quarter to sit through, the economy
+passes through all four phases of the cycle, and the crash decisions are spread
+across the run rather than bunched at one end.
+
+| | 5 years<br>`classroom-3756` | 10 years<br>`classroom-4019` | 20 years<br>`classroom-3094` |
+|---|---|---|---|
+| Total World Fund | +7.4% a year | **+7.9%** a year | **+8.5%** a year |
+| Bitcoin | **-32.3%** a year | **-9.6%** a year | +2.1% a year |
+| Top of the board | KiwiSaver fund, +9.7% | Fisher & Paykel, +9.2% | S&P 500 fund, +8.5% |
+| Bottom of the board | Bitcoin, -32.3% | Mainfreight, -10.5% | Tesla, -10.0% |
+| Crash decisions | 3 | 3 | 6 |
+
+What makes each of them worth teaching is the ending: the boring diversified
+fund beat almost everything, the exciting bet lost money, and the best single
+company only just edged out the fund while carrying several times the risk.
+Nobody was rewarded for excitement, which is the entire point of the app.
+
+Typing your own seed switches this off, as it should — the box wins, and
+changing the run length never overwrites a seed a teacher has handed out.
 
 ## Files
 

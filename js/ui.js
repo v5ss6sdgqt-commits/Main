@@ -722,9 +722,24 @@
       const series = state.market.prices[a.id].slice(0, m + 1);
       Charts.sparkline(row.spark, series.length > 1 ? series : [p, p], resolveColor(a.color));
 
+      /* A disabled button that gives no reason is indistinguishable from a
+       * broken one. Pressing Buy with an empty wallet did nothing at all and
+       * said nothing at all — whatever notice was left over from the previous
+       * trade just sat there, so the last thing on screen was a message about
+       * some other trade entirely. */
       row.buy.disabled = state.finished || Portfolio.maxBuy(state) <= 0;
       row.sell.disabled = state.finished || value <= 0.005;
       row.input.disabled = state.finished;
+      row.buy.title = state.finished
+        ? 'The run has finished.'
+        : row.buy.disabled
+          ? 'You need more than ' + money(state.cfg.feeFlat, 2) + ' in cash — that is the flat fee on any trade.'
+          : '';
+      row.sell.title = state.finished
+        ? 'The run has finished.'
+        : row.sell.disabled
+          ? 'You do not own any ' + a.name + ' to sell.'
+          : '';
     });
   }
 
@@ -782,8 +797,21 @@
       buy: 'You bought more'
     };
 
+    /* The market's own move over the following year, not the portfolio's. A
+     * portfolio picks up a fresh deposit every month, so measuring it here
+     * would credit the decision with money the student simply paid in later —
+     * and would make whichever decision came first look like the best one. */
     decisions.forEach(function (d) {
-      const dir = d.change >= 0 ? 'rose' : 'fell';
+      const window =
+        d.monthsAfter <= 0
+          ? 'The run ended immediately afterwards'
+          : d.monthsAfter >= 12
+            ? 'Over the next year the market'
+            : 'Over the ' + d.monthsAfter + ' months left the market';
+      const verdict =
+        d.monthsAfter <= 0
+          ? '.'
+          : ' ' + (d.marketChange >= 0 ? 'rose' : 'fell') + ' ' + pct(Math.abs(d.marketChange)).slice(1) + '.';
       rows.push(
         '<div class="cost-row"><div class="cost-when">Month ' +
           d.month +
@@ -793,13 +821,10 @@
           d.headline +
           '&rdquo;. You were left with ' +
           money(d.after) +
-          ', and from there your portfolio ' +
-          dir +
-          ' ' +
-          pct(d.change) +
-          ' to ' +
-          money(d.finalValue) +
-          '.</div></div>'
+          '. ' +
+          window +
+          verdict +
+          '</div></div>'
       );
     });
 

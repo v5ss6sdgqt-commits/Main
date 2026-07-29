@@ -11,8 +11,9 @@ seed.** That is the whole thing.
 ## Before the lesson
 
 1. Open the app yourself and play one ten-year run. Ten minutes.
-2. Pick a seed and write it on the board. `classroom-4019` is the default and is
-   a good teaching decade — see *What happens in the default seed* below.
+2. Pick a seed and write it on the board. Each run length has its own default —
+   `classroom-4019` for ten years — and all three are good teaching markets. See
+   *What happens in the default seeds* below.
 3. Decide whether you want **Solo mode** (everyone against the market) or **Comp
    mode** (everyone races the same AI). Comp mode is better for a first lesson;
    there is an opponent to beat and it is more fun.
@@ -118,23 +119,32 @@ Use the questions below. This part matters more than the game.
 
 ---
 
-## What happens in the default seed
+## What happens in the default seeds
 
-`classroom-4019`, ten years. Do not tell students beforehand.
+Do not tell students beforehand. Changing the run length swaps the default seed
+with it, because a market picked to be fair over ten years is not fair over
+five or twenty.
 
-| | Result |
-|---|---|
-| Total World Fund | **+7.9%** a year |
-| S&P/NZX 50 Fund | +8.6% a year |
-| NZ Government Bonds | +3.8% a year |
-| Bitcoin | **−9.6%** a year |
-| Best single company | Fisher & Paykel, +9.3% |
+| | 5 years<br>`classroom-3756` | 10 years<br>`classroom-4019` | 20 years<br>`classroom-3094` |
+|---|---|---|---|
+| Total World Fund | +7.4% a year | **+7.9%** a year | **+8.5%** a year |
+| S&P/NZX 50 Fund | +2.5% a year | +8.6% a year | +8.4% a year |
+| NZ Government Bonds | +4.1% a year | +3.8% a year | +3.7% a year |
+| Bitcoin | **−32.3%** a year | **−9.6%** a year | +2.1% a year |
+| Best on the board | KiwiSaver fund, +9.7% | Fisher & Paykel, +9.2% | S&P 500 fund, +8.5% |
+| Worst on the board | Bitcoin, −32.3% | Mainfreight, −10.5% | Tesla, −10.0% |
+| Crash decisions | 3 | 3 | 6 |
 
-Three crashes, twelve months of recession, and a −32% fall to sit through.
+All three pass through every phase of the business cycle and all three have a
+fall of at least a quarter to sit through.
 
-The teaching point: **the boring diversified fund beat almost everything**, the
-exciting bet lost money, and the best single company only just edged out the
-fund while carrying several times the risk. Nobody was rewarded for excitement.
+The teaching point is the same in each: **the boring diversified fund beat
+almost everything**, and the best single company only just edged out the fund
+while carrying several times the risk. Nobody was rewarded for excitement.
+
+The twenty-year run makes an extra point worth drawing out. Bitcoin *did* make
+money — +2.1% a year — and still finished behind bonds and miles behind the
+world fund. "It went up" and "it was a good investment" are not the same claim.
 
 Run it a second time with a different seed to make the other half of the point:
 a single decade is one roll of the dice.
