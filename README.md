@@ -34,7 +34,7 @@ light/dark theme preference.
 
 ### Handing it out as a single file
 
-`dist/market-lab.html` is the whole app inlined into one 200 KB file. Email it to
+`dist/market-lab.html` is the whole app inlined into one 229 KB file. Email it to
 a class, drop it on a shared drive, or put it on a USB stick — there is no
 folder structure to keep intact and nothing to load over the network.
 
@@ -103,7 +103,7 @@ it is not security and does not pretend to be.
 ## Using it in a lesson
 
 **Give the whole class the same seed.** The "Market seed" box drives every
-random number in the simulation, so `classroom-2910` produces an identical ten
+random number in the simulation, so `classroom-4019` produces an identical ten
 years of prices and news on every machine. Students face the same crash on the
 same month, which turns "how did you do?" into a real comparison of decisions
 rather than a comparison of luck.
@@ -118,8 +118,8 @@ a minute.
 Some things that work well:
 
 - Before starting, have everyone write down which asset they think will win. Then
-  run the default seed, where the answer is Air New Zealand and almost every
-  exciting pick finishes negative.
+  run the default seed, where bitcoin loses 9.6% a year and the best single
+  company only just edges out a boring world fund.
 - Have half the class buy and hold, and half trade every month, then compare the
   fees tile. The $3 flat fee does the teaching for you.
 - Run it twice with the same seed and a different strategy each time.
