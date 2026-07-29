@@ -15,6 +15,27 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#f7f8fa" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#14161a" media="(prefers-color-scheme: dark)">
+
+<!-- How the link looks when a teacher forwards it to another teacher, which is
+     the only way this app is going to spread. Without these, an email or a
+     Teams message shows a bare URL, and a bare URL asking students to open a
+     finance site reads as something to be suspicious of.
+
+     The URLs are absolute because scrapers do not resolve relative ones against
+     the page they found them on. That absoluteness is also why these sit inside
+     the pwa block: build.js strips this whole section from the single-file
+     bundle, which is meant to work off a USB stick with nothing external in it
+     at all. Update them if the site ever moves. -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Market Lab">
+<meta property="og:title" content="Market Lab — an investing simulator for the classroom">
+<meta property="og:description" content="Invest $1,000 and $50 a month across real NZ and international companies, funds and crypto. Sit through recessions, pay real fees, and see whether your decisions beat simply holding an index fund.">
+<meta property="og:url" content="https://v5ss6sdgqt-commits.github.io/Main/">
+<meta property="og:image" content="https://v5ss6sdgqt-commits.github.io/Main/icons/social-card.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Market Lab — an investing simulator for the classroom">
+<meta name="twitter:card" content="summary_large_image">
 <!-- pwa:end -->
 <link rel="stylesheet" href="css/styles.css?v=11">
 </head>
