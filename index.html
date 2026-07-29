@@ -1,26 +1,458 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hello World</title>
-    <style>
-        body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-            background-color: #f0f0f0;
-            font-family: Arial, sans-serif;
-        }
-        h1 {
-            font-size: 4rem;
-            color: #333;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Market Lab — an investing simulator for the classroom</title>
+<meta name="description" content="An investing simulator using real NZ and international companies, funds and crypto, built to teach risk, compounding, diversification and fees.">
+<!-- pwa:start — stripped from the single-file bundle, which has no server to
+     resolve these against. -->
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png" sizes="192x192" type="image/png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Market Lab">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#f7f8fa" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#14161a" media="(prefers-color-scheme: dark)">
+
+<!-- How the link looks when a teacher forwards it to another teacher, which is
+     the only way this app is going to spread. Without these, an email or a
+     Teams message shows a bare URL, and a bare URL asking students to open a
+     finance site reads as something to be suspicious of.
+
+     The URLs are absolute because scrapers do not resolve relative ones against
+     the page they found them on. That absoluteness is also why these sit inside
+     the pwa block: build.js strips this whole section from the single-file
+     bundle, which is meant to work off a USB stick with nothing external in it
+     at all. Update them if the site ever moves. -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Market Lab">
+<meta property="og:title" content="Market Lab — an investing simulator for the classroom">
+<meta property="og:description" content="Invest $1,000 and $50 a month across real NZ and international companies, funds and crypto. Sit through recessions, pay real fees, and see whether your decisions beat simply holding an index fund.">
+<meta property="og:url" content="https://v5ss6sdgqt-commits.github.io/Main/">
+<meta property="og:image" content="https://v5ss6sdgqt-commits.github.io/Main/icons/social-card.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Market Lab — an investing simulator for the classroom">
+<meta name="twitter:card" content="summary_large_image">
+<!-- pwa:end -->
+<link rel="stylesheet" href="css/styles.css?v=11">
 </head>
 <body>
-    <h1>Hello World</h1>
+<div class="wrap">
+
+  <header class="topbar">
+    <div class="brand">
+      <h1>Market Lab</h1>
+      <span class="tag">Real companies. Real trade-offs. Your call.</span>
+    </div>
+    <div class="clock"><span id="clock-text">Start &middot; Year 0</span></div>
+    <!-- Revealed only when the browser says the app can actually be installed. -->
+    <button class="icon-btn install" id="install-btn" type="button" hidden>Install app</button>
+    <button class="icon-btn" id="help-btn" type="button">How it works</button>
+    <button class="icon-btn" id="theme-btn" type="button" aria-label="Switch between light and dark theme">Theme</button>
+  </header>
+
+  <!-- Switching modes starts a fresh run, because a race you joined halfway
+       through would not be a race. -->
+  <div class="modes" role="tablist" aria-label="Game mode">
+    <button class="mode-tab is-on" id="mode-solo" type="button" role="tab" aria-selected="true">
+      Solo mode<small>Just you against the market</small>
+    </button>
+    <button class="mode-tab" id="mode-comp" type="button" role="tab" aria-selected="false">
+      Comp mode<small>Race an AI on the same prices</small>
+    </button>
+  </div>
+
+  <!-- Shown only once the run is up. -->
+  <section class="card" id="results-card" hidden aria-live="polite">
+    <div class="card-head">
+      <h2 id="results-title">Ten years later</h2>
+      <span class="sub" id="results-sub"></span>
+    </div>
+    <div class="result-grid" id="results-grid"></div>
+    <!-- Filled only when the student actually faced a crash or sold something. -->
+    <div class="cost-block" id="cost-block" hidden>
+      <h3>What your decisions cost you</h3>
+      <div id="cost-list"></div>
+    </div>
+
+    <div class="verdict">
+      <h3>What the numbers say about your decisions</h3>
+      <ul id="verdict-list"></ul>
+    </div>
+    <div class="share-block">
+      <div class="share-head">Your result code</div>
+      <div class="share-row">
+        <code id="share-code">&mdash;</code>
+        <button class="ghost" id="copy-code" type="button">Copy</button>
+      </div>
+      <p class="share-note">Send this to your teacher. It carries your result and which market you played, so the class can be ranked without anybody making an account.</p>
+    </div>
+
+    <div class="controls">
+      <button class="primary" id="again-btn" type="button">Run it again with a new market</button>
+    </div>
+  </section>
+
+  <div class="grid">
+
+    <!-- ================= left column ================= -->
+    <div>
+
+      <section class="card">
+        <div class="hero-row">
+          <div>
+            <div class="hero-label">Portfolio value</div>
+            <div class="hero-figure" id="hero-value">$1,000</div>
+            <div class="hero-delta" id="hero-delta">&mdash;</div>
+          </div>
+        </div>
+
+        <!-- The goal is what gives every other number a reason to matter, so it
+             sits directly under the headline figure rather than off in a panel. -->
+        <div class="goal" id="goal-box" hidden>
+          <div class="goal-head">
+            <span class="goal-name" id="goal-name"></span>
+            <span class="goal-count" id="goal-count"></span>
+          </div>
+          <div class="goal-track"><div class="goal-fill" id="goal-fill"></div></div>
+          <div class="goal-note" id="goal-note"></div>
+        </div>
+
+        <!-- Every tile label opens its own explanation. These are the four
+             numbers students stare at, so they are the four worth explaining. -->
+        <div class="tiles">
+          <div class="tile">
+            <div class="k"><button type="button" class="term-link" data-term="cash-interest">Cash available</button></div>
+            <div class="v" id="tile-cash">$1,000</div>
+            <div class="n" id="tile-cash-note">Earns 3.0% a year</div>
+          </div>
+          <div class="tile">
+            <div class="k"><button type="button" class="term-link" data-term="dollar-cost-averaging">Money put in</button></div>
+            <div class="v" id="tile-contributed">$1,000</div>
+            <div class="n" id="tile-contributed-note">$50 added monthly</div>
+          </div>
+          <div class="tile">
+            <div class="k"><button type="button" class="term-link" data-term="real-value">Worth in today's money</button></div>
+            <div class="v" id="tile-real">$1,000</div>
+            <div class="n" id="tile-inflation">Inflation 0.0%</div>
+          </div>
+          <div class="tile">
+            <div class="k"><button type="button" class="term-link" data-term="fees">Fees paid</button></div>
+            <div class="v" id="tile-fees">$0.00</div>
+            <div class="n" id="tile-trades">0 trades</div>
+          </div>
+        </div>
+
+        <div class="card-head" style="margin-top:22px">
+          <h2>You against doing nothing</h2>
+          <span class="sub">The other line buys the world fund on day one and never trades again</span>
+          <button class="icon-btn" id="table-toggle" type="button" aria-expanded="false">Show as table</button>
+        </div>
+
+        <div class="chart-box">
+          <canvas id="main-chart" role="img" aria-label="Line chart comparing your portfolio value against a buy-and-hold world index fund over time"></canvas>
+          <div class="tooltip" id="chart-tooltip" role="status"></div>
+        </div>
+
+        <div class="legend">
+          <span class="item"><span class="key" style="background:var(--series-portfolio)"></span>Your portfolio</span>
+          <span class="item"><span class="key" style="background:var(--series-world)"></span><button type="button" class="term-link" data-term="benchmark">Doing nothing</button></span>
+        </div>
+
+        <!-- Table view: every plotted value is reachable without relying on the
+             chart, which the tooltip alone would not satisfy. -->
+        <div class="data-table" id="chart-table" hidden>
+          <table>
+            <thead>
+              <tr><th scope="col">Month</th><th scope="col">Your portfolio</th><th scope="col">Doing nothing</th><th scope="col">Difference</th></tr>
+            </thead>
+            <tbody id="chart-table-body"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-head">
+          <h2>Set up a new run</h2>
+          <span class="sub">Everyone using the same seed gets the same market</span>
+        </div>
+        <div class="setup">
+          <div class="field">
+            <label for="goal-input">Saving for</label>
+            <select id="goal-input"></select>
+          </div>
+          <div class="field">
+            <!-- The explainer sits beside the label rather than inside it: a
+                 button within a label activates the field as well as itself. -->
+            <label for="seed-input">Market seed</label>
+            <button type="button" class="term-link field-help" data-term="seed">What is this?</button>
+            <input id="seed-input" type="text" value="classroom-4019" autocomplete="off">
+          </div>
+          <div class="field">
+            <label for="years-input">Years</label>
+            <select id="years-input">
+              <option value="5">5</option>
+              <option value="10" selected>10</option>
+              <option value="20">20</option>
+            </select>
+          </div>
+          <button class="ghost" id="restart-btn" type="button">Start over</button>
+          <!-- Neither dropdown applies on its own, so say so rather than
+               silently discarding a run or silently ignoring the change. -->
+          <span class="setup-hint" id="setup-hint" hidden>Press Start over to apply</span>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- ================= right column ================= -->
+    <div>
+
+      <section class="card">
+        <div class="card-head">
+          <h2>Advance time</h2>
+          <span class="sub" id="months-left">120 months to go</span>
+        </div>
+        <div class="controls">
+          <button class="primary play" id="play-btn" type="button" aria-pressed="false">
+            <span class="play-icon" aria-hidden="true"></span><span id="play-label">Run the simulation</span>
+          </button>
+        </div>
+        <div class="controls secondary-controls">
+          <button class="ghost" id="next-month" type="button">Next month</button>
+          <button class="ghost" id="next-year" type="button">Skip a year</button>
+          <label class="speed">
+            Speed
+            <select id="speed-input" aria-label="Simulation speed">
+              <option value="900">Slow</option>
+              <option value="450" selected>Normal</option>
+              <option value="140">Fast</option>
+            </select>
+          </label>
+        </div>
+        <div id="news-banner"></div>
+      </section>
+
+      <section class="card economy-card">
+        <div class="card-head">
+          <h2>The economy</h2>
+          <span class="sub"><button type="button" class="term-link" data-term="cycle">Why this matters</button></span>
+        </div>
+        <div class="econ-head">
+          <div>
+            <div class="econ-phase" id="econ-phase"></div>
+            <div class="econ-blurb" id="econ-blurb"></div>
+          </div>
+          <div class="econ-gdp">
+            <div class="econ-gdp-v" id="econ-gdp">&mdash;</div>
+            <div class="econ-gdp-k"><button type="button" class="term-link" data-term="gdp">GDP growth</button></div>
+          </div>
+        </div>
+        <ol class="econ-track" id="econ-track"></ol>
+        <div class="econ-chart"><canvas id="econ-spark" role="img" aria-label="GDP growth over the run"></canvas></div>
+        <p class="econ-teach" id="econ-teach"></p>
+      </section>
+
+      <!-- Comp mode only. -->
+      <section class="card opponent-card" id="opponent-card" hidden>
+        <div class="card-head">
+          <h2>Your opponent</h2>
+          <label class="speed">
+            Difficulty
+            <select id="difficulty-input" aria-label="Opponent difficulty"></select>
+          </label>
+        </div>
+        <div class="opp-head">
+          <div>
+            <div class="opp-name" id="opp-name"></div>
+            <div class="opp-tagline" id="opp-tagline"></div>
+          </div>
+          <div class="opp-value" id="opp-value">$0</div>
+        </div>
+        <div class="opp-race" id="opp-race"></div>
+        <ul class="feed opp-moves" id="opp-moves"></ul>
+      </section>
+
+      <section class="card">
+        <div class="card-head">
+          <h2>Where your money is</h2>
+          <span class="sub"><button type="button" class="term-link" data-term="diversification">Why the mix matters</button></span>
+        </div>
+        <div id="alloc-wrap"></div>
+        <div class="legend" id="alloc-legend"></div>
+      </section>
+
+      <section class="card">
+        <div class="card-head">
+          <h2>Headlines</h2>
+        </div>
+        <ul class="feed" id="feed"><li class="empty">Nothing has happened yet.</li></ul>
+      </section>
+
+    </div>
+  </div>
+
+  <!-- Full width: the trade controls need the room, and this is the surface
+       students spend the most time on. -->
+  <section class="card">
+    <div class="card-head">
+      <h2>The market</h2>
+      <span class="sub">
+        Real companies, simulated prices &middot; NZD &middot;
+        <button type="button" class="term-link" data-term="fees">$3 + 0.5% per trade</button>
+      </span>
+    </div>
+    <div class="table-scroll">
+      <table class="market-table">
+        <thead>
+          <tr>
+            <th scope="col">Asset</th>
+            <th scope="col"><button type="button" class="term-link" data-term="risk">Risk</button></th>
+            <th scope="col">Price</th>
+            <th scope="col">1 month</th>
+            <th scope="col"><button type="button" class="term-link" data-term="past-performance">Past &rarr; expected</button></th>
+            <th scope="col" class="col-history">History</th>
+            <th scope="col">You hold</th>
+            <th scope="col">Trade</th>
+          </tr>
+        </thead>
+        <tbody id="market-body"></tbody>
+      </table>
+    </div>
+    <div class="notice" id="trade-notice"></div>
+    <p class="table-foot">
+      The first number is roughly what the real thing returned in the past. The second is what this
+      simulation expects from here — and it is deliberately much lower for the past winners.
+      <button type="button" class="term-link" data-term="past-performance">Here is why that gap exists</button>, and it is
+      the most useful thing on this page.
+    </p>
+  </section>
+
+  <section class="card">
+    <div class="card-head">
+      <h2>What this is teaching you</h2>
+      <span class="sub">Tap any underlined word anywhere in the app for a plain-English explanation</span>
+    </div>
+    <div class="learn">
+      <div class="item">
+        <h3><button type="button" class="term-link" data-term="past-performance">Last decade's winner is not next decade's</button></h3>
+        <p>Nvidia returned about 33% a year for twenty years. This simulation expects roughly 9% from it. That is not pessimism — a price already reflects how good everyone knows the company is.</p>
+      </div>
+      <div class="item">
+        <h3><button type="button" class="term-link" data-term="risk">Risk and return travel together</button></h3>
+        <p>Ethereum can move 85% in a year. It is not expected to return more than shares over time — you are taking on far more risk for the same expected reward.</p>
+      </div>
+      <div class="item">
+        <h3><button type="button" class="term-link" data-term="compounding">Compounding needs time, not cleverness</button></h3>
+        <p>Money left alone grows on its own growth. Ten years of an ordinary return usually beats a few brilliant trades, which is why the benchmark line is so hard to beat.</p>
+      </div>
+      <div class="item">
+        <h3><button type="button" class="term-link" data-term="correlation">Six NZ shares is not diversified</button></h3>
+        <p>Fisher &amp; Paykel, Mainfreight, Meridian and a2 Milk all ride the same NZ economy. One NZ fund plus one world fund is duller and genuinely safer.</p>
+      </div>
+      <div class="item">
+        <h3><button type="button" class="term-link" data-term="fees">Small trades are eaten by fees</button></h3>
+        <p>A $3 flat fee on a $50 trade is 6% gone before you own anything. The same fee on a $5,000 trade is 0.06%. Trade small and often and the fees quietly take your returns.</p>
+      </div>
+      <div class="item">
+        <h3><button type="button" class="term-link" data-term="kiwisaver">This is really about KiwiSaver</button></h3>
+        <p>You will be in it from your first payslip for about 45 years. The fund you pick is the biggest money decision you will ever make, and most people never make it.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-head">
+      <h2>Class leaderboard</h2>
+      <span class="sub">For teachers &mdash; paste everyone's codes, one per line</span>
+      <button class="icon-btn" id="board-toggle" type="button" aria-expanded="false">Show</button>
+    </div>
+    <div id="board-body" hidden>
+      <p class="board-help">One student per line. Put their name first if you want it shown:</p>
+      <textarea id="board-input" rows="6" spellcheck="false" placeholder="Aroha  ML1-2K9F-A-20-1XQ-3-7C&#10;Sam    ML1-2K9F-A-20-22B-11-4M"></textarea>
+      <div class="controls">
+        <button class="primary" id="board-rank" type="button">Rank the class</button>
+      </div>
+      <div id="board-out"></div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="disclaimer">
+      <strong>This is a teaching tool, not financial advice.</strong>
+      <p>
+        Every price here is <strong>simulated</strong>. Real company names are used so the examples feel
+        like the real world, but nothing in this app is a view about those companies, a prediction about
+        them, or a recommendation to buy or sell anything.
+      </p>
+      <p>
+        The &ldquo;expected return&rdquo; figures are teaching assumptions, not forecasts &mdash; nobody
+        can forecast returns, which is one of the things this app is trying to show you. Past return
+        figures are approximate and included as context only.
+      </p>
+      <p>
+        Two real factors are <strong>not modelled</strong>: tax of any kind, and currency movement on
+        overseas shares. Dividends are paid, once a year, only by the companies that really pay them.
+        <button type="button" class="term-link" data-term="disclaimer">The full list of what is left out</button>.
+      </p>
+      <p class="disclaimer-last">
+        If you are investing real money, do your own research and consider talking to a licensed
+        financial adviser. Doing well in this simulation does not mean you will do well in a real market,
+        and any single run is one roll of the dice.
+      </p>
+    </div>
+  </footer>
+
+</div>
+
+<!-- The crash decision. Deliberately blocking and deliberately three buttons:
+     the moment a market falls 30% is the one real decision in investing, and
+     watching it scroll past teaches nothing. -->
+<div class="decision-backdrop" id="decision-modal" hidden>
+  <div class="decision" role="dialog" aria-modal="true" aria-labelledby="d-headline">
+    <div class="d-tag" id="d-when"></div>
+    <h2 id="d-headline"></h2>
+    <p class="d-why" id="d-why"></p>
+    <div class="d-money" id="d-money"></div>
+    <div class="d-choices">
+      <button type="button" class="d-choice sell" data-choice="sell">
+        <strong>Sell everything</strong>
+        <small>Get out before it falls further</small>
+      </button>
+      <!-- Shown only when the headline hit one category and the student holds
+           something outside it, where it is a real alternative rather than a
+           duplicate of "sell everything". -->
+      <button type="button" class="d-choice sell-cat" data-choice="sell-cat" hidden>
+        <strong></strong>
+        <small></small>
+      </button>
+      <button type="button" class="d-choice hold" data-choice="hold">
+        <strong>Do nothing</strong>
+        <small>Sit through it and wait</small>
+      </button>
+      <button type="button" class="d-choice buy" data-choice="buy">
+        <strong>Buy more</strong>
+        <small>Everything is on sale</small>
+      </button>
+    </div>
+    <p class="d-foot">Whatever you pick, the app will tell you at the end what it cost or earned you.</p>
+  </div>
+</div>
+
+<script src="js/rng.js?v=11"></script>
+<script src="js/market.js?v=11"></script>
+<script src="js/portfolio.js?v=11"></script>
+<script src="js/goals.js?v=11"></script>
+<script src="js/opponents.js?v=11"></script>
+<script src="js/share.js?v=11"></script>
+<script src="js/charts.js?v=11"></script>
+<script src="js/asset-panel.js?v=11"></script>
+<script src="js/intro.js?v=11"></script>
+<script src="js/ui.js?v=11"></script>
+<script src="js/glossary.js?v=11"></script>
+<script src="js/app.js?v=11"></script>
 </body>
 </html>
