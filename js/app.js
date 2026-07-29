@@ -532,6 +532,47 @@
       restart();
     });
 
+    $('copy-code').addEventListener('click', function () {
+      const code = $('share-code').textContent;
+      const done = function () {
+        const btn = $('copy-code');
+        btn.textContent = 'Copied';
+        setTimeout(function () {
+          btn.textContent = 'Copy';
+        }, 1400);
+      };
+      // Clipboard access is refused on file:// in some browsers, so fall back to
+      // selecting the text rather than leaving the button doing nothing.
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(code).then(done, selectCode);
+      } else {
+        selectCode();
+      }
+    });
+
+    function selectCode() {
+      const el = $('share-code');
+      const range = document.createRange();
+      range.selectNodeContents(el);
+      const sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+      $('copy-code').textContent = 'Selected — press Ctrl+C';
+    }
+
+    $('board-toggle').addEventListener('click', function () {
+      const body = $('board-body');
+      const showing = !body.hidden;
+      body.hidden = showing;
+      this.textContent = showing ? 'Show' : 'Hide';
+      this.setAttribute('aria-expanded', String(!showing));
+      if (!showing) UI.renderLeaderboard($('board-input').value);
+    });
+
+    $('board-rank').addEventListener('click', function () {
+      UI.renderLeaderboard($('board-input').value);
+    });
+
     $('table-toggle').addEventListener('click', function () {
       const table = $('chart-table');
       const showing = !table.hidden;

@@ -73,6 +73,33 @@ Service workers are refused on `file://` URLs, so opening `index.html` straight
 off disk still works but skips the offline cache and the install button. That
 path is for development; installing is for classroom use.
 
+## For teachers
+
+**[TEACHING.md](TEACHING.md)** has a ready-to-run 50-minute lesson, discussion
+questions, a marking rubric and extension activities. Set-up is one line: send
+students the link and tell them the seed.
+
+## Class leaderboard, without accounts
+
+Every comparable tool in this space — The Stock Market Game, HowTheMarketWorks,
+PersonalFinanceLab — leans on a leaderboard, and the research behind them credits
+the competition for the jump in engagement. All of them do it with accounts and a
+server.
+
+This app has neither and should not get either: it has to run offline on a
+locked-down school Chromebook, and asking a teacher to create accounts for thirty
+fifteen-year-olds is exactly the friction that stops a tool being used.
+
+So each finished run produces a short **result code** like
+`ML1-QC59-A-20-06Z8-01-9O`. Students read it out or paste it into a chat; the
+teacher pastes the lot into the **Class leaderboard** box and gets a ranking. No
+accounts, no network, nothing leaving anybody’s machine.
+
+The code carries the seed, so the leaderboard can tell when two students did not
+actually play the same market and says so — which turns a spoiled comparison into
+a lesson about why the seed matters. A checksum catches typos and casual edits;
+it is not security and does not pretend to be.
+
 ## Using it in a lesson
 
 **Give the whole class the same seed.** The "Market seed" box drives every

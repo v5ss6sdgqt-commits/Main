@@ -183,6 +183,70 @@
     );
   }
 
+  /* ---------------- class leaderboard ---------------- */
+
+  function renderLeaderboard(text) {
+    const out = $('board-out');
+    const board = Share.leaderboard(text);
+
+    if (!board.rows.length && !board.rejected.length) {
+      out.innerHTML = '<p class="board-help">Nothing pasted yet.</p>';
+      return;
+    }
+
+    let html = '';
+
+    /* Comparing results from different markets is comparing luck, so say so
+     * rather than quietly producing a ranking that means nothing. */
+    if (board.mixedMarkets) {
+      html +=
+        '<div class="board-warn">These codes are not all from the same market seed, so this ranking compares luck rather than decisions. Have everyone re-run with the same seed.</div>';
+    } else if (board.mixedLengths) {
+      html +=
+        '<div class="board-warn">These runs are different lengths, so the totals are not directly comparable.</div>';
+    }
+
+    if (board.rows.length) {
+      html +=
+        '<div class="data-table"><table><thead><tr><th scope="col">#</th><th scope="col">Name</th>' +
+        '<th scope="col">Final value</th><th scope="col">Trades</th><th scope="col">Played</th></tr></thead><tbody>' +
+        board.rows
+          .map(function (r) {
+            return (
+              '<tr><td>' +
+              r.rank +
+              '</td><td>' +
+              r.name.replace(/</g, '&lt;') +
+              '</td><td><strong>' +
+              money(r.value) +
+              '</strong></td><td>' +
+              r.trades +
+              '</td><td>' +
+              (r.opponent ? 'vs ' + r.opponent.name : 'solo') +
+              '</td></tr>'
+            );
+          })
+          .join('') +
+        '</tbody></table></div>';
+    }
+
+    if (board.rejected.length) {
+      html +=
+        '<div class="board-warn soft">Could not read ' +
+        board.rejected.length +
+        (board.rejected.length === 1 ? ' line' : ' lines') +
+        ': ' +
+        board.rejected
+          .map(function (r) {
+            return '&ldquo;' + r.name.replace(/</g, '&lt;') + '&rdquo; (' + r.reason + ')';
+          })
+          .join(', ') +
+        '</div>';
+    }
+
+    out.innerHTML = html;
+  }
+
   /* ---------------- the opponent ---------------- */
 
   function renderOpponent(state, opp) {
@@ -997,6 +1061,7 @@
       .join('');
 
     renderCost(state);
+    $('share-code').textContent = Share.encode(state, opp);
 
     $('verdict-list').innerHTML = buildVerdict(state, s, opp)
       .map(function (b) {
@@ -1019,6 +1084,7 @@
     renderHero: renderHero,
     renderGoal: renderGoal,
     renderEconomy: renderEconomy,
+    renderLeaderboard: renderLeaderboard,
     renderOpponent: renderOpponent,
     showDecision: showDecision,
     renderTiles: renderTiles,

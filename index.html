@@ -60,6 +60,15 @@
       <h3>What the numbers say about your decisions</h3>
       <ul id="verdict-list"></ul>
     </div>
+    <div class="share-block">
+      <div class="share-head">Your result code</div>
+      <div class="share-row">
+        <code id="share-code">&mdash;</code>
+        <button class="ghost" id="copy-code" type="button">Copy</button>
+      </div>
+      <p class="share-note">Send this to your teacher. It carries your result and which market you played, so the class can be ranked without anybody making an account.</p>
+    </div>
+
     <div class="controls">
       <button class="primary" id="again-btn" type="button">Run it again with a new market</button>
     </div>
@@ -333,6 +342,22 @@
     </div>
   </section>
 
+  <section class="card">
+    <div class="card-head">
+      <h2>Class leaderboard</h2>
+      <span class="sub">For teachers &mdash; paste everyone's codes, one per line</span>
+      <button class="icon-btn" id="board-toggle" type="button" aria-expanded="false">Show</button>
+    </div>
+    <div id="board-body" hidden>
+      <p class="board-help">One student per line. Put their name first if you want it shown:</p>
+      <textarea id="board-input" rows="6" spellcheck="false" placeholder="Aroha  ML1-2K9F-A-20-1XQ-3-7C&#10;Sam    ML1-2K9F-A-20-22B-11-4M"></textarea>
+      <div class="controls">
+        <button class="primary" id="board-rank" type="button">Rank the class</button>
+      </div>
+      <div id="board-out"></div>
+    </div>
+  </section>
+
   <footer>
     Simulated prices using real company names, not investment advice. Historical return figures are
     approximate and included as teaching context. Prices are in NZD and currency movement is not
@@ -373,6 +398,7 @@
 <script src="js/portfolio.js"></script>
 <script src="js/goals.js"></script>
 <script src="js/opponents.js"></script>
+<script src="js/share.js"></script>
 <script src="js/charts.js"></script>
 <script src="js/ui.js"></script>
 <script src="js/glossary.js"></script>

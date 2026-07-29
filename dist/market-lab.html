@@ -1916,6 +1916,88 @@ footer {
   color: var(--text-muted);
 }
 
+/* ============================================================
+   Result code and class leaderboard
+   ============================================================ */
+
+.share-block {
+  margin-top: 18px;
+  padding: 14px 16px;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius);
+  background: var(--surface-2);
+}
+
+.share-head {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+
+.share-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+#share-code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--text-primary);
+  user-select: all;
+}
+
+.share-note {
+  margin: 8px 0 0;
+  font-size: 12px;
+  color: var(--text-muted);
+  max-width: 64ch;
+}
+
+.board-help {
+  margin: 0 0 8px;
+  font-size: 12.5px;
+  color: var(--text-muted);
+}
+
+#board-input {
+  width: 100%;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12.5px;
+  line-height: 1.6;
+  padding: 10px 12px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--surface-1);
+  color: var(--text-primary);
+  resize: vertical;
+}
+
+.board-warn {
+  margin: 12px 0;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border-left: 3px solid var(--down);
+  background: color-mix(in srgb, var(--down) 8%, var(--surface-2));
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--text-secondary);
+}
+
+.board-warn.soft {
+  border-left-color: var(--text-muted);
+  background: var(--surface-2);
+}
+
+#board-out {
+  margin-top: 12px;
+}
+
 </style>
 </head>
 <body>
@@ -1960,6 +2042,15 @@ footer {
       <h3>What the numbers say about your decisions</h3>
       <ul id="verdict-list"></ul>
     </div>
+    <div class="share-block">
+      <div class="share-head">Your result code</div>
+      <div class="share-row">
+        <code id="share-code">&mdash;</code>
+        <button class="ghost" id="copy-code" type="button">Copy</button>
+      </div>
+      <p class="share-note">Send this to your teacher. It carries your result and which market you played, so the class can be ranked without anybody making an account.</p>
+    </div>
+
     <div class="controls">
       <button class="primary" id="again-btn" type="button">Run it again with a new market</button>
     </div>
@@ -2230,6 +2321,22 @@ footer {
         <h3><button type="button" class="term-link" data-term="kiwisaver">This is really about KiwiSaver</button></h3>
         <p>You will be in it from your first payslip for about 45 years. The fund you pick is the biggest money decision you will ever make, and most people never make it.</p>
       </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-head">
+      <h2>Class leaderboard</h2>
+      <span class="sub">For teachers &mdash; paste everyone's codes, one per line</span>
+      <button class="icon-btn" id="board-toggle" type="button" aria-expanded="false">Show</button>
+    </div>
+    <div id="board-body" hidden>
+      <p class="board-help">One student per line. Put their name first if you want it shown:</p>
+      <textarea id="board-input" rows="6" spellcheck="false" placeholder="Aroha  ML1-2K9F-A-20-1XQ-3-7C&#10;Sam    ML1-2K9F-A-20-22B-11-4M"></textarea>
+      <div class="controls">
+        <button class="primary" id="board-rank" type="button">Rank the class</button>
+      </div>
+      <div id="board-out"></div>
     </div>
   </section>
 
@@ -4103,6 +4210,162 @@ footer {
 
 </script>
 <script>
+/* Result codes, and the class leaderboard built on them.
+ *
+ * Every comparable tool in this space — The Stock Market Game, HowTheMarketWorks,
+ * PersonalFinanceLab — leans on a leaderboard, and the research behind them
+ * credits the competition for the jump in engagement. All of them do it with
+ * accounts and a server.
+ *
+ * This app has neither and should not get either: it has to run offline on a
+ * locked-down school Chromebook, and asking a teacher to create accounts for
+ * thirty fifteen-year-olds is exactly the friction that stops a tool being used.
+ *
+ * So the result travels in a short code the student reads out or pastes into a
+ * chat, and the teacher ranks them by pasting the lot into a box. No accounts,
+ * no network, no data leaving anybody's machine.
+ *
+ * The code carries the seed, so the leaderboard can tell when two students did
+ * not actually play the same market and say so — which turns a spoiled
+ * comparison into a teachable moment about why the seed matters.
+ *
+ * The checksum catches typos and casual edits. It is not security, and it is not
+ * pretending to be: a student who wants to fake a result can read this file. */
+
+(function (global) {
+  'use strict';
+
+  const PREFIX = 'ML1';
+  const GOAL_ORDER = ['none', 'flat', 'car', 'oe'];
+
+  function b36(n, width) {
+    let s = Math.max(0, Math.round(n)).toString(36).toUpperCase();
+    while (width && s.length < width) s = '0' + s;
+    return s;
+  }
+
+  function hashSeed(text) {
+    let h = 2166136261 >>> 0;
+    const s = String(text);
+    for (let i = 0; i < s.length; i++) {
+      h ^= s.charCodeAt(i);
+      h = Math.imul(h, 16777619) >>> 0;
+    }
+    return h >>> 0;
+  }
+
+  function checksum(parts) {
+    let h = 7;
+    parts.join('-').split('').forEach(function (ch) {
+      h = (h * 31 + ch.charCodeAt(0)) % 1296;
+    });
+    return b36(h, 2);
+  }
+
+  function encode(state, opponent) {
+    const years = state.market.months / Market.MONTHS_PER_YEAR;
+    const goalIdx = Math.max(0, GOAL_ORDER.indexOf(state.goal ? state.goal.id : 'none'));
+    const parts = [
+      PREFIX,
+      b36(hashSeed(state.market.seed) % 1679616, 4),
+      b36(years, 1),
+      b36(goalIdx, 1) + (opponent ? b36(1 + Opponents.LEVELS.indexOf(opponent.level), 1) : '0'),
+      b36(Portfolio.totalValue(state), 4),
+      b36(state.tradeCount, 2)
+    ];
+    parts.push(checksum(parts));
+    return parts.join('-');
+  }
+
+  function decode(text) {
+    const code = String(text).trim().toUpperCase();
+    const parts = code.split('-');
+    if (parts.length !== 7 || parts[0] !== PREFIX) return null;
+    if (checksum(parts.slice(0, 6)) !== parts[6]) return { invalid: true, code: code };
+
+    const flags = parts[3];
+    const oppIdx = parseInt(flags.charAt(1), 36);
+    return {
+      code: code,
+      seedKey: parts[1],
+      years: parseInt(parts[2], 36),
+      goal: GOAL_ORDER[parseInt(flags.charAt(0), 36)] || 'none',
+      opponent: oppIdx > 0 && Opponents.LEVELS[oppIdx - 1] ? Opponents.LEVELS[oppIdx - 1] : null,
+      value: parseInt(parts[4], 36),
+      trades: parseInt(parts[5], 36)
+    };
+  }
+
+  /* Accepts one entry per line, each optionally preceded by a name:
+   *
+   *   Aroha  ML1-XXXX-A-20-2FK-3-9C
+   *   ML1-XXXX-A-20-1Z8-11-4B
+   *
+   * Ranked by final value, with a warning when the codes are not all from the
+   * same market — comparing those is comparing luck, not decisions. */
+  function leaderboard(text) {
+    const rows = [];
+    String(text)
+      .split('\n')
+      .forEach(function (line) {
+        const trimmed = line.trim();
+        if (!trimmed) return;
+
+        const match = /(ML1(?:-[0-9A-Z]+){6})\s*$/i.exec(trimmed);
+        if (!match) {
+          rows.push({ invalid: true, name: trimmed.slice(0, 40), reason: 'not a result code' });
+          return;
+        }
+        const parsed = decode(match[1]);
+        if (!parsed) {
+          rows.push({ invalid: true, name: trimmed.slice(0, 40), reason: 'not a result code' });
+          return;
+        }
+        if (parsed.invalid) {
+          rows.push({ invalid: true, name: trimmed.slice(0, 40), reason: 'code looks mistyped' });
+          return;
+        }
+        const name = trimmed.slice(0, match.index).trim().replace(/[,:]$/, '');
+        parsed.name = name || 'Anonymous';
+        rows.push(parsed);
+      });
+
+    const valid = rows.filter(function (r) {
+      return !r.invalid;
+    });
+    valid.sort(function (a, b) {
+      return b.value - a.value;
+    });
+    valid.forEach(function (r, i) {
+      r.rank = i + 1;
+    });
+
+    const seeds = {};
+    const lengths = {};
+    valid.forEach(function (r) {
+      seeds[r.seedKey] = true;
+      lengths[r.years] = true;
+    });
+
+    return {
+      rows: valid,
+      rejected: rows.filter(function (r) {
+        return r.invalid;
+      }),
+      mixedMarkets: Object.keys(seeds).length > 1,
+      mixedLengths: Object.keys(lengths).length > 1
+    };
+  }
+
+  global.Share = {
+    encode: encode,
+    decode: decode,
+    leaderboard: leaderboard
+  };
+})(window);
+
+</script>
+<script>
 /* Canvas chart rendering.
  *
  * Hand-rolled rather than pulled from a charting library so the whole app stays
@@ -4744,6 +5007,70 @@ footer {
       resolveColor(growth >= 0 ? 'var(--up)' : 'var(--down)'),
       { zero: 0 }
     );
+  }
+
+  /* ---------------- class leaderboard ---------------- */
+
+  function renderLeaderboard(text) {
+    const out = $('board-out');
+    const board = Share.leaderboard(text);
+
+    if (!board.rows.length && !board.rejected.length) {
+      out.innerHTML = '<p class="board-help">Nothing pasted yet.</p>';
+      return;
+    }
+
+    let html = '';
+
+    /* Comparing results from different markets is comparing luck, so say so
+     * rather than quietly producing a ranking that means nothing. */
+    if (board.mixedMarkets) {
+      html +=
+        '<div class="board-warn">These codes are not all from the same market seed, so this ranking compares luck rather than decisions. Have everyone re-run with the same seed.</div>';
+    } else if (board.mixedLengths) {
+      html +=
+        '<div class="board-warn">These runs are different lengths, so the totals are not directly comparable.</div>';
+    }
+
+    if (board.rows.length) {
+      html +=
+        '<div class="data-table"><table><thead><tr><th scope="col">#</th><th scope="col">Name</th>' +
+        '<th scope="col">Final value</th><th scope="col">Trades</th><th scope="col">Played</th></tr></thead><tbody>' +
+        board.rows
+          .map(function (r) {
+            return (
+              '<tr><td>' +
+              r.rank +
+              '</td><td>' +
+              r.name.replace(/</g, '&lt;') +
+              '</td><td><strong>' +
+              money(r.value) +
+              '</strong></td><td>' +
+              r.trades +
+              '</td><td>' +
+              (r.opponent ? 'vs ' + r.opponent.name : 'solo') +
+              '</td></tr>'
+            );
+          })
+          .join('') +
+        '</tbody></table></div>';
+    }
+
+    if (board.rejected.length) {
+      html +=
+        '<div class="board-warn soft">Could not read ' +
+        board.rejected.length +
+        (board.rejected.length === 1 ? ' line' : ' lines') +
+        ': ' +
+        board.rejected
+          .map(function (r) {
+            return '&ldquo;' + r.name.replace(/</g, '&lt;') + '&rdquo; (' + r.reason + ')';
+          })
+          .join(', ') +
+        '</div>';
+    }
+
+    out.innerHTML = html;
   }
 
   /* ---------------- the opponent ---------------- */
@@ -5560,6 +5887,7 @@ footer {
       .join('');
 
     renderCost(state);
+    $('share-code').textContent = Share.encode(state, opp);
 
     $('verdict-list').innerHTML = buildVerdict(state, s, opp)
       .map(function (b) {
@@ -5582,6 +5910,7 @@ footer {
     renderHero: renderHero,
     renderGoal: renderGoal,
     renderEconomy: renderEconomy,
+    renderLeaderboard: renderLeaderboard,
     renderOpponent: renderOpponent,
     showDecision: showDecision,
     renderTiles: renderTiles,
@@ -7017,6 +7346,47 @@ footer {
     $('again-btn').addEventListener('click', function () {
       $('seed-input').value = randomSeed();
       restart();
+    });
+
+    $('copy-code').addEventListener('click', function () {
+      const code = $('share-code').textContent;
+      const done = function () {
+        const btn = $('copy-code');
+        btn.textContent = 'Copied';
+        setTimeout(function () {
+          btn.textContent = 'Copy';
+        }, 1400);
+      };
+      // Clipboard access is refused on file:// in some browsers, so fall back to
+      // selecting the text rather than leaving the button doing nothing.
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(code).then(done, selectCode);
+      } else {
+        selectCode();
+      }
+    });
+
+    function selectCode() {
+      const el = $('share-code');
+      const range = document.createRange();
+      range.selectNodeContents(el);
+      const sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+      $('copy-code').textContent = 'Selected — press Ctrl+C';
+    }
+
+    $('board-toggle').addEventListener('click', function () {
+      const body = $('board-body');
+      const showing = !body.hidden;
+      body.hidden = showing;
+      this.textContent = showing ? 'Show' : 'Hide';
+      this.setAttribute('aria-expanded', String(!showing));
+      if (!showing) UI.renderLeaderboard($('board-input').value);
+    });
+
+    $('board-rank').addEventListener('click', function () {
+      UI.renderLeaderboard($('board-input').value);
     });
 
     $('table-toggle').addEventListener('click', function () {
