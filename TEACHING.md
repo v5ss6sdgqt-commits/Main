@@ -38,9 +38,17 @@ the whole lesson.
 
 ### 2. Set up (5 min)
 
-Everyone opens the app, enters the seed, picks a goal, and presses **Start
-over**. Check that the seed matches around the room — one typo and that student
-is playing a different decade.
+Everyone opens the app. A four-card briefing comes up on a first visit —
+**let them read it**, it covers where the money comes from, what moves prices,
+and the fees. It can be reopened any time from **How it works** in the header.
+
+Then they enter the seed, pick a goal, and press **Start over**. Check that the
+seed matches around the room — one typo and that student is playing a different
+decade.
+
+Worth saying out loud, because it is the question you will get most: the balance
+climbs every month even if a student buys nothing, because $50 keeps arriving.
+That is their own money, not profit. The briefing says so, but say it again.
 
 ### 3. Play (20 min)
 

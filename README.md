@@ -34,7 +34,7 @@ light/dark theme preference.
 
 ### Handing it out as a single file
 
-`dist/market-lab.html` is the whole app inlined into one 242 KB file. Email it to
+`dist/market-lab.html` is the whole app inlined into one 254 KB file. Email it to
 a class, drop it on a shared drive, or put it on a USB stick — there is no
 folder structure to keep intact and nothing to load over the network.
 
@@ -322,6 +322,26 @@ letting the median fall out as `m - sigma^2/2`, which would restore the real
 penalty for volatility. That is a recalibration of all sixteen assets plus a new
 default seed, so it is recorded as a known limitation rather than half-done.
 
+## The opening briefing
+
+First-time students used to land on a dense dashboard — sixteen assets, a goal
+bar, an economy panel — with no idea what any of it was or where the money came
+from. The first question anyone asked was *"why is my balance going up when I
+have not bought anything?"*, which is the $50 monthly deposit doing exactly what
+it is meant to.
+
+Four short cards now open on a first visit: **your money**, **what you can buy**,
+**what moves prices**, and **the catches**. The figures come from the live config
+rather than being written into the copy, so changing the starting balance or the
+fees updates the briefing too.
+
+Card one exists mostly to head off that question before it can be asked. It says
+plainly that the balance climbs every month whether or not you buy anything, and
+that this is your own money arriving rather than profit.
+
+It is skippable, shown once, and reachable again from **How it works** in the
+header. Nobody should sit through it on their second run.
+
 ## The asset detail panel
 
 Hovering a sparkline in the market table (or clicking it, or tabbing to it)
@@ -455,6 +475,7 @@ js/portfolio.js       holdings, trades, fees, the benchmark, results
 js/goals.js           goal targets and the required-return maths
 js/opponents.js       the AI opponents and their strategies
 js/asset-panel.js     the hover-to-expand asset detail panel
+js/intro.js           the four-card opening briefing
 js/share.js           result codes and the class leaderboard
 js/charts.js          canvas line chart and sparklines
 js/ui.js              DOM rendering

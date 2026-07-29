@@ -43,7 +43,7 @@ html = replaceOnce(
 );
 
 // Order matters — the modules assign to globals and app.js reads them all.
-['rng', 'market', 'portfolio', 'goals', 'opponents', 'share', 'charts', 'asset-panel', 'ui', 'glossary', 'app'].forEach(name => {
+['rng', 'market', 'portfolio', 'goals', 'opponents', 'share', 'charts', 'asset-panel', 'intro', 'ui', 'glossary', 'app'].forEach(name => {
   const js = read('js/' + name + '.js');
   html = replaceOnce(
     html,

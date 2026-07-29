@@ -465,6 +465,13 @@
       return state;
     });
 
+    Intro.attach(function () {
+      return state ? state.cfg : Portfolio.DEFAULTS;
+    });
+    $('help-btn').addEventListener('click', function () {
+      Intro.open(0);
+    });
+
     $('play-btn').addEventListener('click', togglePlaying);
 
     // Changing speed mid-run should take effect now, not after a pause.
@@ -617,5 +624,6 @@
     }
 
     newGame($('seed-input').value.trim() || DEFAULT_SEED, 10, 'car');
+    Intro.maybeOpen();
   });
 })();
