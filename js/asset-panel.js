@@ -44,6 +44,7 @@
       '</div>' +
       '<div class="ap-chart"><canvas></canvas></div>' +
       '<div class="ap-stats"></div>' +
+      '<div class="ap-div"></div>' +
       '<p class="ap-what"></p>' +
       '<p class="ap-blurb"></p>' +
       '<div class="ap-holding"></div>';
@@ -143,6 +144,27 @@
         );
       })
       .join('');
+
+    /* Asked for explicitly: what this holding actually pays you each year, in
+     * dollars rather than as an abstract yield. Companies that pay nothing say
+     * so plainly — that Xero and Tesla have never paid one is worth knowing. */
+    const div = a.dividend || 0;
+    const divEl = panel.querySelector('.ap-div');
+    if (!div) {
+      divEl.innerHTML =
+        '<span class="ap-div-k">Dividend</span><span class="ap-div-v none">Pays none</span>';
+    } else if (div < 0.002) {
+      divEl.innerHTML =
+        '<span class="ap-div-k">Dividend</span><span class="ap-div-v none">A token amount only</span>';
+    } else {
+      const annual = held * div;
+      divEl.innerHTML =
+        '<span class="ap-div-k">Dividend</span><span class="ap-div-v">' +
+        UI.plainPct(div, 1) +
+        ' a year' +
+        (held > 0.005 ? ' &middot; about ' + UI.money(annual, 2) + ' paid to you each year' : '') +
+        '</span>';
+    }
 
     panel.querySelector('.ap-what').textContent = a.what;
     panel.querySelector('.ap-blurb').textContent = a.blurb;

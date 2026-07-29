@@ -45,6 +45,7 @@
       cash: cfg.startingCash,
       shares: shares,
       totalFees: 0,
+      totalDividends: 0,
       totalContributed: cfg.startingCash,
       tradeCount: 0,
       benchShares: 0,
@@ -338,6 +339,33 @@
     state.cash *= 1 + state.cfg.savingsRate / Market.MONTHS_PER_YEAR;
     state.month = m;
 
+    /* Dividends land once a financial year, in cash, and it is up to the student
+     * whether to reinvest. Companies that do not pay one — Xero, Tesla, a2 Milk,
+     * anything crypto — pay nothing, which is the point of showing it. */
+    if (m % Market.MONTHS_PER_YEAR === 0) {
+      let paid = 0;
+      Market.ASSETS.forEach(function (a) {
+        if (!a.dividend) return;
+        const value = holdingValue(state, a.id);
+        if (value <= 0.005) return;
+        paid += value * a.dividend;
+      });
+      if (paid > 0.005) {
+        state.cash += paid;
+        state.totalDividends += paid;
+        addLog(state, 'dividend', 'Received ' + money(paid) + ' in dividends');
+      }
+
+      /* The benchmark reinvests its own, without a fee — which is what an
+       * accumulating index fund actually does, and keeps it comparable to the
+       * 8% the table promises. */
+      const benchAsset = Market.byId(Market.BENCHMARK_ID);
+      if (benchAsset.dividend && state.benchShares > 0) {
+        const cash = benchValue(state) * benchAsset.dividend;
+        state.benchShares += cash / priceOf(state, Market.BENCHMARK_ID);
+      }
+    }
+
     const contribution = state.cfg.monthlyContribution;
     if (contribution > 0) {
       state.cash += contribution;
@@ -433,6 +461,7 @@
       benchAnnualised: annualised(state, bench),
       vsBenchmark: nominal - bench,
       fees: state.totalFees,
+      dividends: state.totalDividends,
       trades: state.tradeCount,
       drawdown: maxDrawdown(state.history),
       inflation: state.market.cpi[state.month] - 1

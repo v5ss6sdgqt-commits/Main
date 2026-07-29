@@ -2325,6 +2325,74 @@ footer {
   cursor: not-allowed;
 }
 
+/* ============================================================
+   Disclaimer
+   ============================================================ */
+
+/* Given the app puts real company names next to simulated prices, this needs to
+   be readable rather than the usual grey small print nobody sees. */
+.disclaimer {
+  border-top: 1px solid var(--border);
+  padding-top: 16px;
+  max-width: 78ch;
+  /* The footer centres its one-liner; four paragraphs of prose need ranged-left
+     to be readable, and a measure short enough to scan. */
+  text-align: left;
+}
+
+.disclaimer > strong {
+  display: block;
+  font-size: 14px;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+
+.disclaimer p {
+  margin: 0 0 8px;
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--text-muted);
+}
+
+.disclaimer strong {
+  color: var(--text-secondary);
+}
+
+.disclaimer-last {
+  padding-top: 8px;
+  border-top: 1px dashed var(--border);
+}
+
+.ap-div {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 10px;
+  margin-top: 10px;
+  padding: 9px 12px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--up) 9%, var(--surface-2));
+  font-size: 12.5px;
+}
+
+.ap-div-k {
+  color: var(--text-muted);
+  flex: none;
+}
+
+.ap-div-v {
+  font-weight: 700;
+  text-align: right;
+  color: var(--up);
+}
+
+/* A company that pays nothing should say so plainly rather than in the colour
+   used for money arriving. */
+.ap-div-v.none {
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
 </style>
 </head>
 <body>
@@ -2669,9 +2737,29 @@ footer {
   </section>
 
   <footer>
-    Simulated prices using real company names, not investment advice. Historical return figures are
-    approximate and included as teaching context. Prices are in NZD and currency movement is not
-    modelled &mdash; <button type="button" class="term-link" data-term="currency">what that leaves out</button>.
+    <div class="disclaimer">
+      <strong>This is a teaching tool, not financial advice.</strong>
+      <p>
+        Every price here is <strong>simulated</strong>. Real company names are used so the examples feel
+        like the real world, but nothing in this app is a view about those companies, a prediction about
+        them, or a recommendation to buy or sell anything.
+      </p>
+      <p>
+        The &ldquo;expected return&rdquo; figures are teaching assumptions, not forecasts &mdash; nobody
+        can forecast returns, which is one of the things this app is trying to show you. Past return
+        figures are approximate and included as context only.
+      </p>
+      <p>
+        Two real factors are <strong>not modelled</strong>: tax of any kind, and currency movement on
+        overseas shares. Dividends are paid, once a year, only by the companies that really pay them.
+        <button type="button" class="term-link" data-term="disclaimer">The full list of what is left out</button>.
+      </p>
+      <p class="disclaimer-last">
+        If you are investing real money, do your own research and consider talking to a licensed
+        financial adviser. Doing well in this simulation does not mean you will do well in a real market,
+        and any single run is one roll of the dice.
+      </p>
+    </div>
   </footer>
 
 </div>
@@ -2875,6 +2963,7 @@ footer {
       mu: 0.04,
       sigma: 0.05,
       cyclical: -0.25,
+      dividend: 0.038,
       rhoW: 0.1,
       rhoNz: 0.1,
       risk: 1,
@@ -2894,6 +2983,7 @@ footer {
       mu: 0.055,
       sigma: 0.08,
       cyclical: 0.5,
+      dividend: 0,
       rhoW: 0.72,
       rhoNz: 0.25,
       risk: 1,
@@ -2915,6 +3005,7 @@ footer {
       mu: 0.075,
       sigma: 0.13,
       cyclical: 1,
+      dividend: 0.035,
       rhoW: 0.5,
       rhoNz: 0.62,
       risk: 2,
@@ -2934,6 +3025,7 @@ footer {
       mu: 0.08,
       sigma: 0.155,
       cyclical: 1,
+      dividend: 0.013,
       rhoW: 0.96,
       rhoNz: 0,
       risk: 2,
@@ -2953,6 +3045,7 @@ footer {
       mu: 0.08,
       sigma: 0.145,
       cyclical: 1,
+      dividend: 0.018,
       rhoW: 1.0,
       rhoNz: 0,
       risk: 2,
@@ -2974,6 +3067,7 @@ footer {
       mu: 0.06,
       sigma: 0.24,
       cyclical: 0.8,
+      dividend: 0.015,
       rhoW: 0.42,
       rhoNz: 0.42,
       risk: 3,
@@ -2993,6 +3087,7 @@ footer {
       mu: 0.058,
       sigma: 0.25,
       cyclical: 1.1,
+      dividend: 0.018,
       rhoW: 0.45,
       rhoNz: 0.45,
       risk: 3,
@@ -3012,6 +3107,7 @@ footer {
       mu: 0.04,
       sigma: 0.38,
       cyclical: 1.2,
+      dividend: 0,
       rhoW: 0.55,
       rhoNz: 0.35,
       risk: 4,
@@ -3031,6 +3127,7 @@ footer {
       mu: 0.063,
       sigma: 0.2,
       cyclical: 0.6,
+      dividend: 0.045,
       rhoW: 0.22,
       rhoNz: 0.5,
       risk: 3,
@@ -3050,6 +3147,7 @@ footer {
       mu: 0.035,
       sigma: 0.44,
       cyclical: 0.9,
+      dividend: 0,
       rhoW: 0.25,
       rhoNz: 0.38,
       risk: 4,
@@ -3069,6 +3167,7 @@ footer {
       mu: 0.03,
       sigma: 0.34,
       cyclical: 1.3,
+      dividend: 0.025,
       rhoW: 0.38,
       rhoNz: 0.45,
       risk: 4,
@@ -3090,6 +3189,7 @@ footer {
       mu: 0.06,
       sigma: 0.27,
       cyclical: 1,
+      dividend: 0.005,
       rhoW: 0.78,
       rhoNz: 0,
       risk: 3,
@@ -3109,6 +3209,7 @@ footer {
       mu: 0.04,
       sigma: 0.48,
       cyclical: 1.3,
+      dividend: 0.0003,
       rhoW: 0.72,
       rhoNz: 0,
       risk: 4,
@@ -3128,6 +3229,7 @@ footer {
       mu: 0.03,
       sigma: 0.55,
       cyclical: 1.4,
+      dividend: 0,
       rhoW: 0.62,
       rhoNz: 0,
       risk: 5,
@@ -3149,6 +3251,7 @@ footer {
       mu: 0.03,
       sigma: 0.55,
       cyclical: 1.2,
+      dividend: 0,
       rhoW: 0.32,
       rhoNz: 0,
       risk: 5,
@@ -3168,6 +3271,7 @@ footer {
       mu: 0.025,
       sigma: 0.65,
       cyclical: 1.3,
+      dividend: 0,
       rhoW: 0.35,
       rhoNz: 0,
       risk: 5,
@@ -3677,12 +3781,16 @@ footer {
          * small enough to be almost invisible over ten years and firm enough to
          * stop the thirty-year tails running away. It pulls toward the trend, not
          * toward a fixed price, so the median is untouched. */
-        const trend = Math.log(1 + a.mu) * (m - 1) * DT;
+        /* `mu` is the *total* return. Once part of it is paid out as cash the
+         * price can only be left to deliver the rest, or the two together would
+         * double-count and every asset would quietly beat its stated figure. */
+        const priceMu = a.mu - (a.dividend || 0);
+        const trend = Math.log(1 + priceMu) * (m - 1) * DT;
         const gap = Math.log(prices[a.id][m - 1] / a.start) - trend;
         const pull = -MEAN_REVERSION * gap * DT;
 
         const cyclical = a.cyclical * (regime.drift - bias) * DT;
-        const drift = Math.log(1 + a.mu) * DT - drag[a.id] + cyclical + pull;
+        const drift = Math.log(1 + priceMu) * DT - drag[a.id] + cyclical + pull;
         const diffusion = a.sigma * regime.volMult * Math.sqrt(DT) * z;
         let r = Math.exp(drift + diffusion) - 1;
 
@@ -3786,6 +3894,7 @@ footer {
       cash: cfg.startingCash,
       shares: shares,
       totalFees: 0,
+      totalDividends: 0,
       totalContributed: cfg.startingCash,
       tradeCount: 0,
       benchShares: 0,
@@ -4079,6 +4188,33 @@ footer {
     state.cash *= 1 + state.cfg.savingsRate / Market.MONTHS_PER_YEAR;
     state.month = m;
 
+    /* Dividends land once a financial year, in cash, and it is up to the student
+     * whether to reinvest. Companies that do not pay one — Xero, Tesla, a2 Milk,
+     * anything crypto — pay nothing, which is the point of showing it. */
+    if (m % Market.MONTHS_PER_YEAR === 0) {
+      let paid = 0;
+      Market.ASSETS.forEach(function (a) {
+        if (!a.dividend) return;
+        const value = holdingValue(state, a.id);
+        if (value <= 0.005) return;
+        paid += value * a.dividend;
+      });
+      if (paid > 0.005) {
+        state.cash += paid;
+        state.totalDividends += paid;
+        addLog(state, 'dividend', 'Received ' + money(paid) + ' in dividends');
+      }
+
+      /* The benchmark reinvests its own, without a fee — which is what an
+       * accumulating index fund actually does, and keeps it comparable to the
+       * 8% the table promises. */
+      const benchAsset = Market.byId(Market.BENCHMARK_ID);
+      if (benchAsset.dividend && state.benchShares > 0) {
+        const cash = benchValue(state) * benchAsset.dividend;
+        state.benchShares += cash / priceOf(state, Market.BENCHMARK_ID);
+      }
+    }
+
     const contribution = state.cfg.monthlyContribution;
     if (contribution > 0) {
       state.cash += contribution;
@@ -4174,6 +4310,7 @@ footer {
       benchAnnualised: annualised(state, bench),
       vsBenchmark: nominal - bench,
       fees: state.totalFees,
+      dividends: state.totalDividends,
       trades: state.tradeCount,
       drawdown: maxDrawdown(state.history),
       inflation: state.market.cpi[state.month] - 1
@@ -5269,6 +5406,7 @@ footer {
       '</div>' +
       '<div class="ap-chart"><canvas></canvas></div>' +
       '<div class="ap-stats"></div>' +
+      '<div class="ap-div"></div>' +
       '<p class="ap-what"></p>' +
       '<p class="ap-blurb"></p>' +
       '<div class="ap-holding"></div>';
@@ -5368,6 +5506,27 @@ footer {
         );
       })
       .join('');
+
+    /* Asked for explicitly: what this holding actually pays you each year, in
+     * dollars rather than as an abstract yield. Companies that pay nothing say
+     * so plainly — that Xero and Tesla have never paid one is worth knowing. */
+    const div = a.dividend || 0;
+    const divEl = panel.querySelector('.ap-div');
+    if (!div) {
+      divEl.innerHTML =
+        '<span class="ap-div-k">Dividend</span><span class="ap-div-v none">Pays none</span>';
+    } else if (div < 0.002) {
+      divEl.innerHTML =
+        '<span class="ap-div-k">Dividend</span><span class="ap-div-v none">A token amount only</span>';
+    } else {
+      const annual = held * div;
+      divEl.innerHTML =
+        '<span class="ap-div-k">Dividend</span><span class="ap-div-v">' +
+        UI.plainPct(div, 1) +
+        ' a year' +
+        (held > 0.005 ? ' &middot; about ' + UI.money(annual, 2) + ' paid to you each year' : '') +
+        '</span>';
+    }
 
     panel.querySelector('.ap-what').textContent = a.what;
     panel.querySelector('.ap-blurb').textContent = a.blurb;
@@ -7544,6 +7703,74 @@ footer {
         );
       },
       see: ['cycle', 'inflation']
+    },
+
+    disclaimer: {
+      title: 'What this app leaves out',
+      hint: 'The gap between this and real investing',
+      body: function () {
+        return (
+          p(
+            'This is a teaching model, not a market. It gets the shape of things right and skips a lot of the detail. The honest list:'
+          ) +
+          sum([
+            { k: 'Tax', v: 'Not modelled at all' },
+            { k: 'Dividends', v: 'Paid yearly, by the companies that pay them' },
+            { k: 'Exchange rates', v: 'Not modelled' },
+            { k: 'Real prices', v: 'Every price is simulated' }
+          ]) +
+          p(
+            '<strong>Tax.</strong> In real life what you owe depends on how you invest — KiwiSaver and most NZ funds are taxed differently from shares you buy yourself, and overseas shares have their own rules again. None of that is here, so every return you see is before tax.'
+          ) +
+          p(
+            '<strong>Dividends</strong> are modelled — paid once a year, in cash, only by the companies that really pay one. Real companies usually pay twice a year rather than once, and the amount moves with profits instead of being a fixed rate.'
+          ) +
+          p(
+            '<strong>Exchange rates.</strong> Prices are all in NZD. Owning Apple for real means also holding US dollars, so your return depends on the currency as well as the company.'
+          ) +
+          p(
+            'None of this changes the lessons — fees, risk, diversification and compounding all work the same way. It does mean the exact dollar figures are a simplification, and that this app is not a substitute for advice from someone qualified.'
+          )
+        );
+      },
+      see: ['currency', 'expected-return']
+    },
+
+    dividends: {
+      title: 'Dividends',
+      hint: 'Getting paid just for owning it',
+      body: function (state) {
+        return (
+          p(
+            'When a company makes a profit it can keep the money to grow with, or hand some of it to the people who own the company. The cash it hands out is a <strong>dividend</strong>.'
+          ) +
+          p(
+            'In this app dividends land in your cash <strong>once a year</strong>. You then choose what to do with them — spend the year buying more, or let them sit earning ' +
+              pct(state.cfg.savingsRate) +
+              '. Reinvesting is what makes the difference over a decade.'
+          ) +
+          p('Not everything pays one, and that is the interesting part:') +
+          sum([
+            { k: 'Meridian Energy', v: '4.5% a year' },
+            { k: 'S&P/NZX 50 Fund', v: '3.5% a year' },
+            { k: 'Fisher & Paykel', v: '1.5% a year' },
+            { k: 'Xero, Tesla, a2 Milk', v: 'Nothing at all' },
+            { k: 'Bitcoin, Ethereum', v: 'Nothing — no profits exist' }
+          ]) +
+          p(
+            'Fast-growing companies usually pay little or nothing, because every dollar goes back into growing. Steady ones like power companies pay a lot, because there is less to spend it on. Neither is better — it is a different way of getting the same return.'
+          ) +
+          p(
+            'Crypto can never pay one. There is no business underneath it earning anything to hand out, which is why the only way to make money on it is for someone else to pay more than you did.'
+          ) +
+          p(
+            'So far this run has paid you <strong>' +
+              money(state.totalDividends || 0, 2) +
+              '</strong> in dividends.'
+          )
+        );
+      },
+      see: ['shares', 'cash-interest']
     },
 
     seed: {

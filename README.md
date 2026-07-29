@@ -34,7 +34,7 @@ light/dark theme preference.
 
 ### Handing it out as a single file
 
-`dist/market-lab.html` is the whole app inlined into one 254 KB file. Email it to
+`dist/market-lab.html` is the whole app inlined into one 267 KB file. Email it to
 a class, drop it on a shared drive, or put it on a USB stick — there is no
 folder structure to keep intact and nothing to load over the network.
 
@@ -181,6 +181,31 @@ means exactly what the table says.
 
 Yes, measurably. Across 300 runs, a month carrying a headline is **1.22x as
 volatile** as one without. The news is not decoration.
+
+## Dividends
+
+Only the companies that really pay one do. Xero and Tesla have never paid a
+dividend, a2 Milk has not paid a regular one, KiwiSaver funds reinvest
+internally rather than distributing, and crypto has no profits to pay one from.
+Meridian pays about 4.5%, the NZX 50 fund about 3.5%, Apple about 0.5%, Nvidia a
+token amount.
+
+They land **once a financial year, in cash**, and it is up to the student whether
+to reinvest — which is a real decision with a real cost to getting it wrong.
+
+The important mechanical point: `mu` is the *total* return, so the price is only
+left to deliver `mu - dividend`. Otherwise the two would double-count and every
+dividend payer would quietly beat its stated figure. A bond fund at 4.0% total
+therefore grows its price at 0.2% and pays the rest out, which is what a real
+bond fund does. Verified over 1,500 runs: price growth plus reinvested dividends
+lands back on the stated total.
+
+The benchmark reinvests its own dividends without a fee, which is what an
+accumulating index fund does and keeps it comparable to the 8% the table
+promises.
+
+Tax is deliberately **not** modelled — it depends on how you invest and would
+add a lot of complexity for little teaching value at this level.
 
 ## Volatility drag, and why the funds win
 

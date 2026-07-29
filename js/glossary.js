@@ -680,6 +680,74 @@
       see: ['cycle', 'inflation']
     },
 
+    disclaimer: {
+      title: 'What this app leaves out',
+      hint: 'The gap between this and real investing',
+      body: function () {
+        return (
+          p(
+            'This is a teaching model, not a market. It gets the shape of things right and skips a lot of the detail. The honest list:'
+          ) +
+          sum([
+            { k: 'Tax', v: 'Not modelled at all' },
+            { k: 'Dividends', v: 'Paid yearly, by the companies that pay them' },
+            { k: 'Exchange rates', v: 'Not modelled' },
+            { k: 'Real prices', v: 'Every price is simulated' }
+          ]) +
+          p(
+            '<strong>Tax.</strong> In real life what you owe depends on how you invest — KiwiSaver and most NZ funds are taxed differently from shares you buy yourself, and overseas shares have their own rules again. None of that is here, so every return you see is before tax.'
+          ) +
+          p(
+            '<strong>Dividends</strong> are modelled — paid once a year, in cash, only by the companies that really pay one. Real companies usually pay twice a year rather than once, and the amount moves with profits instead of being a fixed rate.'
+          ) +
+          p(
+            '<strong>Exchange rates.</strong> Prices are all in NZD. Owning Apple for real means also holding US dollars, so your return depends on the currency as well as the company.'
+          ) +
+          p(
+            'None of this changes the lessons — fees, risk, diversification and compounding all work the same way. It does mean the exact dollar figures are a simplification, and that this app is not a substitute for advice from someone qualified.'
+          )
+        );
+      },
+      see: ['currency', 'expected-return']
+    },
+
+    dividends: {
+      title: 'Dividends',
+      hint: 'Getting paid just for owning it',
+      body: function (state) {
+        return (
+          p(
+            'When a company makes a profit it can keep the money to grow with, or hand some of it to the people who own the company. The cash it hands out is a <strong>dividend</strong>.'
+          ) +
+          p(
+            'In this app dividends land in your cash <strong>once a year</strong>. You then choose what to do with them — spend the year buying more, or let them sit earning ' +
+              pct(state.cfg.savingsRate) +
+              '. Reinvesting is what makes the difference over a decade.'
+          ) +
+          p('Not everything pays one, and that is the interesting part:') +
+          sum([
+            { k: 'Meridian Energy', v: '4.5% a year' },
+            { k: 'S&P/NZX 50 Fund', v: '3.5% a year' },
+            { k: 'Fisher & Paykel', v: '1.5% a year' },
+            { k: 'Xero, Tesla, a2 Milk', v: 'Nothing at all' },
+            { k: 'Bitcoin, Ethereum', v: 'Nothing — no profits exist' }
+          ]) +
+          p(
+            'Fast-growing companies usually pay little or nothing, because every dollar goes back into growing. Steady ones like power companies pay a lot, because there is less to spend it on. Neither is better — it is a different way of getting the same return.'
+          ) +
+          p(
+            'Crypto can never pay one. There is no business underneath it earning anything to hand out, which is why the only way to make money on it is for someone else to pay more than you did.'
+          ) +
+          p(
+            'So far this run has paid you <strong>' +
+              money(state.totalDividends || 0, 2) +
+              '</strong> in dividends.'
+          )
+        );
+      },
+      see: ['shares', 'cash-interest']
+    },
+
     seed: {
       title: 'Market seed',
       hint: 'Why everyone can get the same market',

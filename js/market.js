@@ -100,6 +100,7 @@
       mu: 0.04,
       sigma: 0.05,
       cyclical: -0.25,
+      dividend: 0.038,
       rhoW: 0.1,
       rhoNz: 0.1,
       risk: 1,
@@ -119,6 +120,7 @@
       mu: 0.055,
       sigma: 0.08,
       cyclical: 0.5,
+      dividend: 0,
       rhoW: 0.72,
       rhoNz: 0.25,
       risk: 1,
@@ -140,6 +142,7 @@
       mu: 0.075,
       sigma: 0.13,
       cyclical: 1,
+      dividend: 0.035,
       rhoW: 0.5,
       rhoNz: 0.62,
       risk: 2,
@@ -159,6 +162,7 @@
       mu: 0.08,
       sigma: 0.155,
       cyclical: 1,
+      dividend: 0.013,
       rhoW: 0.96,
       rhoNz: 0,
       risk: 2,
@@ -178,6 +182,7 @@
       mu: 0.08,
       sigma: 0.145,
       cyclical: 1,
+      dividend: 0.018,
       rhoW: 1.0,
       rhoNz: 0,
       risk: 2,
@@ -199,6 +204,7 @@
       mu: 0.06,
       sigma: 0.24,
       cyclical: 0.8,
+      dividend: 0.015,
       rhoW: 0.42,
       rhoNz: 0.42,
       risk: 3,
@@ -218,6 +224,7 @@
       mu: 0.058,
       sigma: 0.25,
       cyclical: 1.1,
+      dividend: 0.018,
       rhoW: 0.45,
       rhoNz: 0.45,
       risk: 3,
@@ -237,6 +244,7 @@
       mu: 0.04,
       sigma: 0.38,
       cyclical: 1.2,
+      dividend: 0,
       rhoW: 0.55,
       rhoNz: 0.35,
       risk: 4,
@@ -256,6 +264,7 @@
       mu: 0.063,
       sigma: 0.2,
       cyclical: 0.6,
+      dividend: 0.045,
       rhoW: 0.22,
       rhoNz: 0.5,
       risk: 3,
@@ -275,6 +284,7 @@
       mu: 0.035,
       sigma: 0.44,
       cyclical: 0.9,
+      dividend: 0,
       rhoW: 0.25,
       rhoNz: 0.38,
       risk: 4,
@@ -294,6 +304,7 @@
       mu: 0.03,
       sigma: 0.34,
       cyclical: 1.3,
+      dividend: 0.025,
       rhoW: 0.38,
       rhoNz: 0.45,
       risk: 4,
@@ -315,6 +326,7 @@
       mu: 0.06,
       sigma: 0.27,
       cyclical: 1,
+      dividend: 0.005,
       rhoW: 0.78,
       rhoNz: 0,
       risk: 3,
@@ -334,6 +346,7 @@
       mu: 0.04,
       sigma: 0.48,
       cyclical: 1.3,
+      dividend: 0.0003,
       rhoW: 0.72,
       rhoNz: 0,
       risk: 4,
@@ -353,6 +366,7 @@
       mu: 0.03,
       sigma: 0.55,
       cyclical: 1.4,
+      dividend: 0,
       rhoW: 0.62,
       rhoNz: 0,
       risk: 5,
@@ -374,6 +388,7 @@
       mu: 0.03,
       sigma: 0.55,
       cyclical: 1.2,
+      dividend: 0,
       rhoW: 0.32,
       rhoNz: 0,
       risk: 5,
@@ -393,6 +408,7 @@
       mu: 0.025,
       sigma: 0.65,
       cyclical: 1.3,
+      dividend: 0,
       rhoW: 0.35,
       rhoNz: 0,
       risk: 5,
@@ -902,12 +918,16 @@
          * small enough to be almost invisible over ten years and firm enough to
          * stop the thirty-year tails running away. It pulls toward the trend, not
          * toward a fixed price, so the median is untouched. */
-        const trend = Math.log(1 + a.mu) * (m - 1) * DT;
+        /* `mu` is the *total* return. Once part of it is paid out as cash the
+         * price can only be left to deliver the rest, or the two together would
+         * double-count and every asset would quietly beat its stated figure. */
+        const priceMu = a.mu - (a.dividend || 0);
+        const trend = Math.log(1 + priceMu) * (m - 1) * DT;
         const gap = Math.log(prices[a.id][m - 1] / a.start) - trend;
         const pull = -MEAN_REVERSION * gap * DT;
 
         const cyclical = a.cyclical * (regime.drift - bias) * DT;
-        const drift = Math.log(1 + a.mu) * DT - drag[a.id] + cyclical + pull;
+        const drift = Math.log(1 + priceMu) * DT - drag[a.id] + cyclical + pull;
         const diffusion = a.sigma * regime.volMult * Math.sqrt(DT) * z;
         let r = Math.exp(drift + diffusion) - 1;
 

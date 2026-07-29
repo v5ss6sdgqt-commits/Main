@@ -2316,3 +2316,71 @@ footer {
   opacity: 0.45;
   cursor: not-allowed;
 }
+
+/* ============================================================
+   Disclaimer
+   ============================================================ */
+
+/* Given the app puts real company names next to simulated prices, this needs to
+   be readable rather than the usual grey small print nobody sees. */
+.disclaimer {
+  border-top: 1px solid var(--border);
+  padding-top: 16px;
+  max-width: 78ch;
+  /* The footer centres its one-liner; four paragraphs of prose need ranged-left
+     to be readable, and a measure short enough to scan. */
+  text-align: left;
+}
+
+.disclaimer > strong {
+  display: block;
+  font-size: 14px;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+
+.disclaimer p {
+  margin: 0 0 8px;
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--text-muted);
+}
+
+.disclaimer strong {
+  color: var(--text-secondary);
+}
+
+.disclaimer-last {
+  padding-top: 8px;
+  border-top: 1px dashed var(--border);
+}
+
+.ap-div {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 10px;
+  margin-top: 10px;
+  padding: 9px 12px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--up) 9%, var(--surface-2));
+  font-size: 12.5px;
+}
+
+.ap-div-k {
+  color: var(--text-muted);
+  flex: none;
+}
+
+.ap-div-v {
+  font-weight: 700;
+  text-align: right;
+  color: var(--up);
+}
+
+/* A company that pays nothing should say so plainly rather than in the colour
+   used for money arriving. */
+.ap-div-v.none {
+  color: var(--text-muted);
+  font-weight: 600;
+}
