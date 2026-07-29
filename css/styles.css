@@ -36,6 +36,8 @@
   /* The portfolio line is near-black so it reads as "you"; its area fill needs
      its own hue, well away from the benchmark indigo. */
   --series-portfolio-fill: #059669;
+  /* The opponent: a hue used nowhere else, so the race reads instantly. */
+  --series-opponent: #db2777;
   --series-cash: #94a3b8;
 
   --series-nzbond: #0e7490;
@@ -105,6 +107,7 @@
 
     --series-portfolio: #ffffff;
     --series-portfolio-fill: #34d399;
+    --series-opponent: #f472b6;
     --series-cash: #7d8593;
 
     --series-nzbond: #38bdf8;
@@ -166,6 +169,7 @@
 
   --series-portfolio: #ffffff;
   --series-portfolio-fill: #34d399;
+  --series-opponent: #f472b6;
   --series-cash: #7d8593;
 
   --series-nzbond: #38bdf8;
@@ -1676,4 +1680,133 @@ footer {
 .d-choice:disabled:hover {
   transform: none;
   border-color: var(--border);
+}
+
+/* ============================================================
+   Mode tabs
+   ============================================================ */
+
+.modes {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.mode-tab {
+  appearance: none;
+  font: inherit;
+  cursor: pointer;
+  text-align: left;
+  padding: 12px 14px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--surface-1);
+  color: var(--text-secondary);
+  font-weight: 700;
+  transition: border-color 0.12s ease, color 0.12s ease;
+}
+
+.mode-tab small {
+  display: block;
+  font-weight: 400;
+  font-size: 11.5px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.mode-tab:hover {
+  border-color: var(--accent);
+}
+
+.mode-tab.is-on {
+  border-color: var(--accent);
+  color: var(--text-primary);
+  background: color-mix(in srgb, var(--accent) 9%, var(--surface-1));
+}
+
+/* ============================================================
+   The opponent
+   ============================================================ */
+
+.opp-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.opp-name {
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--series-opponent);
+}
+
+.opp-tagline {
+  font-size: 12px;
+  color: var(--text-muted);
+  max-width: 40ch;
+}
+
+.opp-value {
+  font-size: 20px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.opp-race {
+  margin-top: 12px;
+}
+
+/* Two-sided: who is ahead should be readable without arithmetic. */
+.race-bar {
+  display: flex;
+  height: 9px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--grid);
+}
+
+.race-you {
+  background: var(--series-portfolio-fill);
+}
+
+.race-them {
+  background: var(--series-opponent);
+}
+
+.race-legend {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 6px;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.race-legend .you {
+  color: var(--text-secondary);
+}
+
+.race-legend .ahead {
+  color: var(--up);
+  font-weight: 700;
+}
+
+.race-legend .behind {
+  color: var(--down);
+  font-weight: 700;
+}
+
+.opp-moves {
+  margin-top: 12px;
+  max-height: 150px;
+  overflow-y: auto;
+}
+
+@media (max-width: 560px) {
+  .modes {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }

@@ -32,6 +32,17 @@
     <button class="icon-btn" id="theme-btn" type="button" aria-label="Switch between light and dark theme">Theme</button>
   </header>
 
+  <!-- Switching modes starts a fresh run, because a race you joined halfway
+       through would not be a race. -->
+  <div class="modes" role="tablist" aria-label="Game mode">
+    <button class="mode-tab is-on" id="mode-solo" type="button" role="tab" aria-selected="true">
+      Solo mode<small>Just you against the market</small>
+    </button>
+    <button class="mode-tab" id="mode-comp" type="button" role="tab" aria-selected="false">
+      Comp mode<small>Race an AI on the same prices</small>
+    </button>
+  </div>
+
   <!-- Shown only once the run is up. -->
   <section class="card" id="results-card" hidden aria-live="polite">
     <div class="card-head">
@@ -194,6 +205,26 @@
         <div id="news-banner"></div>
       </section>
 
+      <!-- Comp mode only. -->
+      <section class="card opponent-card" id="opponent-card" hidden>
+        <div class="card-head">
+          <h2>Your opponent</h2>
+          <label class="speed">
+            Difficulty
+            <select id="difficulty-input" aria-label="Opponent difficulty"></select>
+          </label>
+        </div>
+        <div class="opp-head">
+          <div>
+            <div class="opp-name" id="opp-name"></div>
+            <div class="opp-tagline" id="opp-tagline"></div>
+          </div>
+          <div class="opp-value" id="opp-value">$0</div>
+        </div>
+        <div class="opp-race" id="opp-race"></div>
+        <ul class="feed opp-moves" id="opp-moves"></ul>
+      </section>
+
       <section class="card">
         <div class="card-head">
           <h2>Where your money is</h2>
@@ -321,6 +352,7 @@
 <script src="js/market.js"></script>
 <script src="js/portfolio.js"></script>
 <script src="js/goals.js"></script>
+<script src="js/opponents.js"></script>
 <script src="js/charts.js"></script>
 <script src="js/ui.js"></script>
 <script src="js/glossary.js"></script>

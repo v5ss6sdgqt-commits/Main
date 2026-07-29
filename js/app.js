@@ -25,6 +25,8 @@
 
   let state = null;
   let chart = null;
+  let mode = 'solo';
+  let opponent = null;
 
   function newGame(seed, years, goalId) {
     stopPlaying();
@@ -37,6 +39,9 @@
     state = Portfolio.create(market, {
       goal: target ? { id: chosen.id, name: chosen.name, target: target, blurb: chosen.blurb } : null
     });
+
+    // Same market object, so the opponent races on the identical price path.
+    opponent = mode === 'comp' ? Opponents.create($('difficulty-input').value, market) : null;
 
     UI.buildMarketRows(state, { onTrade: onTrade });
     UI.renderBanner(state, null);
@@ -56,14 +61,15 @@
     UI.renderAllocation(state);
     UI.updateMarket(state);
     UI.renderFeed(state);
+    UI.renderOpponent(state, opponent);
     UI.renderChartTable(state);
-    UI.renderResults(state);
+    UI.renderResults(state, opponent);
     drawChart();
   }
 
   function drawChart() {
     const cfg = {
-      series: UI.chartSeries(state),
+      series: UI.chartSeries(state, opponent),
       reveal: chartReveal,
       onHover: function (idx) {
         UI.showTooltip(state, idx);
@@ -160,6 +166,8 @@
       // Captured before advancing, so the modal can show the actual damage.
       const before = Portfolio.investedValue(state);
       const ev = Portfolio.advance(state);
+      // Lockstep, including when a crash breaks the loop early below.
+      Opponents.advance(opponent);
       if (ev) {
         lastEvent = ev;
         if (ev.big) sawBigEvent = true;
@@ -480,6 +488,41 @@
      * which threw away an eight-year run for anyone who opened it out of
      * curiosity; years used to do nothing, leaving the menu advertising a target
      * the live run was not playing. Both now just flag that a restart is needed. */
+    /* Mode is a tab, not a setting: switching starts a fresh run, because
+     * joining a race halfway through would not be a race. Said out loud rather
+     * than done silently. */
+    $('difficulty-input').innerHTML = Opponents.LEVELS.map(function (l) {
+      return '<option value="' + l.id + '">' + l.difficulty + ' — ' + l.name + '</option>';
+    }).join('');
+    $('difficulty-input').value = 'easy';
+
+    function setMode(next) {
+      if (mode === next) return;
+      mode = next;
+      $('mode-solo').classList.toggle('is-on', mode === 'solo');
+      $('mode-comp').classList.toggle('is-on', mode === 'comp');
+      $('mode-solo').setAttribute('aria-selected', String(mode === 'solo'));
+      $('mode-comp').setAttribute('aria-selected', String(mode === 'comp'));
+      restart();
+      setNotice(
+        mode === 'comp'
+          ? 'New run started. You are racing ' + Opponents.byId($('difficulty-input').value).name + ' on the same prices.'
+          : 'New run started in solo mode.'
+      );
+    }
+
+    $('mode-solo').addEventListener('click', function () {
+      setMode('solo');
+    });
+    $('mode-comp').addEventListener('click', function () {
+      setMode('comp');
+    });
+    $('difficulty-input').addEventListener('change', function () {
+      if (mode !== 'comp') return;
+      restart();
+      setNotice('New run started against ' + Opponents.byId(this.value).name + '.');
+    });
+
     fillGoalOptions();
     $('years-input').addEventListener('change', function () {
       fillGoalOptions();

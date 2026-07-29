@@ -44,6 +44,8 @@
   /* The portfolio line is near-black so it reads as "you"; its area fill needs
      its own hue, well away from the benchmark indigo. */
   --series-portfolio-fill: #059669;
+  /* The opponent: a hue used nowhere else, so the race reads instantly. */
+  --series-opponent: #db2777;
   --series-cash: #94a3b8;
 
   --series-nzbond: #0e7490;
@@ -113,6 +115,7 @@
 
     --series-portfolio: #ffffff;
     --series-portfolio-fill: #34d399;
+    --series-opponent: #f472b6;
     --series-cash: #7d8593;
 
     --series-nzbond: #38bdf8;
@@ -174,6 +177,7 @@
 
   --series-portfolio: #ffffff;
   --series-portfolio-fill: #34d399;
+  --series-opponent: #f472b6;
   --series-cash: #7d8593;
 
   --series-nzbond: #38bdf8;
@@ -1686,6 +1690,135 @@ footer {
   border-color: var(--border);
 }
 
+/* ============================================================
+   Mode tabs
+   ============================================================ */
+
+.modes {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.mode-tab {
+  appearance: none;
+  font: inherit;
+  cursor: pointer;
+  text-align: left;
+  padding: 12px 14px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--surface-1);
+  color: var(--text-secondary);
+  font-weight: 700;
+  transition: border-color 0.12s ease, color 0.12s ease;
+}
+
+.mode-tab small {
+  display: block;
+  font-weight: 400;
+  font-size: 11.5px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.mode-tab:hover {
+  border-color: var(--accent);
+}
+
+.mode-tab.is-on {
+  border-color: var(--accent);
+  color: var(--text-primary);
+  background: color-mix(in srgb, var(--accent) 9%, var(--surface-1));
+}
+
+/* ============================================================
+   The opponent
+   ============================================================ */
+
+.opp-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.opp-name {
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--series-opponent);
+}
+
+.opp-tagline {
+  font-size: 12px;
+  color: var(--text-muted);
+  max-width: 40ch;
+}
+
+.opp-value {
+  font-size: 20px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.opp-race {
+  margin-top: 12px;
+}
+
+/* Two-sided: who is ahead should be readable without arithmetic. */
+.race-bar {
+  display: flex;
+  height: 9px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--grid);
+}
+
+.race-you {
+  background: var(--series-portfolio-fill);
+}
+
+.race-them {
+  background: var(--series-opponent);
+}
+
+.race-legend {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 6px;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.race-legend .you {
+  color: var(--text-secondary);
+}
+
+.race-legend .ahead {
+  color: var(--up);
+  font-weight: 700;
+}
+
+.race-legend .behind {
+  color: var(--down);
+  font-weight: 700;
+}
+
+.opp-moves {
+  margin-top: 12px;
+  max-height: 150px;
+  overflow-y: auto;
+}
+
+@media (max-width: 560px) {
+  .modes {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
 </style>
 </head>
 <body>
@@ -1701,6 +1834,17 @@ footer {
     <button class="icon-btn install" id="install-btn" type="button" hidden>Install app</button>
     <button class="icon-btn" id="theme-btn" type="button" aria-label="Switch between light and dark theme">Theme</button>
   </header>
+
+  <!-- Switching modes starts a fresh run, because a race you joined halfway
+       through would not be a race. -->
+  <div class="modes" role="tablist" aria-label="Game mode">
+    <button class="mode-tab is-on" id="mode-solo" type="button" role="tab" aria-selected="true">
+      Solo mode<small>Just you against the market</small>
+    </button>
+    <button class="mode-tab" id="mode-comp" type="button" role="tab" aria-selected="false">
+      Comp mode<small>Race an AI on the same prices</small>
+    </button>
+  </div>
 
   <!-- Shown only once the run is up. -->
   <section class="card" id="results-card" hidden aria-live="polite">
@@ -1862,6 +2006,26 @@ footer {
           </label>
         </div>
         <div id="news-banner"></div>
+      </section>
+
+      <!-- Comp mode only. -->
+      <section class="card opponent-card" id="opponent-card" hidden>
+        <div class="card-head">
+          <h2>Your opponent</h2>
+          <label class="speed">
+            Difficulty
+            <select id="difficulty-input" aria-label="Opponent difficulty"></select>
+          </label>
+        </div>
+        <div class="opp-head">
+          <div>
+            <div class="opp-name" id="opp-name"></div>
+            <div class="opp-tagline" id="opp-tagline"></div>
+          </div>
+          <div class="opp-value" id="opp-value">$0</div>
+        </div>
+        <div class="opp-race" id="opp-race"></div>
+        <ul class="feed opp-moves" id="opp-moves"></ul>
       </section>
 
       <section class="card">
@@ -2243,7 +2407,7 @@ footer {
       color: 'var(--series-fph)',
       start: 33.5,
       past: { ret: 0.16, since: 'past 20 years' },
-      mu: 0.085,
+      mu: 0.078,
       sigma: 0.26,
       rhoW: 0.42,
       rhoNz: 0.42,
@@ -2261,7 +2425,7 @@ footer {
       color: 'var(--series-mft)',
       start: 68.0,
       past: { ret: 0.15, since: 'past 20 years' },
-      mu: 0.085,
+      mu: 0.078,
       sigma: 0.27,
       rhoW: 0.45,
       rhoNz: 0.45,
@@ -2279,7 +2443,7 @@ footer {
       color: 'var(--series-xro)',
       start: 175.0,
       past: { ret: 0.22, since: 'since 2007' },
-      mu: 0.09,
+      mu: 0.072,
       sigma: 0.42,
       rhoW: 0.55,
       rhoNz: 0.35,
@@ -2297,7 +2461,7 @@ footer {
       color: 'var(--series-mel)',
       start: 5.9,
       past: { ret: 0.11, since: 'since 2013' },
-      mu: 0.075,
+      mu: 0.072,
       sigma: 0.21,
       rhoW: 0.22,
       rhoNz: 0.5,
@@ -2315,7 +2479,7 @@ footer {
       color: 'var(--series-atm)',
       start: 7.2,
       past: { ret: 0.13, since: 'past 20 years' },
-      mu: 0.08,
+      mu: 0.07,
       sigma: 0.48,
       rhoW: 0.25,
       rhoNz: 0.38,
@@ -2333,7 +2497,7 @@ footer {
       color: 'var(--series-air)',
       start: 0.62,
       past: { ret: 0.02, since: 'past 20 years' },
-      mu: 0.07,
+      mu: 0.068,
       sigma: 0.36,
       rhoW: 0.38,
       rhoNz: 0.45,
@@ -2353,7 +2517,7 @@ footer {
       color: 'var(--series-aapl)',
       start: 228.0,
       past: { ret: 0.24, since: 'past 20 years' },
-      mu: 0.085,
+      mu: 0.078,
       sigma: 0.29,
       rhoW: 0.78,
       rhoNz: 0,
@@ -2371,7 +2535,7 @@ footer {
       color: 'var(--series-nvda)',
       start: 185.0,
       past: { ret: 0.33, since: 'past 20 years' },
-      mu: 0.09,
+      mu: 0.072,
       sigma: 0.52,
       rhoW: 0.72,
       rhoNz: 0,
@@ -2389,7 +2553,7 @@ footer {
       color: 'var(--series-tsla)',
       start: 330.0,
       past: { ret: 0.35, since: 'since 2010' },
-      mu: 0.085,
+      mu: 0.068,
       sigma: 0.6,
       rhoW: 0.62,
       rhoNz: 0,
@@ -2409,7 +2573,7 @@ footer {
       color: 'var(--series-btc)',
       start: 178000,
       past: { ret: 0.6, since: 'since 2013' },
-      mu: 0.09,
+      mu: 0.08,
       sigma: 0.7,
       rhoW: 0.32,
       rhoNz: 0,
@@ -2427,7 +2591,7 @@ footer {
       color: 'var(--series-eth)',
       start: 6500,
       past: { ret: 0.45, since: 'since 2015' },
-      mu: 0.09,
+      mu: 0.08,
       sigma: 0.85,
       rhoW: 0.35,
       rhoNz: 0,
@@ -3415,6 +3579,247 @@ footer {
 
 </script>
 <script>
+/* The AI opponents.
+ *
+ * Each one is a real portfolio — same starting cash, same monthly contributions,
+ * same prices, same fees — running a strategy instead of a student. It is a fair
+ * race because it is literally the same simulation; nothing here is scored or
+ * fudged, the bot just trades and lives with the result.
+ *
+ * Two rules the strategies must obey:
+ *
+ *   No lookahead. A strategy may read prices up to and including the current
+ *   month and nothing beyond it. Everything below goes through `trailingReturn`,
+ *   which is bounded by `month`, so this is easy to keep honest.
+ *
+ *   No free trades. Bots pay the same $3 + 0.5% as the student. That is most of
+ *   why the easy opponent loses: it trades constantly and the fees compound
+ *   against it.
+ *
+ * ── The difficulty ladder is upside down on purpose ──
+ *
+ * The hardest opponent is the one that does the least. "The Chaser" switches
+ * holdings every quarter and panics in every crash; "Patient" buys a world index
+ * fund and essentially never touches it again. A student who works up the ladder
+ * discovers that the boring strategy is the strong one by losing to it, which
+ * lands harder than being told.
+ *
+ * Measured over 1,500 markets, the medians order as intended — Chaser $9,194,
+ * Steady $10,212, Patient $10,937 — but the Chaser is streaky rather than simply
+ * bad: it concentrates in one volatile asset, so its 25th-to-75th percentile
+ * range is roughly $4,300 to $21,900 and a good strategy only finishes ahead of
+ * it about 56% of the time. That is honest rather than ideal, and the reason is
+ * a property of the price model rather than of these strategies: see the note on
+ * volatility drag at the foot of this file. */
+
+(function (global) {
+  'use strict';
+
+  /* Return over the last `lookback` months, never reading past `month`. */
+  function trailingReturn(market, assetId, month, lookback) {
+    const prices = market.prices[assetId];
+    const from = Math.max(0, month - lookback);
+    if (!prices[from] || prices[from] <= 0) return 0;
+    return prices[month] / prices[from] - 1;
+  }
+
+  /* The assets that have risen most recently — what a performance-chaser buys,
+   * and precisely the thing the app spends the rest of its time warning about.
+   *
+   * Takes a count because spreading the chase across two or three hot picks was
+   * tried and made the bot markedly *better* rather than worse (median $13,070
+   * against Patient's $10,937). That result is the clearest symptom of the
+   * volatility-drag gap described at the foot of this file, and the reason the
+   * Chaser deliberately concentrates in one. */
+  function topRecent(market, month, lookback, count) {
+    return Market.ASSETS.map(function (a) {
+      return { id: a.id, ret: trailingReturn(market, a.id, month, lookback) };
+    })
+      .sort(function (x, y) {
+        return y.ret - x.ret;
+      })
+      .slice(0, count)
+      .map(function (x) {
+        return x.id;
+      });
+  }
+
+  /* Spend available cash across explicit weights, leaving room for one flat fee
+   * per holding bought. Mirrors Portfolio.investAllCash, which allocates by
+   * existing holdings instead of by a target. */
+  function deploy(bot, weights) {
+    const ids = Object.keys(weights).filter(function (id) {
+      return weights[id] > 0;
+    });
+    if (!ids.length) return 0;
+
+    const budget = (bot.cash - bot.cfg.feeFlat * ids.length) / (1 + bot.cfg.feeRate);
+    // Not worth trading if fees would take more than a tenth, same bar the
+    // student's "buy the dip" button uses.
+    if (budget <= 0 || (bot.cfg.feeFlat * ids.length) / budget > 0.1) return 0;
+
+    let spent = 0;
+    ids.forEach(function (id) {
+      const amount = budget * weights[id];
+      if (amount <= 0) return;
+      const r = Portfolio.buy(bot, id, amount);
+      if (r.ok) spent += r.amount;
+    });
+    return spent;
+  }
+
+  const LEVELS = [
+    {
+      id: 'easy',
+      name: 'The Chaser',
+      difficulty: 'Easy',
+      tagline: 'Chases whatever is hot. Panics in every crash. Wildly streaky.',
+      why:
+        'Switches into the best recent performer every three months and panic-sells every crash, paying a fee each time — about $1,500 of them over ten years. Its median result is the worst of the three, but it concentrates everything in one volatile asset, so it is streaky: usually behind, occasionally miles ahead. Beating it is likely rather than guaranteed, which is its own lesson about luck.',
+      /* Two honest mechanisms make this lose, and neither is a thumb on the
+       * scale. Every asset here has a similar expected return by design, so
+       * concentrating in one is not punished on its own — an earlier version of
+       * this strategy had the *best* median of the three, which would have taught
+       * students that chasing winners pays.
+       *
+       * What actually costs a chaser money is churn and mistiming: dumping the
+       * whole portfolio every quarter burns about 1% in fees each time, roughly
+       * $1,500 over ten years, and selling into a crash then waiting six months
+       * to feel safe again means buying back after the rebound. Both are exactly
+       * what real beginners do. */
+      act: function (bot, market, month, log, memo) {
+        const event = market.events[month];
+
+        if (event && event.crash && Portfolio.investedValue(bot) > 0.005) {
+          const r = Portfolio.sellAll(bot);
+          memo.panickedAt = month;
+          log('panic-sold everything for $' + Math.round(r.sold).toLocaleString());
+          return;
+        }
+
+        // Waits until it "feels safe" — which is to say, until after the bounce.
+        if (memo.panickedAt && month - memo.panickedAt < 6) return;
+
+        if (month === 1 || month % 3 === 0) {
+          const picks = topRecent(market, month, 3, 1);
+          if (Portfolio.investedValue(bot) > 0.005) Portfolio.sellAll(bot);
+          const weights = {};
+          picks.forEach(function (id) {
+            weights[id] = 1 / picks.length;
+          });
+          if (deploy(bot, weights) > 0) {
+            memo.panickedAt = null;
+            log('switched everything into ' + Market.byId(picks[0]).name);
+          }
+        }
+      }
+    },
+    {
+      id: 'medium',
+      name: 'Steady',
+      difficulty: 'Medium',
+      tagline: 'A boring mix of shares and bonds. Never panics.',
+      why:
+        'Splits new money 70/30 between a world fund and government bonds once a year, and never sells. Roughly what a KiwiSaver balanced fund does, and it beats most people.',
+      act: function (bot, market, month, log) {
+        if (month !== 1 && month % 12 !== 0) return;
+        const spent = deploy(bot, { world: 0.7, nzbond: 0.3 });
+        if (spent > 0) log('put ' + Math.round(spent).toLocaleString() + ' into its usual mix');
+      }
+    },
+    {
+      id: 'hard',
+      name: 'Patient',
+      difficulty: 'Hard',
+      tagline: 'Buys the world once. Buys more when everyone else is scared.',
+      why:
+        'Holds a total world index fund, adds to it once a year, and buys extra during crashes instead of selling. It almost never trades — and that is exactly why it is hard to beat.',
+      act: function (bot, market, month, log) {
+        const event = market.events[month];
+
+        // The one thing it does differently from doing nothing at all.
+        if (event && event.crash) {
+          const spent = deploy(bot, { world: 1 });
+          if (spent > 0) log('bought ' + Math.round(spent).toLocaleString() + ' more while prices were down');
+          return;
+        }
+
+        if (month === 1 || month % 12 === 0) {
+          const spent = deploy(bot, { world: 1 });
+          if (spent > 0) log('added ' + Math.round(spent).toLocaleString() + ' to the world fund');
+        }
+      }
+    }
+  ];
+
+  function byId(id) {
+    for (let i = 0; i < LEVELS.length; i++) {
+      if (LEVELS[i].id === id) return LEVELS[i];
+    }
+    return LEVELS[0];
+  }
+
+  function create(levelId, market) {
+    const level = byId(levelId);
+    return {
+      level: level,
+      state: Portfolio.create(market),
+      // Per-opponent scratch memory, e.g. when it last panicked.
+      memo: {},
+      moves: []
+    };
+  }
+
+  /* Advances the bot exactly one month, in lockstep with the student, then lets
+   * it act on the month that just happened. */
+  function advance(opp) {
+    if (!opp || opp.state.finished) return;
+    Portfolio.advance(opp.state);
+    const month = opp.state.month;
+
+    opp.level.act(
+      opp.state,
+      opp.state.market,
+      month,
+      function (text) {
+        opp.moves.unshift({ month: month, text: text });
+        if (opp.moves.length > 40) opp.moves.pop();
+      },
+      opp.memo
+    );
+  }
+
+  function value(opp) {
+    return opp ? Portfolio.totalValue(opp.state) : 0;
+  }
+
+  /* ── Known limitation: no volatility drag ──
+   *
+   * market.js sets each asset's drift so that its *median* compound return
+   * equals `mu`, which was the right call for teaching — the textbook
+   * alternative made Ethereum look like a guaranteed loss. But it has a
+   * consequence that shows up sharply here: it implies a very high arithmetic
+   * mean for volatile assets, so combining several of them raises the median a
+   * lot, and concentrating in one is not penalised the way it is in reality.
+   *
+   * That is why no amount of tuning made the Chaser reliably bad, and why
+   * diversifying it made it better. Fixing it properly means specifying
+   * arithmetic means and letting the median fall out as `m - sigma^2/2`, which
+   * would restore the real penalty for volatility and let the Chaser lose for
+   * the right reason. It is a recalibration of all sixteen assets and a new
+   * default seed, so it is recorded here rather than half-done. */
+
+  global.Opponents = {
+    LEVELS: LEVELS,
+    byId: byId,
+    create: create,
+    advance: advance,
+    value: value
+  };
+})(window);
+
+</script>
+<script>
 /* Canvas chart rendering.
  *
  * Hand-rolled rather than pulled from a charting library so the whole app stays
@@ -4003,6 +4408,58 @@ footer {
     }
   }
 
+  /* ---------------- the opponent ---------------- */
+
+  function renderOpponent(state, opp) {
+    const card = $('opponent-card');
+    if (!opp) {
+      card.hidden = true;
+      return;
+    }
+    card.hidden = false;
+
+    const you = Portfolio.totalValue(state);
+    const them = Opponents.value(opp);
+    const lead = you - them;
+
+    $('opp-name').textContent = opp.level.name;
+    $('opp-tagline').textContent = opp.level.tagline;
+    $('opp-value').textContent = money(them);
+
+    /* A two-sided bar rather than two numbers: who is ahead should be readable
+     * without doing arithmetic, which is the whole point of a race. */
+    const total = you + them;
+    const yourShare = total > 0 ? (you / total) * 100 : 50;
+    $('opp-race').innerHTML =
+      '<div class="race-bar"><div class="race-you" style="width:' +
+      yourShare +
+      '%"></div><div class="race-them" style="width:' +
+      (100 - yourShare) +
+      '%"></div></div>' +
+      '<div class="race-legend"><span class="you">You ' +
+      money(you) +
+      '</span><span class="' +
+      (lead >= 0 ? 'ahead' : 'behind') +
+      '">' +
+      (lead >= 0 ? money(lead) + ' ahead' : money(-lead) + ' behind') +
+      '</span></div>';
+
+    const moves = $('opp-moves');
+    if (!opp.moves.length) {
+      moves.innerHTML =
+        '<li class="empty">' +
+        (state.month === 0 ? 'Waiting for the market to open.' : 'Has not traded yet.') +
+        '</li>';
+      return;
+    }
+    moves.innerHTML = opp.moves
+      .slice(0, 6)
+      .map(function (m) {
+        return '<li><span class="when">M' + m.month + '</span><span class="what">' + m.text + '</span></li>';
+      })
+      .join('');
+  }
+
   /* ---------------- the crash decision ---------------- */
 
   function showDecision(state, event, damage, onChoose) {
@@ -4098,17 +4555,37 @@ footer {
 
   /* ---------------- main chart ---------------- */
 
-  function chartSeries(state) {
+  /* In comp mode the opponent replaces the benchmark on the chart. Three lines
+   * is one too many to read at a glance, and the benchmark still appears in the
+   * results — where it is a fact to absorb rather than something to watch. */
+  function chartSeries(state, opp) {
+    const you = {
+      key: 'portfolio',
+      name: 'Your portfolio',
+      color: resolveColor('var(--series-portfolio)'),
+      fill: resolveColor('var(--series-portfolio-fill)'),
+      values: state.history.map(function (h) {
+        return h.total;
+      })
+    };
+
+    if (opp) {
+      return [
+        you,
+        {
+          key: 'opponent',
+          name: opp.level.name,
+          color: resolveColor('var(--series-opponent)'),
+          fill: resolveColor('var(--series-opponent)'),
+          values: opp.state.history.map(function (h) {
+            return h.total;
+          })
+        }
+      ];
+    }
+
     return [
-      {
-        key: 'portfolio',
-        name: 'Your portfolio',
-        color: resolveColor('var(--series-portfolio)'),
-        fill: resolveColor('var(--series-portfolio-fill)'),
-        values: state.history.map(function (h) {
-          return h.total;
-        })
-      },
+      you,
       {
         key: 'benchmark',
         name: 'World fund, bought and held',
@@ -4504,10 +4981,39 @@ footer {
     $('cost-list').innerHTML = rows.join('');
   }
 
-  function buildVerdict(state, s) {
+  function buildVerdict(state, s, opp) {
     const bullets = [];
 
-    // The goal comes first, because it is the only number they actually wanted.
+    /* In a race, who won comes before everything else. */
+    if (opp) {
+      const them = Opponents.value(opp);
+      const gap = s.nominal - them;
+      if (gap >= 0) {
+        bullets.push(
+          '<strong>You beat ' +
+            opp.level.name +
+            ' by ' +
+            money(gap) +
+            '.</strong> ' +
+            (opp.level.id === 'hard'
+              ? 'That is the hard one, and it barely traded all run — beating it is a genuine result rather than a lucky month.'
+              : 'Try the next difficulty up: the harder opponents trade less, not more.')
+        );
+      } else {
+        bullets.push(
+          '<strong>' +
+            opp.level.name +
+            ' beat you by ' +
+            money(-gap) +
+            '.</strong> ' +
+            (opp.level.id === 'hard'
+              ? 'It bought a world fund, added to it once a year, and bought more during the crashes. That is the entire strategy — and it is hard to beat because doing less is genuinely difficult.'
+              : 'Look at what it actually did in its move list. It is not clever; it is just consistent.')
+        );
+      }
+    }
+
+    // The goal comes next, because it is the number they actually wanted.
     const goal = Goals.progress(state);
     if (goal) {
       if (goal.reached) {
@@ -4576,7 +5082,8 @@ footer {
       bullets.push(
         'You made ' +
           s.trades +
-          ' trades and paid ' +
+          (s.trades === 1 ? ' trade' : ' trades') +
+          ' and paid ' +
           money(s.fees, 2) +
           ' in fees — an average of ' +
           money(perTrade, 2) +
@@ -4639,7 +5146,7 @@ footer {
     return bullets;
   }
 
-  function renderResults(state) {
+  function renderResults(state, opp) {
     const card = $('results-card');
     if (!state.finished) {
       card.hidden = true;
@@ -4682,6 +5189,22 @@ footer {
       { k: 'Inflation', v: plainPct(s.inflation), n: 'Over the whole run', term: 'inflation' }
     ];
 
+    if (opp) {
+      const them = Opponents.value(opp);
+      const gap = s.nominal - them;
+      tiles.splice(4, 0, {
+        k: 'Against ' + opp.level.name,
+        v: signedMoney(gap),
+        n: gap >= 0 ? 'You won' : 'The AI won',
+        cls: gap >= 0 ? 'up' : 'down'
+      });
+      tiles.push({
+        k: opp.level.name + "'s trades",
+        v: String(opp.state.tradeCount),
+        n: 'You made ' + s.trades
+      });
+    }
+
     $('results-grid').innerHTML = tiles
       .map(function (t) {
         return (
@@ -4700,7 +5223,7 @@ footer {
 
     renderCost(state);
 
-    $('verdict-list').innerHTML = buildVerdict(state, s)
+    $('verdict-list').innerHTML = buildVerdict(state, s, opp)
       .map(function (b) {
         return '<li>' + b + '</li>';
       })
@@ -4720,6 +5243,7 @@ footer {
     renderHeader: renderHeader,
     renderHero: renderHero,
     renderGoal: renderGoal,
+    renderOpponent: renderOpponent,
     showDecision: showDecision,
     renderTiles: renderTiles,
     renderChartTable: renderChartTable,
@@ -5578,6 +6102,8 @@ footer {
 
   let state = null;
   let chart = null;
+  let mode = 'solo';
+  let opponent = null;
 
   function newGame(seed, years, goalId) {
     stopPlaying();
@@ -5590,6 +6116,9 @@ footer {
     state = Portfolio.create(market, {
       goal: target ? { id: chosen.id, name: chosen.name, target: target, blurb: chosen.blurb } : null
     });
+
+    // Same market object, so the opponent races on the identical price path.
+    opponent = mode === 'comp' ? Opponents.create($('difficulty-input').value, market) : null;
 
     UI.buildMarketRows(state, { onTrade: onTrade });
     UI.renderBanner(state, null);
@@ -5609,14 +6138,15 @@ footer {
     UI.renderAllocation(state);
     UI.updateMarket(state);
     UI.renderFeed(state);
+    UI.renderOpponent(state, opponent);
     UI.renderChartTable(state);
-    UI.renderResults(state);
+    UI.renderResults(state, opponent);
     drawChart();
   }
 
   function drawChart() {
     const cfg = {
-      series: UI.chartSeries(state),
+      series: UI.chartSeries(state, opponent),
       reveal: chartReveal,
       onHover: function (idx) {
         UI.showTooltip(state, idx);
@@ -5713,6 +6243,8 @@ footer {
       // Captured before advancing, so the modal can show the actual damage.
       const before = Portfolio.investedValue(state);
       const ev = Portfolio.advance(state);
+      // Lockstep, including when a crash breaks the loop early below.
+      Opponents.advance(opponent);
       if (ev) {
         lastEvent = ev;
         if (ev.big) sawBigEvent = true;
@@ -6033,6 +6565,41 @@ footer {
      * which threw away an eight-year run for anyone who opened it out of
      * curiosity; years used to do nothing, leaving the menu advertising a target
      * the live run was not playing. Both now just flag that a restart is needed. */
+    /* Mode is a tab, not a setting: switching starts a fresh run, because
+     * joining a race halfway through would not be a race. Said out loud rather
+     * than done silently. */
+    $('difficulty-input').innerHTML = Opponents.LEVELS.map(function (l) {
+      return '<option value="' + l.id + '">' + l.difficulty + ' — ' + l.name + '</option>';
+    }).join('');
+    $('difficulty-input').value = 'easy';
+
+    function setMode(next) {
+      if (mode === next) return;
+      mode = next;
+      $('mode-solo').classList.toggle('is-on', mode === 'solo');
+      $('mode-comp').classList.toggle('is-on', mode === 'comp');
+      $('mode-solo').setAttribute('aria-selected', String(mode === 'solo'));
+      $('mode-comp').setAttribute('aria-selected', String(mode === 'comp'));
+      restart();
+      setNotice(
+        mode === 'comp'
+          ? 'New run started. You are racing ' + Opponents.byId($('difficulty-input').value).name + ' on the same prices.'
+          : 'New run started in solo mode.'
+      );
+    }
+
+    $('mode-solo').addEventListener('click', function () {
+      setMode('solo');
+    });
+    $('mode-comp').addEventListener('click', function () {
+      setMode('comp');
+    });
+    $('difficulty-input').addEventListener('change', function () {
+      if (mode !== 'comp') return;
+      restart();
+      setNotice('New run started against ' + Opponents.byId(this.value).name + '.');
+    });
+
     fillGoalOptions();
     $('years-input').addEventListener('change', function () {
       fillGoalOptions();

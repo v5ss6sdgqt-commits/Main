@@ -146,6 +146,58 @@
     }
   }
 
+  /* ---------------- the opponent ---------------- */
+
+  function renderOpponent(state, opp) {
+    const card = $('opponent-card');
+    if (!opp) {
+      card.hidden = true;
+      return;
+    }
+    card.hidden = false;
+
+    const you = Portfolio.totalValue(state);
+    const them = Opponents.value(opp);
+    const lead = you - them;
+
+    $('opp-name').textContent = opp.level.name;
+    $('opp-tagline').textContent = opp.level.tagline;
+    $('opp-value').textContent = money(them);
+
+    /* A two-sided bar rather than two numbers: who is ahead should be readable
+     * without doing arithmetic, which is the whole point of a race. */
+    const total = you + them;
+    const yourShare = total > 0 ? (you / total) * 100 : 50;
+    $('opp-race').innerHTML =
+      '<div class="race-bar"><div class="race-you" style="width:' +
+      yourShare +
+      '%"></div><div class="race-them" style="width:' +
+      (100 - yourShare) +
+      '%"></div></div>' +
+      '<div class="race-legend"><span class="you">You ' +
+      money(you) +
+      '</span><span class="' +
+      (lead >= 0 ? 'ahead' : 'behind') +
+      '">' +
+      (lead >= 0 ? money(lead) + ' ahead' : money(-lead) + ' behind') +
+      '</span></div>';
+
+    const moves = $('opp-moves');
+    if (!opp.moves.length) {
+      moves.innerHTML =
+        '<li class="empty">' +
+        (state.month === 0 ? 'Waiting for the market to open.' : 'Has not traded yet.') +
+        '</li>';
+      return;
+    }
+    moves.innerHTML = opp.moves
+      .slice(0, 6)
+      .map(function (m) {
+        return '<li><span class="when">M' + m.month + '</span><span class="what">' + m.text + '</span></li>';
+      })
+      .join('');
+  }
+
   /* ---------------- the crash decision ---------------- */
 
   function showDecision(state, event, damage, onChoose) {
@@ -241,17 +293,37 @@
 
   /* ---------------- main chart ---------------- */
 
-  function chartSeries(state) {
+  /* In comp mode the opponent replaces the benchmark on the chart. Three lines
+   * is one too many to read at a glance, and the benchmark still appears in the
+   * results — where it is a fact to absorb rather than something to watch. */
+  function chartSeries(state, opp) {
+    const you = {
+      key: 'portfolio',
+      name: 'Your portfolio',
+      color: resolveColor('var(--series-portfolio)'),
+      fill: resolveColor('var(--series-portfolio-fill)'),
+      values: state.history.map(function (h) {
+        return h.total;
+      })
+    };
+
+    if (opp) {
+      return [
+        you,
+        {
+          key: 'opponent',
+          name: opp.level.name,
+          color: resolveColor('var(--series-opponent)'),
+          fill: resolveColor('var(--series-opponent)'),
+          values: opp.state.history.map(function (h) {
+            return h.total;
+          })
+        }
+      ];
+    }
+
     return [
-      {
-        key: 'portfolio',
-        name: 'Your portfolio',
-        color: resolveColor('var(--series-portfolio)'),
-        fill: resolveColor('var(--series-portfolio-fill)'),
-        values: state.history.map(function (h) {
-          return h.total;
-        })
-      },
+      you,
       {
         key: 'benchmark',
         name: 'World fund, bought and held',
@@ -647,10 +719,39 @@
     $('cost-list').innerHTML = rows.join('');
   }
 
-  function buildVerdict(state, s) {
+  function buildVerdict(state, s, opp) {
     const bullets = [];
 
-    // The goal comes first, because it is the only number they actually wanted.
+    /* In a race, who won comes before everything else. */
+    if (opp) {
+      const them = Opponents.value(opp);
+      const gap = s.nominal - them;
+      if (gap >= 0) {
+        bullets.push(
+          '<strong>You beat ' +
+            opp.level.name +
+            ' by ' +
+            money(gap) +
+            '.</strong> ' +
+            (opp.level.id === 'hard'
+              ? 'That is the hard one, and it barely traded all run — beating it is a genuine result rather than a lucky month.'
+              : 'Try the next difficulty up: the harder opponents trade less, not more.')
+        );
+      } else {
+        bullets.push(
+          '<strong>' +
+            opp.level.name +
+            ' beat you by ' +
+            money(-gap) +
+            '.</strong> ' +
+            (opp.level.id === 'hard'
+              ? 'It bought a world fund, added to it once a year, and bought more during the crashes. That is the entire strategy — and it is hard to beat because doing less is genuinely difficult.'
+              : 'Look at what it actually did in its move list. It is not clever; it is just consistent.')
+        );
+      }
+    }
+
+    // The goal comes next, because it is the number they actually wanted.
     const goal = Goals.progress(state);
     if (goal) {
       if (goal.reached) {
@@ -719,7 +820,8 @@
       bullets.push(
         'You made ' +
           s.trades +
-          ' trades and paid ' +
+          (s.trades === 1 ? ' trade' : ' trades') +
+          ' and paid ' +
           money(s.fees, 2) +
           ' in fees — an average of ' +
           money(perTrade, 2) +
@@ -782,7 +884,7 @@
     return bullets;
   }
 
-  function renderResults(state) {
+  function renderResults(state, opp) {
     const card = $('results-card');
     if (!state.finished) {
       card.hidden = true;
@@ -825,6 +927,22 @@
       { k: 'Inflation', v: plainPct(s.inflation), n: 'Over the whole run', term: 'inflation' }
     ];
 
+    if (opp) {
+      const them = Opponents.value(opp);
+      const gap = s.nominal - them;
+      tiles.splice(4, 0, {
+        k: 'Against ' + opp.level.name,
+        v: signedMoney(gap),
+        n: gap >= 0 ? 'You won' : 'The AI won',
+        cls: gap >= 0 ? 'up' : 'down'
+      });
+      tiles.push({
+        k: opp.level.name + "'s trades",
+        v: String(opp.state.tradeCount),
+        n: 'You made ' + s.trades
+      });
+    }
+
     $('results-grid').innerHTML = tiles
       .map(function (t) {
         return (
@@ -843,7 +961,7 @@
 
     renderCost(state);
 
-    $('verdict-list').innerHTML = buildVerdict(state, s)
+    $('verdict-list').innerHTML = buildVerdict(state, s, opp)
       .map(function (b) {
         return '<li>' + b + '</li>';
       })
@@ -863,6 +981,7 @@
     renderHeader: renderHeader,
     renderHero: renderHero,
     renderGoal: renderGoal,
+    renderOpponent: renderOpponent,
     showDecision: showDecision,
     renderTiles: renderTiles,
     renderChartTable: renderChartTable,

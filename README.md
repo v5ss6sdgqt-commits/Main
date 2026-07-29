@@ -34,7 +34,7 @@ light/dark theme preference.
 
 ### Handing it out as a single file
 
-`dist/market-lab.html` is the whole app inlined into one 184 KB file. Email it to
+`dist/market-lab.html` is the whole app inlined into one 200 KB file. Email it to
 a class, drop it on a shared drive, or put it on a USB stick — there is no
 folder structure to keep intact and nothing to load over the network.
 
@@ -182,6 +182,54 @@ On the default seed, the three choices at the month-69 recession play out as
 buying more ($9,083) ahead of holding ($8,886) ahead of panic selling ($8,788).
 Nothing about that ordering is scripted — it falls out of the simulation.
 
+## Comp mode: racing an AI
+
+A tab at the top switches between **Solo mode** and **Comp mode**. In Comp mode
+an AI opponent runs as a real second portfolio — same starting cash, same
+monthly contributions, same prices, same fees — so the race is literally the
+same simulation with a strategy in place of a student. Its line replaces the
+benchmark on the chart, its moves are visible as it makes them, and the end
+screen reports who won.
+
+Strategies live in `js/opponents.js` and obey two rules: no lookahead (they may
+read prices up to the current month and no further) and no free trades.
+
+**The difficulty ladder is upside down on purpose.**
+
+| Level | Who | What it does |
+|---|---|---|
+| Easy | The Chaser | Switches into the hottest asset every quarter, panics in every crash. Pays about $1,500 in fees over ten years. |
+| Medium | Steady | 70/30 world fund and bonds, once a year, never sells. |
+| Hard | Patient | Buys a world fund, adds yearly, buys *more* during crashes. Trades about 13 times in a decade. |
+
+The hardest opponent is the one that does the least. A student who works up the
+ladder discovers that the boring strategy is the strong one by losing to it,
+which lands harder than being told.
+
+Measured over 1,500 markets the medians order as intended — Chaser $9,194,
+Steady $10,212, Patient $10,937 — but the Chaser is **streaky rather than simply
+bad**. It concentrates in one volatile asset, so its 25th-to-75th percentile
+range is roughly $4,300 to $21,900 and a good strategy only finishes ahead of it
+about 56% of the time. That is honest rather than ideal, and worth telling
+students: sometimes the reckless player wins, which is what makes recklessness
+tempting.
+
+### Why the Chaser is not worse
+
+The price model sets each asset’s drift so its *median* compound return equals
+`mu`. That was the right call for teaching — the textbook alternative made
+Ethereum look like a guaranteed loss — but it implies a very high arithmetic
+mean for volatile assets, so there is no **volatility drag**: combining several
+volatile assets raises the median a lot, and concentrating in one is not
+penalised the way it is in reality.
+
+That is why no amount of tuning made the Chaser reliably bad, and why letting it
+diversify across three hot picks made it markedly *better* (median $13,070,
+beating Patient). Fixing it properly means specifying arithmetic means and
+letting the median fall out as `m - sigma^2/2`, which would restore the real
+penalty for volatility. That is a recalibration of all sixteen assets plus a new
+default seed, so it is recorded as a known limitation rather than half-done.
+
 ## Explaining the words
 
 Every financial term in the app is a clickable button that opens a plain-language
@@ -287,6 +335,7 @@ js/rng.js             seeded PRNG and normal variates
 js/market.js          assets, price engine, news events, inflation
 js/portfolio.js       holdings, trades, fees, the benchmark, results
 js/goals.js           goal targets and the required-return maths
+js/opponents.js       the AI opponents and their strategies
 js/charts.js          canvas line chart and sparklines
 js/ui.js              DOM rendering
 js/app.js             bootstrap and event wiring
