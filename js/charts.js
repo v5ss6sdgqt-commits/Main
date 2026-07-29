@@ -75,15 +75,31 @@
     return mult * base;
   }
 
+  /* Axis labels for values spanning six orders of magnitude.
+   *
+   * Rounding everything below $1,000 to whole dollars was fine while this only
+   * drew portfolio totals, but the asset panel charts prices — and six of the
+   * sixteen assets trade under $10. Air New Zealand at $0.83 rendered every
+   * gridline as "$1", so the axis carried no information at all. */
   function compactMoney(n) {
     const abs = Math.abs(n);
     if (abs >= 1000000) return '$' + (n / 1000000).toFixed(abs >= 10000000 ? 0 : 1) + 'M';
     if (abs >= 1000) return '$' + (n / 1000).toFixed(abs >= 10000 ? 0 : 1) + 'k';
-    return '$' + Math.round(n);
+    if (abs >= 10) return '$' + Math.round(n);
+    if (abs >= 1) return '$' + n.toFixed(2);
+    return '$' + n.toFixed(abs >= 0.1 ? 2 : 3);
   }
 
   /* Line chart with crosshair, end markers and collision-aware end labels.
    * cfg: { series: [{name, color, values, width}], months, tooltip, onHover } */
+  /* Padding has to be identical in `draw` and `pointFromEvent`, or the crosshair
+   * lands somewhere other than the cursor. One definition, read by both. */
+  const DEFAULT_PAD = { l: 58, r: 96, t: 18, b: 30 };
+
+  function padOf(cfg) {
+    return Object.assign({}, DEFAULT_PAD, (cfg && cfg.pad) || {});
+  }
+
   function line(canvas, cfg) {
     const state = { hover: null, cfg: cfg };
 
@@ -96,10 +112,11 @@
       });
       if (!series.length) return;
 
-      const padL = 58;
-      const padR = 96;
-      const padT = 18;
-      const padB = 30;
+      const pad4 = padOf(state.cfg);
+      const padL = pad4.l;
+      const padR = pad4.r;
+      const padT = pad4.t;
+      const padB = pad4.b;
       const plotW = c.w - padL - padR;
       const plotH = c.h - padT - padB;
       if (plotW <= 0 || plotH <= 0) return;
@@ -327,8 +344,9 @@
 
     function pointFromEvent(ev) {
       const rect = canvas.getBoundingClientRect();
-      const padL = 58;
-      const padR = 96;
+      const pad4 = padOf(state.cfg);
+      const padL = pad4.l;
+      const padR = pad4.r;
       const plotW = rect.width - padL - padR;
       const n = state.cfg.series[0].values.length;
       const rel = (ev.clientX - rect.left - padL) / Math.max(1, plotW);

@@ -34,7 +34,7 @@ light/dark theme preference.
 
 ### Handing it out as a single file
 
-`dist/market-lab.html` is the whole app inlined into one 229 KB file. Email it to
+`dist/market-lab.html` is the whole app inlined into one 242 KB file. Email it to
 a class, drop it on a shared drive, or put it on a USB stick — there is no
 folder structure to keep intact and nothing to load over the network.
 
@@ -322,6 +322,28 @@ letting the median fall out as `m - sigma^2/2`, which would restore the real
 penalty for volatility. That is a recalibration of all sixteen assets plus a new
 default seed, so it is recorded as a known limitation rather than half-done.
 
+## The asset detail panel
+
+Hovering a sparkline in the market table (or clicking it, or tabbing to it)
+opens a panel with a readable chart of that asset, a stats row, and — the part
+that matters — **what the company actually is and why it behaves the way it
+does**.
+
+Those two sentences per asset already existed in `js/market.js` as `what` and
+`blurb`, and were being rendered nowhere. A student deciding whether to buy Air
+New Zealand is better served by *"a famous company and a famously poor long-run
+investment"* than by a 62-pixel squiggle.
+
+It responds to hover, click and keyboard rather than hover alone, because
+hover-only would be unusable on a phone and invisible to anyone navigating by
+keyboard. A click pins it, so you can pin bitcoin and then advance the months to
+watch it move — which is why an outside click only dismisses a pinned panel when
+it lands on empty page rather than on a control.
+
+The history column used to be hidden below 660px. It now shows as a full-width
+tappable strip, since phones are exactly where a tiny sparkline is least
+readable.
+
 ## Explaining the words
 
 Every financial term in the app is a clickable button that opens a plain-language
@@ -432,6 +454,8 @@ js/market.js          assets, price engine, news events, inflation
 js/portfolio.js       holdings, trades, fees, the benchmark, results
 js/goals.js           goal targets and the required-return maths
 js/opponents.js       the AI opponents and their strategies
+js/asset-panel.js     the hover-to-expand asset detail panel
+js/share.js           result codes and the class leaderboard
 js/charts.js          canvas line chart and sparklines
 js/ui.js              DOM rendering
 js/app.js             bootstrap and event wiring

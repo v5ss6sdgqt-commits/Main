@@ -684,8 +684,20 @@ tbody tr:last-child td {
     font-size: 12px;
   }
 
+  /* Shown on phones as a full-width tappable strip. It used to be hidden here,
+     which removed the asset detail panel from exactly the students most likely
+     to be squinting at a 62px chart. */
   .market-table .col-history {
-    display: none;
+    display: block;
+  }
+
+  .market-table .spark-btn {
+    width: 100%;
+  }
+
+  .market-table .spark-btn .spark {
+    width: 100%;
+    height: 34px;
   }
 
   .market-table .trade-cell {
@@ -1996,6 +2008,172 @@ footer {
 
 #board-out {
   margin-top: 12px;
+}
+
+/* ============================================================
+   Asset detail panel
+   ============================================================ */
+
+/* The sparkline is a control now, so it has to look like one on hover without
+   adding a sixteen-row row of borders at rest. */
+.spark-btn {
+  appearance: none;
+  border: 1px solid transparent;
+  background: none;
+  padding: 3px 4px;
+  border-radius: 7px;
+  cursor: zoom-in;
+  display: block;
+  transition: border-color 0.12s ease, background 0.12s ease;
+}
+
+.spark-btn:hover,
+.spark-btn:focus-visible {
+  border-color: var(--border);
+  background: var(--surface-2);
+}
+
+.asset-pop {
+  position: absolute;
+  z-index: 70;
+  width: min(420px, calc(100vw - 24px));
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 12px 34px rgba(13, 17, 23, 0.18);
+  padding: 14px 16px 16px;
+}
+
+.ap-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.ap-name {
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: -0.01em;
+}
+
+.ap-sub {
+  font-size: 11.5px;
+  color: var(--text-muted);
+  margin-top: 1px;
+}
+
+.ap-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: none;
+}
+
+.ap-close {
+  appearance: none;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 20px;
+  line-height: 1;
+  padding: 0 2px;
+  cursor: pointer;
+}
+
+.ap-close:hover {
+  color: var(--text-primary);
+}
+
+.ap-chart {
+  height: 132px;
+  margin: 12px 0 10px;
+}
+
+.ap-chart canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.ap-stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: var(--surface-2);
+}
+
+.ap-k {
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+
+.ap-v {
+  font-size: 14px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+/* The two lines that were written for students and never shown until now. */
+.ap-what {
+  margin: 12px 0 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.ap-blurb {
+  margin: 6px 0 0;
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--text-secondary);
+}
+
+.ap-holding {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+  font-size: 12.5px;
+}
+
+.ap-hold-k {
+  color: var(--text-muted);
+}
+
+.ap-hold-v {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 620px) {
+  .asset-pop {
+    position: fixed;
+    left: 0 !important;
+    right: 0;
+    top: auto !important;
+    bottom: 0;
+    width: 100%;
+    max-width: none;
+    max-height: 82vh;
+    overflow-y: auto;
+    border-radius: 14px 14px 0 0;
+    border-bottom: none;
+    padding-bottom: 22px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spark-btn {
+    transition: none;
+  }
 }
 
 </style>
@@ -4443,15 +4621,31 @@ footer {
     return mult * base;
   }
 
+  /* Axis labels for values spanning six orders of magnitude.
+   *
+   * Rounding everything below $1,000 to whole dollars was fine while this only
+   * drew portfolio totals, but the asset panel charts prices — and six of the
+   * sixteen assets trade under $10. Air New Zealand at $0.83 rendered every
+   * gridline as "$1", so the axis carried no information at all. */
   function compactMoney(n) {
     const abs = Math.abs(n);
     if (abs >= 1000000) return '$' + (n / 1000000).toFixed(abs >= 10000000 ? 0 : 1) + 'M';
     if (abs >= 1000) return '$' + (n / 1000).toFixed(abs >= 10000 ? 0 : 1) + 'k';
-    return '$' + Math.round(n);
+    if (abs >= 10) return '$' + Math.round(n);
+    if (abs >= 1) return '$' + n.toFixed(2);
+    return '$' + n.toFixed(abs >= 0.1 ? 2 : 3);
   }
 
   /* Line chart with crosshair, end markers and collision-aware end labels.
    * cfg: { series: [{name, color, values, width}], months, tooltip, onHover } */
+  /* Padding has to be identical in `draw` and `pointFromEvent`, or the crosshair
+   * lands somewhere other than the cursor. One definition, read by both. */
+  const DEFAULT_PAD = { l: 58, r: 96, t: 18, b: 30 };
+
+  function padOf(cfg) {
+    return Object.assign({}, DEFAULT_PAD, (cfg && cfg.pad) || {});
+  }
+
   function line(canvas, cfg) {
     const state = { hover: null, cfg: cfg };
 
@@ -4464,10 +4658,11 @@ footer {
       });
       if (!series.length) return;
 
-      const padL = 58;
-      const padR = 96;
-      const padT = 18;
-      const padB = 30;
+      const pad4 = padOf(state.cfg);
+      const padL = pad4.l;
+      const padR = pad4.r;
+      const padT = pad4.t;
+      const padB = pad4.b;
       const plotW = c.w - padL - padR;
       const plotH = c.h - padT - padB;
       if (plotW <= 0 || plotH <= 0) return;
@@ -4695,8 +4890,9 @@ footer {
 
     function pointFromEvent(ev) {
       const rect = canvas.getBoundingClientRect();
-      const padL = 58;
-      const padR = 96;
+      const pad4 = padOf(state.cfg);
+      const padL = pad4.l;
+      const padR = pad4.r;
       const plotW = rect.width - padL - padR;
       const n = state.cfg.series[0].values.length;
       const rel = (ev.clientX - rect.left - padL) / Math.max(1, plotW);
@@ -4819,6 +5015,295 @@ footer {
     sparkline: sparkline,
     compactMoney: compactMoney,
     theme: theme
+  };
+})(window);
+
+</script>
+<script>
+/* The asset detail panel.
+ *
+ * A 62x22px sparkline shows a vague shape and nothing else — you cannot read a
+ * value off it, or see when the crash hit. Hovering one opens this, which gives
+ * the same data at a size you can actually read.
+ *
+ * It carries more than the chart, because two useful fields on every asset were
+ * being written and never displayed: `what` (what the company actually does) and
+ * `blurb` (why it behaves the way it does). A student deciding whether to buy
+ * Air New Zealand is better served by "a famous company and a famously poor
+ * long-run investment" than by a squiggle.
+ *
+ * Opens on hover, click, or keyboard — hover alone would be unusable on a phone
+ * and invisible to anyone navigating by keyboard. A click pins it so the pointer
+ * can leave; anything else closes on mouse-out.
+ *
+ * Structure deliberately mirrors js/glossary.js, which already solved
+ * positioning, dismissal and focus return. */
+
+(function (global) {
+  'use strict';
+
+  const HOVER_DELAY = 220;
+
+  let panel = null;
+  let chart = null;
+  let anchorEl = null;
+  let assetId = null;
+  let pinned = false;
+  let openTimer = null;
+  let openedAt = 0;
+  let getState = null;
+
+  function build() {
+    panel = document.createElement('div');
+    panel.className = 'asset-pop';
+    panel.setAttribute('role', 'dialog');
+    panel.hidden = true;
+    panel.innerHTML =
+      '<div class="ap-head">' +
+      '<div><div class="ap-name"></div><div class="ap-sub"></div></div>' +
+      '<div class="ap-right"><span class="ap-risk"></span>' +
+      '<button type="button" class="ap-close" aria-label="Close">&times;</button></div>' +
+      '</div>' +
+      '<div class="ap-chart"><canvas></canvas></div>' +
+      '<div class="ap-stats"></div>' +
+      '<p class="ap-what"></p>' +
+      '<p class="ap-blurb"></p>' +
+      '<div class="ap-holding"></div>';
+    document.body.appendChild(panel);
+
+    panel.querySelector('.ap-close').addEventListener('click', close);
+    // Pointer inside the panel keeps it alive even when it was only hovered.
+    panel.addEventListener('mouseenter', function () {
+      clearTimeout(openTimer);
+    });
+    panel.addEventListener('mouseleave', function () {
+      if (!pinned) close();
+    });
+  }
+
+  function close() {
+    clearTimeout(openTimer);
+    if (!panel || panel.hidden) return;
+    panel.hidden = true;
+    pinned = false;
+    assetId = null;
+    const previous = anchorEl;
+    anchorEl = null;
+    if (previous && document.contains(previous)) previous.focus({ preventScroll: true });
+  }
+
+  function place() {
+    if (!anchorEl) return;
+    // On a phone it is a bottom sheet pinned by CSS; measuring here would fight
+    // the stylesheet.
+    if (window.matchMedia('(max-width: 620px)').matches) {
+      panel.style.left = '';
+      panel.style.top = '';
+      return;
+    }
+
+    const box = anchorEl.getBoundingClientRect();
+    const width = panel.offsetWidth;
+    const height = panel.offsetHeight;
+    const margin = 10;
+    const viewport = document.documentElement.clientWidth;
+
+    /* Anchored to the right of the sparkline where there is room, because the
+     * trade controls sit to its right and covering them mid-decision is rude. */
+    let left = box.right + window.scrollX + 12;
+    if (left + width > window.scrollX + viewport - margin) {
+      left = box.left + window.scrollX - width - 12;
+    }
+    if (left < window.scrollX + margin) {
+      left = window.scrollX + Math.max(margin, (viewport - width) / 2);
+    }
+
+    let top = box.top + window.scrollY + box.height / 2 - height / 2;
+    const minTop = window.scrollY + margin;
+    const maxTop = window.scrollY + window.innerHeight - height - margin;
+    top = Math.max(minTop, Math.min(maxTop, top));
+
+    panel.style.left = Math.round(left) + 'px';
+    panel.style.top = Math.round(top) + 'px';
+  }
+
+  function render() {
+    const state = getState && getState();
+    if (!state || !assetId || !panel || panel.hidden) return;
+
+    const a = Market.byId(assetId);
+    if (!a) return;
+
+    const m = state.month;
+    const price = Portfolio.priceOf(state, a.id);
+    const change = state.market.returns[a.id][m];
+    const sinceStart = price / a.start - 1;
+    const held = Portfolio.holdingValue(state, a.id);
+
+    panel.querySelector('.ap-name').textContent = a.name;
+    panel.querySelector('.ap-sub').textContent = a.ticker + ' · ' + a.where;
+
+    const risk = panel.querySelector('.ap-risk');
+    risk.textContent = UI.riskWord(a.risk);
+    risk.className = 'ap-risk risk risk-' + a.risk;
+
+    panel.querySelector('.ap-stats').innerHTML = [
+      { k: 'Price now', v: UI.price(price) },
+      { k: 'This month', v: m === 0 ? '—' : UI.pct(change), cls: m === 0 ? '' : change >= 0 ? 'up' : 'down' },
+      { k: 'Since the start', v: m === 0 ? '—' : UI.pct(sinceStart), cls: m === 0 ? '' : sinceStart >= 0 ? 'up' : 'down' },
+      { k: 'Past → expected', v: UI.plainPct(a.past.ret, 0) + ' → ' + UI.plainPct(a.mu, 1) }
+    ]
+      .map(function (s) {
+        return (
+          '<div class="ap-stat"><div class="ap-k">' +
+          s.k +
+          '</div><div class="ap-v ' +
+          (s.cls || '') +
+          '">' +
+          s.v +
+          '</div></div>'
+        );
+      })
+      .join('');
+
+    panel.querySelector('.ap-what').textContent = a.what;
+    panel.querySelector('.ap-blurb').textContent = a.blurb;
+
+    panel.querySelector('.ap-holding').innerHTML =
+      held > 0.005
+        ? '<span class="ap-hold-k">You hold</span><span class="ap-hold-v">' +
+          UI.money(held) +
+          ' · ' +
+          state.shares[a.id].toFixed(state.shares[a.id] < 1 ? 4 : 2) +
+          ' units</span>'
+        : '<span class="ap-hold-k">You do not own any of this</span>';
+
+    drawChart(state, a);
+  }
+
+  function drawChart(state, a) {
+    const canvas = panel.querySelector('.ap-chart canvas');
+    const values = state.market.prices[a.id].slice(0, state.month + 1);
+
+    const cfg = {
+      /* No second series here, so the main chart's wide right margin would be
+       * empty space — but it still needs room for the end label, which runs to
+       * "$178k" for bitcoin and "$0.83" for Air New Zealand. Too tight and the
+       * price gets clipped by the panel edge. */
+      pad: { l: 52, r: 62, t: 14, b: 24 },
+      series: [
+        {
+          key: a.id,
+          name: a.name,
+          color: UI.resolveColor(a.color),
+          fill: UI.resolveColor(a.color),
+          // One point draws nothing, so month zero shows a flat line at the
+          // opening price rather than an empty box.
+          values: values.length > 1 ? values : [a.start, a.start]
+        }
+      ]
+    };
+
+    if (!chart || chart.canvas !== canvas) {
+      chart = Charts.line(canvas, cfg);
+      chart.canvas = canvas;
+      chart.draw();
+    } else {
+      chart.update(cfg);
+    }
+  }
+
+  function open(id, trigger, isPinned) {
+    if (!panel) build();
+    const state = getState && getState();
+    if (!state) return;
+
+    assetId = id;
+    anchorEl = trigger;
+    pinned = !!isPinned;
+    panel.hidden = false;
+    render();
+    place();
+    openedAt = window.scrollY;
+  }
+
+  function attach(stateGetter) {
+    getState = stateGetter;
+    if (!panel) build();
+
+    const body = document.getElementById('market-body');
+
+    body.addEventListener('mouseover', function (ev) {
+      const btn = ev.target.closest('.spark-btn');
+      if (!btn || pinned) return;
+      const id = btn.getAttribute('data-asset');
+      if (id === assetId && !panel.hidden) return;
+      clearTimeout(openTimer);
+      // A delay so sweeping the pointer across the table does not strobe.
+      openTimer = setTimeout(function () {
+        open(id, btn, false);
+      }, HOVER_DELAY);
+    });
+
+    body.addEventListener('mouseout', function (ev) {
+      const btn = ev.target.closest('.spark-btn');
+      if (!btn || pinned) return;
+      // Moving into the panel itself must not close it.
+      const to = ev.relatedTarget;
+      if (to && (to.closest('.asset-pop') || to.closest('.spark-btn') === btn)) return;
+      clearTimeout(openTimer);
+      close();
+    });
+
+    body.addEventListener('click', function (ev) {
+      const btn = ev.target.closest('.spark-btn');
+      if (!btn) return;
+      ev.preventDefault();
+      const id = btn.getAttribute('data-asset');
+      // Clicking the pinned asset again closes it; anything else pins that one.
+      if (pinned && id === assetId) close();
+      else open(id, btn, true);
+    });
+
+    /* A pinned panel is dismissed by clicking empty page, not by clicking a
+     * control. Pinning bitcoin and then pressing "Next year" to watch it move is
+     * the whole reason pinning exists, and a blanket outside-click rule killed
+     * the panel on the first button press. Escape and the close button are
+     * always available, so this only loosens an extra convenience. */
+    document.addEventListener('click', function (ev) {
+      if (panel.hidden || !pinned) return;
+      if (ev.target.closest('.asset-pop') || ev.target.closest('.spark-btn')) return;
+      if (ev.target.closest('button, input, select, textarea, label, a')) return;
+      close();
+    });
+
+    document.addEventListener('keydown', function (ev) {
+      if (ev.key === 'Escape' && !panel.hidden) close();
+    });
+
+    window.addEventListener('resize', function () {
+      if (!panel.hidden) place();
+    });
+
+    // Only a deliberate scroll dismisses; focusing can nudge the page a pixel.
+    window.addEventListener(
+      'scroll',
+      function () {
+        if (!panel.hidden && Math.abs(window.scrollY - openedAt) > 8) close();
+      },
+      { passive: true }
+    );
+  }
+
+  global.AssetPanel = {
+    attach: attach,
+    open: open,
+    close: close,
+    // Called from renderAll so an open panel keeps up as months advance.
+    refresh: render,
+    isOpen: function () {
+      return !!panel && !panel.hidden;
+    }
   };
 })(window);
 
@@ -5449,7 +5934,11 @@ footer {
           '<span class="ret-note">' +
           a.past.since +
           '</span></td>' +
-          '<td class="col-history"><canvas class="spark"></canvas></td>' +
+          '<td class="col-history"><button type="button" class="spark-btn" data-asset="' +
+          a.id +
+          '" aria-label="Show the price history and details for ' +
+          a.name +
+          '"><canvas class="spark"></canvas></button></td>' +
           '<td class="c-holding" data-label="You hold"></td>' +
           '<td data-label="Trade"><div class="trade-cell">' +
           '<input type="number" min="0" step="10" placeholder="$" aria-label="Amount in dollars to trade in ' +
@@ -5904,6 +6393,9 @@ footer {
     pct: pct,
     plainPct: plainPct,
     resolveColor: resolveColor,
+    riskWord: function (n) {
+      return RISK_WORDS[n] || '';
+    },
     monthLabel: monthLabel,
     chartSeries: chartSeries,
     renderHeader: renderHeader,
@@ -6876,6 +7368,7 @@ footer {
     UI.renderOpponent(state, opponent);
     UI.renderChartTable(state);
     UI.renderResults(state, opponent);
+    AssetPanel.refresh();
     drawChart();
   }
 
@@ -7135,6 +7628,7 @@ footer {
     if (state) {
       drawChart();
       UI.updateMarket(state);
+      AssetPanel.refresh();
     }
   }
 
@@ -7272,6 +7766,10 @@ footer {
     setupInstall();
 
     Glossary.attach(function () {
+      return state;
+    });
+
+    AssetPanel.attach(function () {
       return state;
     });
 

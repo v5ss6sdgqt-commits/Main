@@ -623,7 +623,11 @@
           '<span class="ret-note">' +
           a.past.since +
           '</span></td>' +
-          '<td class="col-history"><canvas class="spark"></canvas></td>' +
+          '<td class="col-history"><button type="button" class="spark-btn" data-asset="' +
+          a.id +
+          '" aria-label="Show the price history and details for ' +
+          a.name +
+          '"><canvas class="spark"></canvas></button></td>' +
           '<td class="c-holding" data-label="You hold"></td>' +
           '<td data-label="Trade"><div class="trade-cell">' +
           '<input type="number" min="0" step="10" placeholder="$" aria-label="Amount in dollars to trade in ' +
@@ -1078,6 +1082,9 @@
     pct: pct,
     plainPct: plainPct,
     resolveColor: resolveColor,
+    riskWord: function (n) {
+      return RISK_WORDS[n] || '';
+    },
     monthLabel: monthLabel,
     chartSeries: chartSeries,
     renderHeader: renderHeader,

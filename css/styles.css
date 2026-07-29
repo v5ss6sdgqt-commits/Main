@@ -676,8 +676,20 @@ tbody tr:last-child td {
     font-size: 12px;
   }
 
+  /* Shown on phones as a full-width tappable strip. It used to be hidden here,
+     which removed the asset detail panel from exactly the students most likely
+     to be squinting at a 62px chart. */
   .market-table .col-history {
-    display: none;
+    display: block;
+  }
+
+  .market-table .spark-btn {
+    width: 100%;
+  }
+
+  .market-table .spark-btn .spark {
+    width: 100%;
+    height: 34px;
   }
 
   .market-table .trade-cell {
@@ -1988,4 +2000,170 @@ footer {
 
 #board-out {
   margin-top: 12px;
+}
+
+/* ============================================================
+   Asset detail panel
+   ============================================================ */
+
+/* The sparkline is a control now, so it has to look like one on hover without
+   adding a sixteen-row row of borders at rest. */
+.spark-btn {
+  appearance: none;
+  border: 1px solid transparent;
+  background: none;
+  padding: 3px 4px;
+  border-radius: 7px;
+  cursor: zoom-in;
+  display: block;
+  transition: border-color 0.12s ease, background 0.12s ease;
+}
+
+.spark-btn:hover,
+.spark-btn:focus-visible {
+  border-color: var(--border);
+  background: var(--surface-2);
+}
+
+.asset-pop {
+  position: absolute;
+  z-index: 70;
+  width: min(420px, calc(100vw - 24px));
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 12px 34px rgba(13, 17, 23, 0.18);
+  padding: 14px 16px 16px;
+}
+
+.ap-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.ap-name {
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: -0.01em;
+}
+
+.ap-sub {
+  font-size: 11.5px;
+  color: var(--text-muted);
+  margin-top: 1px;
+}
+
+.ap-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: none;
+}
+
+.ap-close {
+  appearance: none;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 20px;
+  line-height: 1;
+  padding: 0 2px;
+  cursor: pointer;
+}
+
+.ap-close:hover {
+  color: var(--text-primary);
+}
+
+.ap-chart {
+  height: 132px;
+  margin: 12px 0 10px;
+}
+
+.ap-chart canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.ap-stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: var(--surface-2);
+}
+
+.ap-k {
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+
+.ap-v {
+  font-size: 14px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+/* The two lines that were written for students and never shown until now. */
+.ap-what {
+  margin: 12px 0 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.ap-blurb {
+  margin: 6px 0 0;
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--text-secondary);
+}
+
+.ap-holding {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+  font-size: 12.5px;
+}
+
+.ap-hold-k {
+  color: var(--text-muted);
+}
+
+.ap-hold-v {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 620px) {
+  .asset-pop {
+    position: fixed;
+    left: 0 !important;
+    right: 0;
+    top: auto !important;
+    bottom: 0;
+    width: 100%;
+    max-width: none;
+    max-height: 82vh;
+    overflow-y: auto;
+    border-radius: 14px 14px 0 0;
+    border-bottom: none;
+    padding-bottom: 22px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spark-btn {
+    transition: none;
+  }
 }

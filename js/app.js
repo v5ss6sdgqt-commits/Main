@@ -60,6 +60,7 @@
     UI.renderOpponent(state, opponent);
     UI.renderChartTable(state);
     UI.renderResults(state, opponent);
+    AssetPanel.refresh();
     drawChart();
   }
 
@@ -319,6 +320,7 @@
     if (state) {
       drawChart();
       UI.updateMarket(state);
+      AssetPanel.refresh();
     }
   }
 
@@ -456,6 +458,10 @@
     setupInstall();
 
     Glossary.attach(function () {
+      return state;
+    });
+
+    AssetPanel.attach(function () {
       return state;
     });
 
