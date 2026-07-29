@@ -10,26 +10,45 @@
  *   the app opens instantly, and quietly refresh the copy in the background for
  *   next time.
  *
- * Bump CACHE when the shell changes; the old cache is deleted on activate. */
+ * Those two strategies together used to be able to break the one promise the
+ * whole classroom exercise rests on. A student returning after an update got the
+ * new index.html from the network, but every script came back from the old cache
+ * — stale-while-revalidate serves the cached copy now and only refreshes it for
+ * next time. New page, old js. And because js/market.js, js/goals.js and
+ * js/app.js *are* the market, two students could type the same seed, see
+ * completely different prices and different goal targets, and have nothing on
+ * screen to tell them why. Same-seed determinism is the feature that makes a
+ * class comparable; silently losing it is worse than an error message.
+ *
+ * The fix is the ordinary one: every asset URL in index.html carries `?v=N`. A
+ * new page asks for URLs the old cache has never seen, so they miss and go to
+ * the network. There is no version in which old js can answer a new page's
+ * request.
+ *
+ * On release, bump all three together — CACHE below, VERSION below, and the
+ * `?v=` on every tag in index.html. They must agree. */
 
-const CACHE = 'market-lab-v11';
+const VERSION = '11';
+const CACHE = 'market-lab-v' + VERSION;
+
+const v = url => url + '?v=' + VERSION;
 
 const SHELL = [
   './',
   'index.html',
-  'css/styles.css',
-  'js/rng.js',
-  'js/market.js',
-  'js/portfolio.js',
-  'js/charts.js',
-  'js/goals.js',
-  'js/opponents.js',
-  'js/share.js',
-  'js/asset-panel.js',
-  'js/intro.js',
-  'js/ui.js',
-  'js/glossary.js',
-  'js/app.js',
+  v('css/styles.css'),
+  v('js/rng.js'),
+  v('js/market.js'),
+  v('js/portfolio.js'),
+  v('js/charts.js'),
+  v('js/goals.js'),
+  v('js/opponents.js'),
+  v('js/share.js'),
+  v('js/asset-panel.js'),
+  v('js/intro.js'),
+  v('js/ui.js'),
+  v('js/glossary.js'),
+  v('js/app.js'),
   'manifest.webmanifest',
   'icons/icon-192.png',
   'icons/icon-512.png',

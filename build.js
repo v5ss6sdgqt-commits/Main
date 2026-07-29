@@ -35,10 +35,14 @@ function replaceOnce(source, pattern, text) {
  * — it checks the protocol and no-ops on file:// URLs. */
 html = replaceOnce(html, /<!-- pwa:start[\s\S]*?pwa:end -->\n?/, '');
 
+/* The `?v=` on every asset URL is the cache-busting version described in sw.js.
+ * It is irrelevant to a single inlined file, so the patterns below tolerate it
+ * rather than requiring it — and `replaceOnce` throws if one stops matching, so
+ * a change to those tags can never silently produce a half-bundled file. */
 const css = read('css/styles.css');
 html = replaceOnce(
   html,
-  /<link rel="stylesheet" href="css\/styles\.css">/,
+  /<link rel="stylesheet" href="css\/styles\.css(\?[^"]*)?">/,
   '<style>\n' + css + '\n</style>'
 );
 
@@ -47,7 +51,7 @@ html = replaceOnce(
   const js = read('js/' + name + '.js');
   html = replaceOnce(
     html,
-    new RegExp('<script src="js/' + name + '\\.js"></script>'),
+    new RegExp('<script src="js/' + name + '\\.js(\\?[^"]*)?"></script>'),
     '<script>\n' + js + '\n</script>'
   );
 });
