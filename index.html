@@ -158,7 +158,7 @@
                  button within a label activates the field as well as itself. -->
             <label for="seed-input">Market seed</label>
             <button type="button" class="term-link field-help" data-term="seed">What is this?</button>
-            <input id="seed-input" type="text" value="classroom-2910" autocomplete="off">
+            <input id="seed-input" type="text" value="classroom-4019" autocomplete="off">
           </div>
           <div class="field">
             <label for="years-input">Years</label>
@@ -203,6 +203,26 @@
           </label>
         </div>
         <div id="news-banner"></div>
+      </section>
+
+      <section class="card economy-card">
+        <div class="card-head">
+          <h2>The economy</h2>
+          <span class="sub"><button type="button" class="term-link" data-term="cycle">Why this matters</button></span>
+        </div>
+        <div class="econ-head">
+          <div>
+            <div class="econ-phase" id="econ-phase"></div>
+            <div class="econ-blurb" id="econ-blurb"></div>
+          </div>
+          <div class="econ-gdp">
+            <div class="econ-gdp-v" id="econ-gdp">&mdash;</div>
+            <div class="econ-gdp-k"><button type="button" class="term-link" data-term="gdp">GDP growth</button></div>
+          </div>
+        </div>
+        <ol class="econ-track" id="econ-track"></ol>
+        <div class="econ-chart"><canvas id="econ-spark" role="img" aria-label="GDP growth over the run"></canvas></div>
+        <p class="econ-teach" id="econ-teach"></p>
       </section>
 
       <!-- Comp mode only. -->

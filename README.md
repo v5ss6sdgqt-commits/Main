@@ -118,6 +118,71 @@ Sixteen real things, grouped into five categories.
 Prices are in NZD. Currency conversion is deliberately not modelled, which is a
 real simplification — the glossary says so to students rather than hiding it.
 
+## The business cycle
+
+The economy walks a loop — **expansion → overheating → recession → recovery** —
+and everything else keys off it. It is what high-school economics actually
+teaches, and wiring it in makes the rest of the app cohere: the news stops being
+random and starts being caused, GDP becomes something to watch, and a sidebar
+panel shows which phase the run is in with a live GDP figure and chart.
+
+Average phase lengths are roughly matched to the real post-war record, so about
+63% of months are expansion and only 11% recession. That is itself a lesson:
+you spend most of your life in the good part, which is why sitting still wins.
+
+The phase drives five things at once:
+
+| | Expansion | Overheating | Recession | Recovery |
+|---|---|---|---|---|
+| GDP growth | +3.2% | +1.5% | **-1.8%** | +3.8% |
+| Drift on risky assets | +2.5% | 0 | **-11%** | +7.5% |
+| Volatility | 0.9x | 1.1x | **1.7x** | 1.25x |
+| Correlation boost | 0 | +0.10 | **+0.35** | +0.15 |
+| Inflation | 2.5% | 4.0% | 1.5% | 1.8% |
+
+That correlation row is the one a plain random walk cannot produce. **In a
+downturn everything risky starts moving together**, so a spread-out portfolio
+protects you least exactly when you need it most. Bonds are the exception — they
+carry a negative cycle beta, so they rise when shares fall, which is the whole
+reason they earn a place.
+
+The cycle is drift-neutralised the same way the news events are: weighted by how
+long each phase lasts, the average drift adjustment is subtracted, so `mu` still
+means exactly what the table says.
+
+### Do the headlines actually move prices?
+
+Yes, measurably. Across 300 runs, a month carrying a headline is **1.22x as
+volatile** as one without. The news is not decoration.
+
+## Volatility drag, and why the funds win
+
+Each asset’s `mu` is its target **median** compound return, and volatile assets
+have low ones — Ethereum 2.5%, Tesla 3.0%, against a world fund at 8.0%. That is
+volatility drag: a plausible arithmetic mean minus sigma-squared-over-two lands
+about there, and it matches the evidence that the median single stock
+underperforms the index it sits in.
+
+This was not always true here, and fixing it mattered. An earlier version gave
+crypto and the hot tech names the *highest* expected returns, so the app’s own
+glossary said "higher risk does not mean higher return" while the model quietly
+paid a premium for risk. It also broke the AI ladder: the reckless opponent had
+the best median of the three. With the recalibration, a good strategy now beats
+it 70% of the time rather than 56%.
+
+## Bounded tails
+
+Plain geometric Brownian motion never stops: the spread grows with the square
+root of time and nothing bounds it. Over thirty years that produced Ethereum at
+a billion times its starting price in about a third of runs — visibly broken
+rather than merely unlucky.
+
+The drift now carries a gentle pull back toward each asset’s median path
+(`MEAN_REVERSION = 0.12`/year). It is almost invisible over ten years, firm
+enough to bound thirty, and pulls toward the trend rather than a fixed price so
+the median is untouched. Runs containing an absurd price went from 2% / 15% / 35%
+at ten, twenty and thirty years to **0% at all three**.
+
 ## The most important design decision
 
 Every asset carries **two** return figures, and they deliberately disagree.

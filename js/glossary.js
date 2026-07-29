@@ -628,6 +628,58 @@
       see: ['diversification']
     },
 
+    cycle: {
+      title: 'The business cycle',
+      hint: 'The loop every economy walks',
+      body: function (state) {
+        const phase = Market.cycleById(state.market.cycle[state.month]);
+        return (
+          p(
+            'Economies do not grow in a straight line. They move through four stages, over and over: <strong>expansion</strong>, <strong>overheating</strong>, <strong>recession</strong>, <strong>recovery</strong>.'
+          ) +
+          p('Right now this run is in <strong>' + phase.name + '</strong>. ' + phase.blurb) +
+          sum([
+            { k: 'Expansion', v: 'Hiring, spending, shares grind up' },
+            { k: 'Overheating', v: 'Inflation climbs, the OCR rises' },
+            { k: 'Recession', v: 'GDP shrinks, almost everything falls' },
+            { k: 'Recovery', v: 'Cheap money, the riskiest things bounce' }
+          ]) +
+          p(
+            'Expansions are long and recessions are short — about 60% of months here are expansion and only about 11% recession. That is why sitting still usually wins: you spend most of your life in the good part.'
+          ) +
+          p(
+            'The important catch is that in a recession things start moving <em>together</em>. Shares that normally rise and fall at different times all fall at once, so a spread-out portfolio protects you least exactly when you need it most. Bonds are the exception, which is why they earn their place.'
+          )
+        );
+      },
+      see: ['gdp', 'diversification', 'ocr']
+    },
+
+    gdp: {
+      title: 'GDP growth',
+      hint: 'Whether the economy is growing or shrinking',
+      body: function (state) {
+        const g = state.market.gdp[state.month];
+        return (
+          p(
+            'GDP is the total value of everything a country produces in a year. GDP <em>growth</em> is whether that total is getting bigger or smaller.'
+          ) +
+          p(
+            'Right now it is running at <strong>' +
+              UI.pct(g) +
+              '</strong> a year. Anything around 2-3% is healthy. Below zero means the economy is actually shrinking.'
+          ) +
+          p(
+            'Two quarters of shrinking GDP in a row is the usual definition of a <strong>recession</strong>. That is when businesses stop hiring, people stop spending, and company profits fall — which is why share prices fall with it.'
+          ) +
+          p(
+            'Watch the little chart: the dips are where the market got frightening, and where the decisions in this app actually mattered.'
+          )
+        );
+      },
+      see: ['cycle', 'inflation']
+    },
+
     seed: {
       title: 'Market seed',
       hint: 'Why everyone can get the same market',
@@ -655,6 +707,8 @@
 
   let panel = null;
   let lastAnchor = null;
+  // Scroll position when the panel opened, so a stray pixel does not dismiss it.
+  let openedAt = 0;
   let getState = null;
 
   function build() {
@@ -673,10 +727,6 @@
     document.body.appendChild(panel);
 
     panel.querySelector('.term-close').addEventListener('click', close);
-    panel.addEventListener('click', function (ev) {
-      const link = ev.target.closest('[data-goto]');
-      if (link) open(link.getAttribute('data-goto'), lastAnchor);
-    });
   }
 
   function close() {
@@ -750,7 +800,13 @@
     lastAnchor = anchor || lastAnchor;
     panel.hidden = false;
     place(lastAnchor);
-    panel.querySelector('.term-close').focus();
+
+    /* Both halves of this matter. Moving focus can nudge the page, and the
+     * scroll-to-close handler below took that nudge as the reader scrolling
+     * away — so following a "See also" link opened the new entry and instantly
+     * closed it again, which looked like the link doing nothing at all. */
+    openedAt = window.scrollY;
+    panel.querySelector('.term-close').focus({ preventScroll: true });
   }
 
   /* One delegated listener on the document, so terms rendered later — market
@@ -766,6 +822,19 @@
         open(trigger.getAttribute('data-term'), trigger);
         return;
       }
+
+      /* "See also" is handled here rather than on the panel, and it must come
+       * before the outside-click check below. Opening a term rewrites the
+       * panel's contents, which detaches the very chip that was clicked — so by
+       * the time the check ran, `closest('.term-pop')` found nothing, decided
+       * the click was outside, and closed the panel a moment after opening it.
+       * That is what made following a "See also" link look like it did nothing. */
+      const goto = ev.target.closest('[data-goto]');
+      if (goto && !panel.hidden) {
+        open(goto.getAttribute('data-goto'), lastAnchor);
+        return;
+      }
+
       if (!panel.hidden && !ev.target.closest('.term-pop')) close();
     });
 
@@ -777,11 +846,13 @@
       if (!panel.hidden && lastAnchor) place(lastAnchor);
     });
 
-    // A scrolled-away panel is just clutter, and re-anchoring on scroll is worse.
+    // A scrolled-away panel is just clutter, and re-anchoring on scroll is
+    // worse — but only a deliberate scroll should count, not the pixel or two
+    // that moving focus can cause.
     window.addEventListener(
       'scroll',
       function () {
-        if (!panel.hidden) close();
+        if (!panel.hidden && Math.abs(window.scrollY - openedAt) > 8) close();
       },
       { passive: true }
     );

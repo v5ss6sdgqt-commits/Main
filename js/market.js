@@ -99,6 +99,7 @@
       past: { ret: 0.045, since: 'past 20 years' },
       mu: 0.04,
       sigma: 0.05,
+      cyclical: -0.25,
       rhoW: 0.1,
       rhoNz: 0.1,
       risk: 1,
@@ -117,6 +118,7 @@
       past: { ret: 0.065, since: 'since 2007' },
       mu: 0.055,
       sigma: 0.08,
+      cyclical: 0.5,
       rhoW: 0.72,
       rhoNz: 0.25,
       risk: 1,
@@ -137,6 +139,7 @@
       past: { ret: 0.095, since: 'past 20 years' },
       mu: 0.075,
       sigma: 0.13,
+      cyclical: 1,
       rhoW: 0.5,
       rhoNz: 0.62,
       risk: 2,
@@ -155,6 +158,7 @@
       past: { ret: 0.105, since: 'past 20 years' },
       mu: 0.08,
       sigma: 0.155,
+      cyclical: 1,
       rhoW: 0.96,
       rhoNz: 0,
       risk: 2,
@@ -173,6 +177,7 @@
       past: { ret: 0.085, since: 'past 20 years' },
       mu: 0.08,
       sigma: 0.145,
+      cyclical: 1,
       rhoW: 1.0,
       rhoNz: 0,
       risk: 2,
@@ -191,8 +196,9 @@
       color: 'var(--series-fph)',
       start: 33.5,
       past: { ret: 0.16, since: 'past 20 years' },
-      mu: 0.078,
-      sigma: 0.26,
+      mu: 0.06,
+      sigma: 0.24,
+      cyclical: 0.8,
       rhoW: 0.42,
       rhoNz: 0.42,
       risk: 3,
@@ -209,8 +215,9 @@
       color: 'var(--series-mft)',
       start: 68.0,
       past: { ret: 0.15, since: 'past 20 years' },
-      mu: 0.078,
-      sigma: 0.27,
+      mu: 0.058,
+      sigma: 0.25,
+      cyclical: 1.1,
       rhoW: 0.45,
       rhoNz: 0.45,
       risk: 3,
@@ -227,8 +234,9 @@
       color: 'var(--series-xro)',
       start: 175.0,
       past: { ret: 0.22, since: 'since 2007' },
-      mu: 0.072,
-      sigma: 0.42,
+      mu: 0.04,
+      sigma: 0.38,
+      cyclical: 1.2,
       rhoW: 0.55,
       rhoNz: 0.35,
       risk: 4,
@@ -245,8 +253,9 @@
       color: 'var(--series-mel)',
       start: 5.9,
       past: { ret: 0.11, since: 'since 2013' },
-      mu: 0.072,
-      sigma: 0.21,
+      mu: 0.063,
+      sigma: 0.2,
+      cyclical: 0.6,
       rhoW: 0.22,
       rhoNz: 0.5,
       risk: 3,
@@ -263,8 +272,9 @@
       color: 'var(--series-atm)',
       start: 7.2,
       past: { ret: 0.13, since: 'past 20 years' },
-      mu: 0.07,
-      sigma: 0.48,
+      mu: 0.035,
+      sigma: 0.44,
+      cyclical: 0.9,
       rhoW: 0.25,
       rhoNz: 0.38,
       risk: 4,
@@ -281,8 +291,9 @@
       color: 'var(--series-air)',
       start: 0.62,
       past: { ret: 0.02, since: 'past 20 years' },
-      mu: 0.068,
-      sigma: 0.36,
+      mu: 0.03,
+      sigma: 0.34,
+      cyclical: 1.3,
       rhoW: 0.38,
       rhoNz: 0.45,
       risk: 4,
@@ -301,8 +312,9 @@
       color: 'var(--series-aapl)',
       start: 228.0,
       past: { ret: 0.24, since: 'past 20 years' },
-      mu: 0.078,
-      sigma: 0.29,
+      mu: 0.06,
+      sigma: 0.27,
+      cyclical: 1,
       rhoW: 0.78,
       rhoNz: 0,
       risk: 3,
@@ -319,8 +331,9 @@
       color: 'var(--series-nvda)',
       start: 185.0,
       past: { ret: 0.33, since: 'past 20 years' },
-      mu: 0.072,
-      sigma: 0.52,
+      mu: 0.04,
+      sigma: 0.48,
+      cyclical: 1.3,
       rhoW: 0.72,
       rhoNz: 0,
       risk: 4,
@@ -337,8 +350,9 @@
       color: 'var(--series-tsla)',
       start: 330.0,
       past: { ret: 0.35, since: 'since 2010' },
-      mu: 0.068,
-      sigma: 0.6,
+      mu: 0.03,
+      sigma: 0.55,
+      cyclical: 1.4,
       rhoW: 0.62,
       rhoNz: 0,
       risk: 5,
@@ -357,8 +371,9 @@
       color: 'var(--series-btc)',
       start: 178000,
       past: { ret: 0.6, since: 'since 2013' },
-      mu: 0.08,
-      sigma: 0.7,
+      mu: 0.03,
+      sigma: 0.55,
+      cyclical: 1.2,
       rhoW: 0.32,
       rhoNz: 0,
       risk: 5,
@@ -375,8 +390,9 @@
       color: 'var(--series-eth)',
       start: 6500,
       past: { ret: 0.45, since: 'since 2015' },
-      mu: 0.08,
-      sigma: 0.85,
+      mu: 0.025,
+      sigma: 0.65,
+      cyclical: 1.3,
       rhoW: 0.35,
       rhoNz: 0,
       risk: 5,
@@ -615,6 +631,114 @@
   const EVENT_CHANCE_PER_MONTH = 0.32;
   const BASE_INFLATION = 0.025;
 
+  /* Strength of the pull back toward each asset's median path, per year. Small
+   * on purpose: enough to bound thirty-year tails, too weak to be a forecast. */
+  const MEAN_REVERSION = 0.12;
+
+  /* ── The business cycle ──
+   *
+   * The economy walks a loop: expansion → peak → recession → recovery →
+   * expansion. It is the thing high-school economics actually teaches, and
+   * wiring it in makes the rest of the app cohere — the news stops being random
+   * and starts being *caused*, GDP becomes something to watch, and the market
+   * gets the one behaviour a plain random walk cannot produce.
+   *
+   * That behaviour is `corr`: in a downturn, everything risky starts moving
+   * together. Diversification failing exactly when it is needed most is one of
+   * the most important facts about real markets, and no amount of tuning
+   * individual correlations reproduces it — the regime has to do it.
+   *
+   * `months` is the average length of each phase, roughly matched to the real
+   * post-war record: long expansions, short sharp recessions. */
+  const CYCLE = [
+    {
+      id: 'expansion',
+      name: 'Expansion',
+      mood: 'good',
+      blurb: 'Businesses are hiring, people are spending, and shares grind upwards.',
+      teach:
+        'The long, boring, profitable part of the cycle. Most years look like this, which is exactly why sitting still tends to win.',
+      gdp: 0.032,
+      drift: 0.025,
+      volMult: 0.9,
+      corr: 0.0,
+      inflation: 0.025,
+      months: 60
+    },
+    {
+      id: 'peak',
+      name: 'Overheating',
+      mood: 'warm',
+      blurb: 'Running hot. Prices are rising fast and the Reserve Bank is getting nervous.',
+      teach:
+        'Everyone feels rich and nobody wants to sell. Inflation climbs, the OCR goes up to cool things down, and higher rates make shares less attractive.',
+      gdp: 0.015,
+      drift: 0.0,
+      volMult: 1.1,
+      corr: 0.1,
+      inflation: 0.04,
+      months: 10
+    },
+    {
+      id: 'recession',
+      name: 'Recession',
+      mood: 'bad',
+      blurb: 'The economy is shrinking. Jobs go, and almost everything risky falls together.',
+      teach:
+        'Two quarters of shrinking GDP. This is when diversification is tested: correlations rise, so things that normally move apart fall side by side. Bonds are the exception.',
+      gdp: -0.018,
+      drift: -0.11,
+      volMult: 1.7,
+      corr: 0.35,
+      inflation: 0.015,
+      months: 11
+    },
+    {
+      id: 'recovery',
+      name: 'Recovery',
+      mood: 'warm',
+      blurb: 'The worst is over. Rates are low, and the riskiest things bounce hardest.',
+      teach:
+        'The bounce usually starts before the news feels better, which is why selling at the bottom hurts twice — you take the fall and miss the rebound.',
+      gdp: 0.038,
+      drift: 0.075,
+      volMult: 1.25,
+      corr: 0.15,
+      inflation: 0.018,
+      months: 18
+    }
+  ];
+
+  /* Long-run share of time spent in each phase, from the average durations. */
+  function cycleWeights() {
+    const total = CYCLE.reduce(function (s, c) {
+      return s + c.months;
+    }, 0);
+    return CYCLE.map(function (c) {
+      return c.months / total;
+    });
+  }
+
+  /* The cycle must not quietly change any asset's long-run return.
+   *
+   * Recessions subtract drift and expansions add it, and those do not cancel by
+   * themselves — weighted by how long each phase lasts, the average comes out
+   * positive. Subtracting that average keeps `mu` meaning exactly what the table
+   * says it means, the same discipline the news events already follow. */
+  function cycleDriftBias() {
+    const w = cycleWeights();
+    return CYCLE.reduce(function (sum, c, i) {
+      return sum + w[i] * c.drift;
+    }, 0);
+  }
+
+  function cycleById(id) {
+    for (let i = 0; i < CYCLE.length; i++) {
+      if (CYCLE[i].id === id) return CYCLE[i];
+    }
+    return CYCLE[0];
+  }
+
   function byId(id) {
     for (let i = 0; i < ASSETS.length; i++) {
       if (ASSETS[i].id === id) return ASSETS[i];
@@ -694,7 +818,21 @@
       drag[a.id] = eventLogDrag(a);
     });
 
+    /* Cycle state. Starts in expansion, which is where most decades begin. */
+    let phase = 0;
+    const cycle = [CYCLE[0].id];
+    const gdp = [CYCLE[0].gdp];
+    const bias = cycleDriftBias();
+
     for (let m = 1; m <= months; m++) {
+      // Advance the cycle first: this month happens inside the new phase.
+      const here = CYCLE[phase];
+      if (rng.next() < 1 / here.months) phase = (phase + 1) % CYCLE.length;
+      const regime = CYCLE[phase];
+      cycle.push(regime.id);
+      // Reported GDP wobbles around the phase's underlying rate.
+      gdp.push(regime.gdp + rng.normal() * 0.008);
+
       // Two shared factors: one global, one local to New Zealand.
       const worldShock = rng.normal();
       const nzShock = rng.normal();
@@ -705,9 +843,14 @@
 
       ASSETS.forEach(function (a) {
         const own = rng.normal();
-        const systematic = a.rhoW * a.rhoW + a.rhoNz * a.rhoNz;
+
+        /* In a downturn, correlations rise toward one. `corr` pulls each asset's
+         * loading on the shared world factor upward, so a diversified holding
+         * stops behaving like one exactly when the student needs it to. */
+        const rhoW = Math.min(1, a.rhoW + regime.corr * (1 - a.rhoW) * (a.cyclical > 0 ? 1 : 0));
+        const systematic = rhoW * rhoW + a.rhoNz * a.rhoNz;
         const idiosyncratic = Math.sqrt(Math.max(0, 1 - systematic));
-        const z = a.rhoW * worldShock + a.rhoNz * nzShock + idiosyncratic * own;
+        const z = rhoW * worldShock + a.rhoNz * nzShock + idiosyncratic * own;
 
         /* `mu` is the compound growth rate a typical path actually achieves.
          *
@@ -723,8 +866,26 @@
          * exp(0.08) - 1 = 8.33%, so a table promising 8% would quietly deliver
          * a third of a point more. Small, but the whole point of showing an
          * expected return next to a past one is that the numbers are honest. */
-        const drift = Math.log(1 + a.mu) * DT - drag[a.id];
-        const diffusion = a.sigma * Math.sqrt(DT) * z;
+        /* Mean reversion, and the reason it is here.
+         *
+         * Plain geometric Brownian motion has nothing stopping it: the spread of
+         * outcomes grows with the square root of time and never bounds. Over
+         * thirty years that produced Ethereum at a billion times its starting
+         * price in about a third of runs — visibly broken rather than merely
+         * unlucky. Real assets cannot do that; nothing compounds past the size of
+         * the world economy.
+         *
+         * So the drift gets a gentle pull back toward the median path. `kappa` is
+         * small enough to be almost invisible over ten years and firm enough to
+         * stop the thirty-year tails running away. It pulls toward the trend, not
+         * toward a fixed price, so the median is untouched. */
+        const trend = Math.log(1 + a.mu) * (m - 1) * DT;
+        const gap = Math.log(prices[a.id][m - 1] / a.start) - trend;
+        const pull = -MEAN_REVERSION * gap * DT;
+
+        const cyclical = a.cyclical * (regime.drift - bias) * DT;
+        const drift = Math.log(1 + a.mu) * DT - drag[a.id] + cyclical + pull;
+        const diffusion = a.sigma * regime.volMult * Math.sqrt(DT) * z;
         let r = Math.exp(drift + diffusion) - 1;
 
         if (event) {
@@ -740,7 +901,8 @@
         returns[a.id].push(next / prev - 1);
       });
 
-      const infl = BASE_INFLATION / MONTHS_PER_YEAR + (rng.normal() * 0.004) / Math.sqrt(12);
+      // Inflation follows the cycle: hot at the peak, cool in a recession.
+      const infl = regime.inflation / MONTHS_PER_YEAR + (rng.normal() * 0.004) / Math.sqrt(12);
       cpi.push(cpi[m - 1] * (1 + Math.max(-0.01, infl)));
     }
 
@@ -750,13 +912,17 @@
       prices: prices,
       returns: returns,
       events: events,
-      cpi: cpi
+      cpi: cpi,
+      cycle: cycle,
+      gdp: gdp
     };
   }
 
   global.Market = {
     ASSETS: ASSETS,
     CATEGORIES: CATEGORIES,
+    CYCLE: CYCLE,
+    cycleById: cycleById,
     EVENTS: EVENTS,
     MONTHS_PER_YEAR: MONTHS_PER_YEAR,
     BASE_INFLATION: BASE_INFLATION,

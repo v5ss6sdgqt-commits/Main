@@ -146,6 +146,43 @@
     }
   }
 
+  /* ---------------- the economy ---------------- */
+
+  function renderEconomy(state) {
+    const phase = Market.cycleById(state.market.cycle[state.month]);
+    const growth = state.market.gdp[state.month];
+
+    $('econ-phase').textContent = phase.name;
+    $('econ-phase').className = 'econ-phase mood-' + phase.mood;
+    $('econ-blurb').textContent = phase.blurb;
+    $('econ-teach').textContent = phase.teach;
+
+    const g = $('econ-gdp');
+    g.textContent = pct(growth);
+    g.className = 'econ-gdp-v ' + (growth >= 0 ? 'up' : 'down');
+
+    /* The loop, drawn as a loop. Students are taught these four stages by name,
+     * so showing where the run currently sits connects the app to the lesson. */
+    $('econ-track').innerHTML = Market.CYCLE.map(function (c) {
+      return (
+        '<li class="econ-step' +
+        (c.id === phase.id ? ' is-on mood-' + c.mood : '') +
+        '"><span></span>' +
+        c.name +
+        '</li>'
+      );
+    }).join('');
+
+    // GDP so far, so a recession is visible as a dip rather than only a word.
+    const series = state.market.gdp.slice(0, state.month + 1);
+    Charts.sparkline(
+      $('econ-spark'),
+      series.length > 1 ? series : [growth, growth],
+      resolveColor(growth >= 0 ? 'var(--up)' : 'var(--down)'),
+      { zero: 0 }
+    );
+  }
+
   /* ---------------- the opponent ---------------- */
 
   function renderOpponent(state, opp) {
@@ -981,6 +1018,7 @@
     renderHeader: renderHeader,
     renderHero: renderHero,
     renderGoal: renderGoal,
+    renderEconomy: renderEconomy,
     renderOpponent: renderOpponent,
     showDecision: showDecision,
     renderTiles: renderTiles,

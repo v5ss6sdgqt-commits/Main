@@ -5,23 +5,18 @@
 
   const $ = UI.$;
 
-  /* The one seed out of 6,000 that satisfied every constraint below, chosen for
-   * being representative rather than flattering.
+  /* Re-picked after the business cycle and the volatility recalibration changed
+   * every price path. Chosen from 8,000 candidates for being representative
+   * rather than flattering: the world fund lands on its 8% expectation (7.9%),
+   * there is a -32% fall to sit through, twelve months of recession, and three
+   * crashes that each ask the student what to do.
    *
-   * Required: the world fund lands near its 8% expectation (7.0% here), there is
-   * a real crash to sit through (-33%), bonds and the NZX 50 behave, at least
-   * three headline events fire, no asset finishes at an absurd rate, and nothing
-   * falls further than about 87% — deeper than crypto has ever actually gone
-   * reads as a broken simulation rather than a fair tail.
-   *
-   * What makes this decade worth teaching is how it turned out. The boring NZX
-   * 50 fund returns 10.6% and beats almost everything. Nvidia, Xero and a2 Milk
-   * all finish *negative*. Bitcoin manages 6.2% — below the world fund, after an
-   * 87% fall on the way. And the single best performer is Air New Zealand at
-   * 18.9%: the company with the worst real history on the board, which no
-   * student would ever have picked. A decade where the exciting bets paid off
-   * would teach the precise opposite of what this app is for. */
-  const DEFAULT_SEED = 'classroom-2910';
+   * What makes this decade worth teaching is the ending. Bitcoin *loses* 9.6% a
+   * year. The NZX 50 fund returns 8.6%. And the best single company on the board
+   * is Fisher & Paykel at 9.3% — barely ahead of a boring world fund, after
+   * carrying several times the risk to get there. Nobody is rewarded for
+   * excitement, which is the entire point of the app. */
+  const DEFAULT_SEED = 'classroom-4019';
 
   let state = null;
   let chart = null;
@@ -57,6 +52,7 @@
     UI.renderHeader(state);
     UI.renderHero(state);
     UI.renderGoal(state);
+    UI.renderEconomy(state);
     UI.renderTiles(state);
     UI.renderAllocation(state);
     UI.updateMarket(state);

@@ -375,7 +375,7 @@
 
   /* Single-series sparkline for the market table. Identity comes from the asset
    * name in the same row, so the color here is reinforcement, not the only cue. */
-  function sparkline(canvas, values, color) {
+  function sparkline(canvas, values, color, opts) {
     const c = setupCanvas(canvas);
     const ctx = c.ctx;
     if (!values || values.length < 2) return;
@@ -383,6 +383,12 @@
     const padY = 3;
     let lo = Math.min.apply(null, values);
     let hi = Math.max.apply(null, values);
+    /* GDP crosses zero and the sign is the whole point, so that series asks for
+     * zero to stay inside the range rather than being cropped out of view. */
+    if (opts && typeof opts.zero === 'number') {
+      lo = Math.min(lo, opts.zero);
+      hi = Math.max(hi, opts.zero);
+    }
     if (hi === lo) hi = lo + 1;
 
     const x = function (i) {
@@ -391,6 +397,18 @@
     const y = function (v) {
       return padY + (c.h - padY * 2) * (1 - (v - lo) / (hi - lo));
     };
+
+    if (opts && typeof opts.zero === 'number') {
+      const zy = y(opts.zero);
+      ctx.strokeStyle = token('--axis');
+      ctx.lineWidth = 1;
+      ctx.setLineDash([2, 2]);
+      ctx.beginPath();
+      ctx.moveTo(0, zy);
+      ctx.lineTo(c.w, zy);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
 
     // Same treatment as the main chart, so sixteen tiny charts read as one set.
     const top = withAlpha(color, 0.24);

@@ -1819,6 +1819,103 @@ footer {
   }
 }
 
+/* ============================================================
+   The economy
+   ============================================================ */
+
+.econ-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.econ-phase {
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.econ-phase.mood-good { color: var(--up); }
+.econ-phase.mood-warm { color: var(--cat-crypto); }
+.econ-phase.mood-bad  { color: var(--down); }
+
+.econ-blurb {
+  font-size: 12.5px;
+  color: var(--text-secondary);
+  max-width: 42ch;
+  margin-top: 2px;
+}
+
+.econ-gdp {
+  text-align: right;
+  flex: none;
+}
+
+.econ-gdp-v {
+  font-size: 22px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.econ-gdp-k {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+/* The four stages, drawn as the loop students are taught by name. */
+.econ-track {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 4px;
+  list-style: none;
+  margin: 14px 0 0;
+  padding: 0;
+}
+
+.econ-step {
+  font-size: 10.5px;
+  color: var(--text-muted);
+  text-align: center;
+  line-height: 1.3;
+}
+
+.econ-step span {
+  display: block;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--grid);
+  margin-bottom: 5px;
+}
+
+.econ-step.is-on {
+  color: var(--text-primary);
+  font-weight: 700;
+}
+
+.econ-step.is-on.mood-good span { background: var(--up); }
+.econ-step.is-on.mood-warm span { background: var(--cat-crypto); }
+.econ-step.is-on.mood-bad  span { background: var(--down); }
+
+.econ-chart {
+  height: 44px;
+  margin-top: 12px;
+}
+
+.econ-chart canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.econ-teach {
+  margin: 10px 0 0;
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--text-muted);
+}
+
 </style>
 </head>
 <body>
@@ -1961,7 +2058,7 @@ footer {
                  button within a label activates the field as well as itself. -->
             <label for="seed-input">Market seed</label>
             <button type="button" class="term-link field-help" data-term="seed">What is this?</button>
-            <input id="seed-input" type="text" value="classroom-2910" autocomplete="off">
+            <input id="seed-input" type="text" value="classroom-4019" autocomplete="off">
           </div>
           <div class="field">
             <label for="years-input">Years</label>
@@ -2006,6 +2103,26 @@ footer {
           </label>
         </div>
         <div id="news-banner"></div>
+      </section>
+
+      <section class="card economy-card">
+        <div class="card-head">
+          <h2>The economy</h2>
+          <span class="sub"><button type="button" class="term-link" data-term="cycle">Why this matters</button></span>
+        </div>
+        <div class="econ-head">
+          <div>
+            <div class="econ-phase" id="econ-phase"></div>
+            <div class="econ-blurb" id="econ-blurb"></div>
+          </div>
+          <div class="econ-gdp">
+            <div class="econ-gdp-v" id="econ-gdp">&mdash;</div>
+            <div class="econ-gdp-k"><button type="button" class="term-link" data-term="gdp">GDP growth</button></div>
+          </div>
+        </div>
+        <ol class="econ-track" id="econ-track"></ol>
+        <div class="econ-chart"><canvas id="econ-spark" role="img" aria-label="GDP growth over the run"></canvas></div>
+        <p class="econ-teach" id="econ-teach"></p>
       </section>
 
       <!-- Comp mode only. -->
@@ -2315,6 +2432,7 @@ footer {
       past: { ret: 0.045, since: 'past 20 years' },
       mu: 0.04,
       sigma: 0.05,
+      cyclical: -0.25,
       rhoW: 0.1,
       rhoNz: 0.1,
       risk: 1,
@@ -2333,6 +2451,7 @@ footer {
       past: { ret: 0.065, since: 'since 2007' },
       mu: 0.055,
       sigma: 0.08,
+      cyclical: 0.5,
       rhoW: 0.72,
       rhoNz: 0.25,
       risk: 1,
@@ -2353,6 +2472,7 @@ footer {
       past: { ret: 0.095, since: 'past 20 years' },
       mu: 0.075,
       sigma: 0.13,
+      cyclical: 1,
       rhoW: 0.5,
       rhoNz: 0.62,
       risk: 2,
@@ -2371,6 +2491,7 @@ footer {
       past: { ret: 0.105, since: 'past 20 years' },
       mu: 0.08,
       sigma: 0.155,
+      cyclical: 1,
       rhoW: 0.96,
       rhoNz: 0,
       risk: 2,
@@ -2389,6 +2510,7 @@ footer {
       past: { ret: 0.085, since: 'past 20 years' },
       mu: 0.08,
       sigma: 0.145,
+      cyclical: 1,
       rhoW: 1.0,
       rhoNz: 0,
       risk: 2,
@@ -2407,8 +2529,9 @@ footer {
       color: 'var(--series-fph)',
       start: 33.5,
       past: { ret: 0.16, since: 'past 20 years' },
-      mu: 0.078,
-      sigma: 0.26,
+      mu: 0.06,
+      sigma: 0.24,
+      cyclical: 0.8,
       rhoW: 0.42,
       rhoNz: 0.42,
       risk: 3,
@@ -2425,8 +2548,9 @@ footer {
       color: 'var(--series-mft)',
       start: 68.0,
       past: { ret: 0.15, since: 'past 20 years' },
-      mu: 0.078,
-      sigma: 0.27,
+      mu: 0.058,
+      sigma: 0.25,
+      cyclical: 1.1,
       rhoW: 0.45,
       rhoNz: 0.45,
       risk: 3,
@@ -2443,8 +2567,9 @@ footer {
       color: 'var(--series-xro)',
       start: 175.0,
       past: { ret: 0.22, since: 'since 2007' },
-      mu: 0.072,
-      sigma: 0.42,
+      mu: 0.04,
+      sigma: 0.38,
+      cyclical: 1.2,
       rhoW: 0.55,
       rhoNz: 0.35,
       risk: 4,
@@ -2461,8 +2586,9 @@ footer {
       color: 'var(--series-mel)',
       start: 5.9,
       past: { ret: 0.11, since: 'since 2013' },
-      mu: 0.072,
-      sigma: 0.21,
+      mu: 0.063,
+      sigma: 0.2,
+      cyclical: 0.6,
       rhoW: 0.22,
       rhoNz: 0.5,
       risk: 3,
@@ -2479,8 +2605,9 @@ footer {
       color: 'var(--series-atm)',
       start: 7.2,
       past: { ret: 0.13, since: 'past 20 years' },
-      mu: 0.07,
-      sigma: 0.48,
+      mu: 0.035,
+      sigma: 0.44,
+      cyclical: 0.9,
       rhoW: 0.25,
       rhoNz: 0.38,
       risk: 4,
@@ -2497,8 +2624,9 @@ footer {
       color: 'var(--series-air)',
       start: 0.62,
       past: { ret: 0.02, since: 'past 20 years' },
-      mu: 0.068,
-      sigma: 0.36,
+      mu: 0.03,
+      sigma: 0.34,
+      cyclical: 1.3,
       rhoW: 0.38,
       rhoNz: 0.45,
       risk: 4,
@@ -2517,8 +2645,9 @@ footer {
       color: 'var(--series-aapl)',
       start: 228.0,
       past: { ret: 0.24, since: 'past 20 years' },
-      mu: 0.078,
-      sigma: 0.29,
+      mu: 0.06,
+      sigma: 0.27,
+      cyclical: 1,
       rhoW: 0.78,
       rhoNz: 0,
       risk: 3,
@@ -2535,8 +2664,9 @@ footer {
       color: 'var(--series-nvda)',
       start: 185.0,
       past: { ret: 0.33, since: 'past 20 years' },
-      mu: 0.072,
-      sigma: 0.52,
+      mu: 0.04,
+      sigma: 0.48,
+      cyclical: 1.3,
       rhoW: 0.72,
       rhoNz: 0,
       risk: 4,
@@ -2553,8 +2683,9 @@ footer {
       color: 'var(--series-tsla)',
       start: 330.0,
       past: { ret: 0.35, since: 'since 2010' },
-      mu: 0.068,
-      sigma: 0.6,
+      mu: 0.03,
+      sigma: 0.55,
+      cyclical: 1.4,
       rhoW: 0.62,
       rhoNz: 0,
       risk: 5,
@@ -2573,8 +2704,9 @@ footer {
       color: 'var(--series-btc)',
       start: 178000,
       past: { ret: 0.6, since: 'since 2013' },
-      mu: 0.08,
-      sigma: 0.7,
+      mu: 0.03,
+      sigma: 0.55,
+      cyclical: 1.2,
       rhoW: 0.32,
       rhoNz: 0,
       risk: 5,
@@ -2591,8 +2723,9 @@ footer {
       color: 'var(--series-eth)',
       start: 6500,
       past: { ret: 0.45, since: 'since 2015' },
-      mu: 0.08,
-      sigma: 0.85,
+      mu: 0.025,
+      sigma: 0.65,
+      cyclical: 1.3,
       rhoW: 0.35,
       rhoNz: 0,
       risk: 5,
@@ -2831,6 +2964,114 @@ footer {
   const EVENT_CHANCE_PER_MONTH = 0.32;
   const BASE_INFLATION = 0.025;
 
+  /* Strength of the pull back toward each asset's median path, per year. Small
+   * on purpose: enough to bound thirty-year tails, too weak to be a forecast. */
+  const MEAN_REVERSION = 0.12;
+
+  /* ── The business cycle ──
+   *
+   * The economy walks a loop: expansion → peak → recession → recovery →
+   * expansion. It is the thing high-school economics actually teaches, and
+   * wiring it in makes the rest of the app cohere — the news stops being random
+   * and starts being *caused*, GDP becomes something to watch, and the market
+   * gets the one behaviour a plain random walk cannot produce.
+   *
+   * That behaviour is `corr`: in a downturn, everything risky starts moving
+   * together. Diversification failing exactly when it is needed most is one of
+   * the most important facts about real markets, and no amount of tuning
+   * individual correlations reproduces it — the regime has to do it.
+   *
+   * `months` is the average length of each phase, roughly matched to the real
+   * post-war record: long expansions, short sharp recessions. */
+  const CYCLE = [
+    {
+      id: 'expansion',
+      name: 'Expansion',
+      mood: 'good',
+      blurb: 'Businesses are hiring, people are spending, and shares grind upwards.',
+      teach:
+        'The long, boring, profitable part of the cycle. Most years look like this, which is exactly why sitting still tends to win.',
+      gdp: 0.032,
+      drift: 0.025,
+      volMult: 0.9,
+      corr: 0.0,
+      inflation: 0.025,
+      months: 60
+    },
+    {
+      id: 'peak',
+      name: 'Overheating',
+      mood: 'warm',
+      blurb: 'Running hot. Prices are rising fast and the Reserve Bank is getting nervous.',
+      teach:
+        'Everyone feels rich and nobody wants to sell. Inflation climbs, the OCR goes up to cool things down, and higher rates make shares less attractive.',
+      gdp: 0.015,
+      drift: 0.0,
+      volMult: 1.1,
+      corr: 0.1,
+      inflation: 0.04,
+      months: 10
+    },
+    {
+      id: 'recession',
+      name: 'Recession',
+      mood: 'bad',
+      blurb: 'The economy is shrinking. Jobs go, and almost everything risky falls together.',
+      teach:
+        'Two quarters of shrinking GDP. This is when diversification is tested: correlations rise, so things that normally move apart fall side by side. Bonds are the exception.',
+      gdp: -0.018,
+      drift: -0.11,
+      volMult: 1.7,
+      corr: 0.35,
+      inflation: 0.015,
+      months: 11
+    },
+    {
+      id: 'recovery',
+      name: 'Recovery',
+      mood: 'warm',
+      blurb: 'The worst is over. Rates are low, and the riskiest things bounce hardest.',
+      teach:
+        'The bounce usually starts before the news feels better, which is why selling at the bottom hurts twice — you take the fall and miss the rebound.',
+      gdp: 0.038,
+      drift: 0.075,
+      volMult: 1.25,
+      corr: 0.15,
+      inflation: 0.018,
+      months: 18
+    }
+  ];
+
+  /* Long-run share of time spent in each phase, from the average durations. */
+  function cycleWeights() {
+    const total = CYCLE.reduce(function (s, c) {
+      return s + c.months;
+    }, 0);
+    return CYCLE.map(function (c) {
+      return c.months / total;
+    });
+  }
+
+  /* The cycle must not quietly change any asset's long-run return.
+   *
+   * Recessions subtract drift and expansions add it, and those do not cancel by
+   * themselves — weighted by how long each phase lasts, the average comes out
+   * positive. Subtracting that average keeps `mu` meaning exactly what the table
+   * says it means, the same discipline the news events already follow. */
+  function cycleDriftBias() {
+    const w = cycleWeights();
+    return CYCLE.reduce(function (sum, c, i) {
+      return sum + w[i] * c.drift;
+    }, 0);
+  }
+
+  function cycleById(id) {
+    for (let i = 0; i < CYCLE.length; i++) {
+      if (CYCLE[i].id === id) return CYCLE[i];
+    }
+    return CYCLE[0];
+  }
+
   function byId(id) {
     for (let i = 0; i < ASSETS.length; i++) {
       if (ASSETS[i].id === id) return ASSETS[i];
@@ -2910,7 +3151,21 @@ footer {
       drag[a.id] = eventLogDrag(a);
     });
 
+    /* Cycle state. Starts in expansion, which is where most decades begin. */
+    let phase = 0;
+    const cycle = [CYCLE[0].id];
+    const gdp = [CYCLE[0].gdp];
+    const bias = cycleDriftBias();
+
     for (let m = 1; m <= months; m++) {
+      // Advance the cycle first: this month happens inside the new phase.
+      const here = CYCLE[phase];
+      if (rng.next() < 1 / here.months) phase = (phase + 1) % CYCLE.length;
+      const regime = CYCLE[phase];
+      cycle.push(regime.id);
+      // Reported GDP wobbles around the phase's underlying rate.
+      gdp.push(regime.gdp + rng.normal() * 0.008);
+
       // Two shared factors: one global, one local to New Zealand.
       const worldShock = rng.normal();
       const nzShock = rng.normal();
@@ -2921,9 +3176,14 @@ footer {
 
       ASSETS.forEach(function (a) {
         const own = rng.normal();
-        const systematic = a.rhoW * a.rhoW + a.rhoNz * a.rhoNz;
+
+        /* In a downturn, correlations rise toward one. `corr` pulls each asset's
+         * loading on the shared world factor upward, so a diversified holding
+         * stops behaving like one exactly when the student needs it to. */
+        const rhoW = Math.min(1, a.rhoW + regime.corr * (1 - a.rhoW) * (a.cyclical > 0 ? 1 : 0));
+        const systematic = rhoW * rhoW + a.rhoNz * a.rhoNz;
         const idiosyncratic = Math.sqrt(Math.max(0, 1 - systematic));
-        const z = a.rhoW * worldShock + a.rhoNz * nzShock + idiosyncratic * own;
+        const z = rhoW * worldShock + a.rhoNz * nzShock + idiosyncratic * own;
 
         /* `mu` is the compound growth rate a typical path actually achieves.
          *
@@ -2939,8 +3199,26 @@ footer {
          * exp(0.08) - 1 = 8.33%, so a table promising 8% would quietly deliver
          * a third of a point more. Small, but the whole point of showing an
          * expected return next to a past one is that the numbers are honest. */
-        const drift = Math.log(1 + a.mu) * DT - drag[a.id];
-        const diffusion = a.sigma * Math.sqrt(DT) * z;
+        /* Mean reversion, and the reason it is here.
+         *
+         * Plain geometric Brownian motion has nothing stopping it: the spread of
+         * outcomes grows with the square root of time and never bounds. Over
+         * thirty years that produced Ethereum at a billion times its starting
+         * price in about a third of runs — visibly broken rather than merely
+         * unlucky. Real assets cannot do that; nothing compounds past the size of
+         * the world economy.
+         *
+         * So the drift gets a gentle pull back toward the median path. `kappa` is
+         * small enough to be almost invisible over ten years and firm enough to
+         * stop the thirty-year tails running away. It pulls toward the trend, not
+         * toward a fixed price, so the median is untouched. */
+        const trend = Math.log(1 + a.mu) * (m - 1) * DT;
+        const gap = Math.log(prices[a.id][m - 1] / a.start) - trend;
+        const pull = -MEAN_REVERSION * gap * DT;
+
+        const cyclical = a.cyclical * (regime.drift - bias) * DT;
+        const drift = Math.log(1 + a.mu) * DT - drag[a.id] + cyclical + pull;
+        const diffusion = a.sigma * regime.volMult * Math.sqrt(DT) * z;
         let r = Math.exp(drift + diffusion) - 1;
 
         if (event) {
@@ -2956,7 +3234,8 @@ footer {
         returns[a.id].push(next / prev - 1);
       });
 
-      const infl = BASE_INFLATION / MONTHS_PER_YEAR + (rng.normal() * 0.004) / Math.sqrt(12);
+      // Inflation follows the cycle: hot at the peak, cool in a recession.
+      const infl = regime.inflation / MONTHS_PER_YEAR + (rng.normal() * 0.004) / Math.sqrt(12);
       cpi.push(cpi[m - 1] * (1 + Math.max(-0.01, infl)));
     }
 
@@ -2966,13 +3245,17 @@ footer {
       prices: prices,
       returns: returns,
       events: events,
-      cpi: cpi
+      cpi: cpi,
+      cycle: cycle,
+      gdp: gdp
     };
   }
 
   global.Market = {
     ASSETS: ASSETS,
     CATEGORIES: CATEGORIES,
+    CYCLE: CYCLE,
+    cycleById: cycleById,
     EVENTS: EVENTS,
     MONTHS_PER_YEAR: MONTHS_PER_YEAR,
     BASE_INFLATION: BASE_INFLATION,
@@ -4197,7 +4480,7 @@ footer {
 
   /* Single-series sparkline for the market table. Identity comes from the asset
    * name in the same row, so the color here is reinforcement, not the only cue. */
-  function sparkline(canvas, values, color) {
+  function sparkline(canvas, values, color, opts) {
     const c = setupCanvas(canvas);
     const ctx = c.ctx;
     if (!values || values.length < 2) return;
@@ -4205,6 +4488,12 @@ footer {
     const padY = 3;
     let lo = Math.min.apply(null, values);
     let hi = Math.max.apply(null, values);
+    /* GDP crosses zero and the sign is the whole point, so that series asks for
+     * zero to stay inside the range rather than being cropped out of view. */
+    if (opts && typeof opts.zero === 'number') {
+      lo = Math.min(lo, opts.zero);
+      hi = Math.max(hi, opts.zero);
+    }
     if (hi === lo) hi = lo + 1;
 
     const x = function (i) {
@@ -4213,6 +4502,18 @@ footer {
     const y = function (v) {
       return padY + (c.h - padY * 2) * (1 - (v - lo) / (hi - lo));
     };
+
+    if (opts && typeof opts.zero === 'number') {
+      const zy = y(opts.zero);
+      ctx.strokeStyle = token('--axis');
+      ctx.lineWidth = 1;
+      ctx.setLineDash([2, 2]);
+      ctx.beginPath();
+      ctx.moveTo(0, zy);
+      ctx.lineTo(c.w, zy);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
 
     // Same treatment as the main chart, so sixteen tiny charts read as one set.
     const top = withAlpha(color, 0.24);
@@ -4406,6 +4707,43 @@ footer {
       note.textContent =
         'Needs about ' + plainPct(need) + ' a year from here' + (need > 0.14 ? ' — that is a lot.' : '.');
     }
+  }
+
+  /* ---------------- the economy ---------------- */
+
+  function renderEconomy(state) {
+    const phase = Market.cycleById(state.market.cycle[state.month]);
+    const growth = state.market.gdp[state.month];
+
+    $('econ-phase').textContent = phase.name;
+    $('econ-phase').className = 'econ-phase mood-' + phase.mood;
+    $('econ-blurb').textContent = phase.blurb;
+    $('econ-teach').textContent = phase.teach;
+
+    const g = $('econ-gdp');
+    g.textContent = pct(growth);
+    g.className = 'econ-gdp-v ' + (growth >= 0 ? 'up' : 'down');
+
+    /* The loop, drawn as a loop. Students are taught these four stages by name,
+     * so showing where the run currently sits connects the app to the lesson. */
+    $('econ-track').innerHTML = Market.CYCLE.map(function (c) {
+      return (
+        '<li class="econ-step' +
+        (c.id === phase.id ? ' is-on mood-' + c.mood : '') +
+        '"><span></span>' +
+        c.name +
+        '</li>'
+      );
+    }).join('');
+
+    // GDP so far, so a recession is visible as a dip rather than only a word.
+    const series = state.market.gdp.slice(0, state.month + 1);
+    Charts.sparkline(
+      $('econ-spark'),
+      series.length > 1 ? series : [growth, growth],
+      resolveColor(growth >= 0 ? 'var(--up)' : 'var(--down)'),
+      { zero: 0 }
+    );
   }
 
   /* ---------------- the opponent ---------------- */
@@ -5243,6 +5581,7 @@ footer {
     renderHeader: renderHeader,
     renderHero: renderHero,
     renderGoal: renderGoal,
+    renderEconomy: renderEconomy,
     renderOpponent: renderOpponent,
     showDecision: showDecision,
     renderTiles: renderTiles,
@@ -5889,6 +6228,58 @@ footer {
       see: ['diversification']
     },
 
+    cycle: {
+      title: 'The business cycle',
+      hint: 'The loop every economy walks',
+      body: function (state) {
+        const phase = Market.cycleById(state.market.cycle[state.month]);
+        return (
+          p(
+            'Economies do not grow in a straight line. They move through four stages, over and over: <strong>expansion</strong>, <strong>overheating</strong>, <strong>recession</strong>, <strong>recovery</strong>.'
+          ) +
+          p('Right now this run is in <strong>' + phase.name + '</strong>. ' + phase.blurb) +
+          sum([
+            { k: 'Expansion', v: 'Hiring, spending, shares grind up' },
+            { k: 'Overheating', v: 'Inflation climbs, the OCR rises' },
+            { k: 'Recession', v: 'GDP shrinks, almost everything falls' },
+            { k: 'Recovery', v: 'Cheap money, the riskiest things bounce' }
+          ]) +
+          p(
+            'Expansions are long and recessions are short — about 60% of months here are expansion and only about 11% recession. That is why sitting still usually wins: you spend most of your life in the good part.'
+          ) +
+          p(
+            'The important catch is that in a recession things start moving <em>together</em>. Shares that normally rise and fall at different times all fall at once, so a spread-out portfolio protects you least exactly when you need it most. Bonds are the exception, which is why they earn their place.'
+          )
+        );
+      },
+      see: ['gdp', 'diversification', 'ocr']
+    },
+
+    gdp: {
+      title: 'GDP growth',
+      hint: 'Whether the economy is growing or shrinking',
+      body: function (state) {
+        const g = state.market.gdp[state.month];
+        return (
+          p(
+            'GDP is the total value of everything a country produces in a year. GDP <em>growth</em> is whether that total is getting bigger or smaller.'
+          ) +
+          p(
+            'Right now it is running at <strong>' +
+              UI.pct(g) +
+              '</strong> a year. Anything around 2-3% is healthy. Below zero means the economy is actually shrinking.'
+          ) +
+          p(
+            'Two quarters of shrinking GDP in a row is the usual definition of a <strong>recession</strong>. That is when businesses stop hiring, people stop spending, and company profits fall — which is why share prices fall with it.'
+          ) +
+          p(
+            'Watch the little chart: the dips are where the market got frightening, and where the decisions in this app actually mattered.'
+          )
+        );
+      },
+      see: ['cycle', 'inflation']
+    },
+
     seed: {
       title: 'Market seed',
       hint: 'Why everyone can get the same market',
@@ -5916,6 +6307,8 @@ footer {
 
   let panel = null;
   let lastAnchor = null;
+  // Scroll position when the panel opened, so a stray pixel does not dismiss it.
+  let openedAt = 0;
   let getState = null;
 
   function build() {
@@ -5934,10 +6327,6 @@ footer {
     document.body.appendChild(panel);
 
     panel.querySelector('.term-close').addEventListener('click', close);
-    panel.addEventListener('click', function (ev) {
-      const link = ev.target.closest('[data-goto]');
-      if (link) open(link.getAttribute('data-goto'), lastAnchor);
-    });
   }
 
   function close() {
@@ -6011,7 +6400,13 @@ footer {
     lastAnchor = anchor || lastAnchor;
     panel.hidden = false;
     place(lastAnchor);
-    panel.querySelector('.term-close').focus();
+
+    /* Both halves of this matter. Moving focus can nudge the page, and the
+     * scroll-to-close handler below took that nudge as the reader scrolling
+     * away — so following a "See also" link opened the new entry and instantly
+     * closed it again, which looked like the link doing nothing at all. */
+    openedAt = window.scrollY;
+    panel.querySelector('.term-close').focus({ preventScroll: true });
   }
 
   /* One delegated listener on the document, so terms rendered later — market
@@ -6027,6 +6422,19 @@ footer {
         open(trigger.getAttribute('data-term'), trigger);
         return;
       }
+
+      /* "See also" is handled here rather than on the panel, and it must come
+       * before the outside-click check below. Opening a term rewrites the
+       * panel's contents, which detaches the very chip that was clicked — so by
+       * the time the check ran, `closest('.term-pop')` found nothing, decided
+       * the click was outside, and closed the panel a moment after opening it.
+       * That is what made following a "See also" link look like it did nothing. */
+      const goto = ev.target.closest('[data-goto]');
+      if (goto && !panel.hidden) {
+        open(goto.getAttribute('data-goto'), lastAnchor);
+        return;
+      }
+
       if (!panel.hidden && !ev.target.closest('.term-pop')) close();
     });
 
@@ -6038,11 +6446,13 @@ footer {
       if (!panel.hidden && lastAnchor) place(lastAnchor);
     });
 
-    // A scrolled-away panel is just clutter, and re-anchoring on scroll is worse.
+    // A scrolled-away panel is just clutter, and re-anchoring on scroll is
+    // worse — but only a deliberate scroll should count, not the pixel or two
+    // that moving focus can cause.
     window.addEventListener(
       'scroll',
       function () {
-        if (!panel.hidden) close();
+        if (!panel.hidden && Math.abs(window.scrollY - openedAt) > 8) close();
       },
       { passive: true }
     );
@@ -6082,23 +6492,18 @@ footer {
 
   const $ = UI.$;
 
-  /* The one seed out of 6,000 that satisfied every constraint below, chosen for
-   * being representative rather than flattering.
+  /* Re-picked after the business cycle and the volatility recalibration changed
+   * every price path. Chosen from 8,000 candidates for being representative
+   * rather than flattering: the world fund lands on its 8% expectation (7.9%),
+   * there is a -32% fall to sit through, twelve months of recession, and three
+   * crashes that each ask the student what to do.
    *
-   * Required: the world fund lands near its 8% expectation (7.0% here), there is
-   * a real crash to sit through (-33%), bonds and the NZX 50 behave, at least
-   * three headline events fire, no asset finishes at an absurd rate, and nothing
-   * falls further than about 87% — deeper than crypto has ever actually gone
-   * reads as a broken simulation rather than a fair tail.
-   *
-   * What makes this decade worth teaching is how it turned out. The boring NZX
-   * 50 fund returns 10.6% and beats almost everything. Nvidia, Xero and a2 Milk
-   * all finish *negative*. Bitcoin manages 6.2% — below the world fund, after an
-   * 87% fall on the way. And the single best performer is Air New Zealand at
-   * 18.9%: the company with the worst real history on the board, which no
-   * student would ever have picked. A decade where the exciting bets paid off
-   * would teach the precise opposite of what this app is for. */
-  const DEFAULT_SEED = 'classroom-2910';
+   * What makes this decade worth teaching is the ending. Bitcoin *loses* 9.6% a
+   * year. The NZX 50 fund returns 8.6%. And the best single company on the board
+   * is Fisher & Paykel at 9.3% — barely ahead of a boring world fund, after
+   * carrying several times the risk to get there. Nobody is rewarded for
+   * excitement, which is the entire point of the app. */
+  const DEFAULT_SEED = 'classroom-4019';
 
   let state = null;
   let chart = null;
@@ -6134,6 +6539,7 @@ footer {
     UI.renderHeader(state);
     UI.renderHero(state);
     UI.renderGoal(state);
+    UI.renderEconomy(state);
     UI.renderTiles(state);
     UI.renderAllocation(state);
     UI.updateMarket(state);
