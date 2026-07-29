@@ -1526,10 +1526,20 @@ footer {
   margin-left: auto;
 }
 
+/* Three or four options depending on whether the headline hit one category,
+   so the grid flows rather than being pinned to a column count. */
 .d-choices {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(148px, 1fr));
   gap: 9px;
+}
+
+.d-choice.sell-cat:hover {
+  border-color: var(--cat-crypto);
+}
+
+.d-choice[hidden] {
+  display: none;
 }
 
 .d-choice {

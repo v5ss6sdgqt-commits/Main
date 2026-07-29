@@ -206,6 +206,27 @@
     return { sold: sold, fees: fees, before: before };
   }
 
+  /* Sells one category and leaves the rest alone.
+   *
+   * "Sell everything" is the wrong instrument for a crypto collapse — it dumps
+   * the bonds and the world fund too, which the news had nothing to do with.
+   * Offering the targeted version turns a panic button into an actual decision:
+   * cut the thing that broke, or cut everything. */
+  function sellCategory(state, categoryId) {
+    let sold = 0;
+    let fees = 0;
+    Market.assetsInCategory(categoryId).forEach(function (a) {
+      const value = holdingValue(state, a.id);
+      if (value <= 0.005) return;
+      const result = sell(state, a.id, value);
+      if (result.ok) {
+        sold += result.amount;
+        fees += result.fee;
+      }
+    });
+    return { sold: sold, fees: fees };
+  }
+
   /* Buy-the-dip button. Spreads all available cash across whatever the student
    * already holds, in their existing proportions, so it reinforces their own
    * strategy rather than quietly picking assets for them. With nothing held it
@@ -431,6 +452,7 @@
     buy: buy,
     sell: sell,
     sellAll: sellAll,
+    sellCategory: sellCategory,
     investAllCash: investAllCash,
     sellAnalysis: sellAnalysis,
     decisionAnalysis: decisionAnalysis,

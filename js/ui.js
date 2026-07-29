@@ -347,6 +347,36 @@
         : 'You have no spare cash';
     buyBtn.disabled = !worthIt;
 
+    /* The targeted sell. "Sell everything" is the wrong instrument for a crypto
+     * collapse — it dumps the bonds and the world fund too, which the headline
+     * had nothing to do with. This offers the surgical version, but only when it
+     * is genuinely a different choice: the student has to hold something in the
+     * hit category *and* something outside it, or the button would either do
+     * nothing or duplicate "sell everything". */
+    const catBtn = modal.querySelector('.d-choice.sell-cat');
+    const worst = Market.worstCategory(event);
+    let catValue = 0;
+    let catCount = 0;
+    if (worst) {
+      Market.assetsInCategory(worst.category.id).forEach(function (a) {
+        const v = Portfolio.holdingValue(state, a.id);
+        if (v > 0.005) {
+          catValue += v;
+          catCount += 1;
+        }
+      });
+    }
+    const offerTargeted = !!worst && catValue > 0.005 && damage.after - catValue > 0.005;
+
+    catBtn.hidden = !offerTargeted;
+    if (offerTargeted) {
+      const catFees = catCount * state.cfg.feeFlat + catValue * state.cfg.feeRate;
+      catBtn.querySelector('strong').textContent = 'Sell just the ' + worst.category.name.toLowerCase();
+      catBtn.querySelector('small').textContent =
+        'Cash out ' + money(catValue) + ', keep the rest · about ' + money(catFees, 2) + ' in fees';
+      catBtn.setAttribute('data-category', worst.category.id);
+    }
+
     modal.hidden = false;
 
     const buttons = Array.prototype.slice.call(modal.querySelectorAll('.d-choice'));
@@ -358,7 +388,7 @@
     function trap(ev) {
       if (ev.key !== 'Tab') return;
       const live = buttons.filter(function (b) {
-        return !b.disabled;
+        return !b.disabled && !b.hidden;
       });
       const first = live[0];
       const last = live[live.length - 1];
@@ -376,12 +406,13 @@
 
     function handle(ev) {
       const choice = ev.currentTarget.getAttribute('data-choice');
+      const category = ev.currentTarget.getAttribute('data-category');
       buttons.forEach(function (b) {
         b.removeEventListener('click', handle);
       });
       document.removeEventListener('keydown', trap, true);
       modal.hidden = true;
-      onChoose(choice);
+      onChoose(choice, category);
     }
 
     buttons.forEach(function (b) {
@@ -746,6 +777,7 @@
 
     const VERBS = {
       sell: 'You sold everything',
+      'sell-cat': 'You sold just the part that was hit',
       hold: 'You sat through it',
       buy: 'You bought more'
     };

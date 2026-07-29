@@ -229,8 +229,20 @@
       change: before > 0 ? after / before - 1 : 0
     };
 
-    UI.showDecision(state, event, damage, function (choice) {
-      if (choice === 'sell') {
+    UI.showDecision(state, event, damage, function (choice, categoryId) {
+      if (choice === 'sell-cat') {
+        const cat = Market.categoryById(categoryId);
+        const r = Portfolio.sellCategory(state, categoryId);
+        setNotice(
+          'Sold your ' +
+            cat.name.toLowerCase() +
+            ' for ' +
+            UI.money(r.sold, 2) +
+            ', paying ' +
+            UI.money(r.fees, 2) +
+            ' in fees. Everything else is untouched.'
+        );
+      } else if (choice === 'sell') {
         const r = Portfolio.sellAll(state);
         setNotice(
           'Sold everything for ' + UI.money(r.sold, 2) + ', paying ' + UI.money(r.fees, 2) + ' in fees to get out.'

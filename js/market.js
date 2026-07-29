@@ -763,6 +763,29 @@
     return (1 + catPart) * (1 + ownPart) - 1;
   }
 
+  /* The category an event hits hardest, averaged across its assets. Used to
+   * offer a targeted "sell just the crypto" instead of only an all-or-nothing
+   * panic button. */
+  function worstCategory(event) {
+    let worst = null;
+    let worstHit = 0;
+    CATEGORIES.forEach(function (cat) {
+      const assets = ASSETS.filter(function (a) {
+        return a.category === cat.id;
+      });
+      if (!assets.length) return;
+      const mean =
+        assets.reduce(function (sum, a) {
+          return sum + effectFor(event, a);
+        }, 0) / assets.length;
+      if (mean < worstHit) {
+        worstHit = mean;
+        worst = cat;
+      }
+    });
+    return worst ? { category: worst, hit: worstHit } : null;
+  }
+
   function totalEventWeight() {
     return EVENTS.reduce(function (sum, e) {
       return sum + e.weight;
@@ -923,6 +946,7 @@
     CATEGORIES: CATEGORIES,
     CYCLE: CYCLE,
     cycleById: cycleById,
+    worstCategory: worstCategory,
     EVENTS: EVENTS,
     MONTHS_PER_YEAR: MONTHS_PER_YEAR,
     BASE_INFLATION: BASE_INFLATION,

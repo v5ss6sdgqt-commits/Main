@@ -1534,10 +1534,20 @@ footer {
   margin-left: auto;
 }
 
+/* Three or four options depending on whether the headline hit one category,
+   so the grid flows rather than being pinned to a column count. */
 .d-choices {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(148px, 1fr));
   gap: 9px;
+}
+
+.d-choice.sell-cat:hover {
+  border-color: var(--cat-crypto);
+}
+
+.d-choice[hidden] {
+  display: none;
 }
 
 .d-choice {
@@ -2680,6 +2690,13 @@ footer {
         <strong>Sell everything</strong>
         <small>Get out before it falls further</small>
       </button>
+      <!-- Shown only when the headline hit one category and the student holds
+           something outside it, where it is a real alternative rather than a
+           duplicate of "sell everything". -->
+      <button type="button" class="d-choice sell-cat" data-choice="sell-cat" hidden>
+        <strong></strong>
+        <small></small>
+      </button>
       <button type="button" class="d-choice hold" data-choice="hold">
         <strong>Do nothing</strong>
         <small>Sit through it and wait</small>
@@ -3521,6 +3538,29 @@ footer {
     return (1 + catPart) * (1 + ownPart) - 1;
   }
 
+  /* The category an event hits hardest, averaged across its assets. Used to
+   * offer a targeted "sell just the crypto" instead of only an all-or-nothing
+   * panic button. */
+  function worstCategory(event) {
+    let worst = null;
+    let worstHit = 0;
+    CATEGORIES.forEach(function (cat) {
+      const assets = ASSETS.filter(function (a) {
+        return a.category === cat.id;
+      });
+      if (!assets.length) return;
+      const mean =
+        assets.reduce(function (sum, a) {
+          return sum + effectFor(event, a);
+        }, 0) / assets.length;
+      if (mean < worstHit) {
+        worstHit = mean;
+        worst = cat;
+      }
+    });
+    return worst ? { category: worst, hit: worstHit } : null;
+  }
+
   function totalEventWeight() {
     return EVENTS.reduce(function (sum, e) {
       return sum + e.weight;
@@ -3681,6 +3721,7 @@ footer {
     CATEGORIES: CATEGORIES,
     CYCLE: CYCLE,
     cycleById: cycleById,
+    worstCategory: worstCategory,
     EVENTS: EVENTS,
     MONTHS_PER_YEAR: MONTHS_PER_YEAR,
     BASE_INFLATION: BASE_INFLATION,
@@ -3904,6 +3945,27 @@ footer {
       }
     });
     return { sold: sold, fees: fees, before: before };
+  }
+
+  /* Sells one category and leaves the rest alone.
+   *
+   * "Sell everything" is the wrong instrument for a crypto collapse — it dumps
+   * the bonds and the world fund too, which the news had nothing to do with.
+   * Offering the targeted version turns a panic button into an actual decision:
+   * cut the thing that broke, or cut everything. */
+  function sellCategory(state, categoryId) {
+    let sold = 0;
+    let fees = 0;
+    Market.assetsInCategory(categoryId).forEach(function (a) {
+      const value = holdingValue(state, a.id);
+      if (value <= 0.005) return;
+      const result = sell(state, a.id, value);
+      if (result.ok) {
+        sold += result.amount;
+        fees += result.fee;
+      }
+    });
+    return { sold: sold, fees: fees };
   }
 
   /* Buy-the-dip button. Spreads all available cash across whatever the student
@@ -4131,6 +4193,7 @@ footer {
     buy: buy,
     sell: sell,
     sellAll: sellAll,
+    sellCategory: sellCategory,
     investAllCash: investAllCash,
     sellAnalysis: sellAnalysis,
     decisionAnalysis: decisionAnalysis,
@@ -6008,6 +6071,36 @@ footer {
         : 'You have no spare cash';
     buyBtn.disabled = !worthIt;
 
+    /* The targeted sell. "Sell everything" is the wrong instrument for a crypto
+     * collapse — it dumps the bonds and the world fund too, which the headline
+     * had nothing to do with. This offers the surgical version, but only when it
+     * is genuinely a different choice: the student has to hold something in the
+     * hit category *and* something outside it, or the button would either do
+     * nothing or duplicate "sell everything". */
+    const catBtn = modal.querySelector('.d-choice.sell-cat');
+    const worst = Market.worstCategory(event);
+    let catValue = 0;
+    let catCount = 0;
+    if (worst) {
+      Market.assetsInCategory(worst.category.id).forEach(function (a) {
+        const v = Portfolio.holdingValue(state, a.id);
+        if (v > 0.005) {
+          catValue += v;
+          catCount += 1;
+        }
+      });
+    }
+    const offerTargeted = !!worst && catValue > 0.005 && damage.after - catValue > 0.005;
+
+    catBtn.hidden = !offerTargeted;
+    if (offerTargeted) {
+      const catFees = catCount * state.cfg.feeFlat + catValue * state.cfg.feeRate;
+      catBtn.querySelector('strong').textContent = 'Sell just the ' + worst.category.name.toLowerCase();
+      catBtn.querySelector('small').textContent =
+        'Cash out ' + money(catValue) + ', keep the rest · about ' + money(catFees, 2) + ' in fees';
+      catBtn.setAttribute('data-category', worst.category.id);
+    }
+
     modal.hidden = false;
 
     const buttons = Array.prototype.slice.call(modal.querySelectorAll('.d-choice'));
@@ -6019,7 +6112,7 @@ footer {
     function trap(ev) {
       if (ev.key !== 'Tab') return;
       const live = buttons.filter(function (b) {
-        return !b.disabled;
+        return !b.disabled && !b.hidden;
       });
       const first = live[0];
       const last = live[live.length - 1];
@@ -6037,12 +6130,13 @@ footer {
 
     function handle(ev) {
       const choice = ev.currentTarget.getAttribute('data-choice');
+      const category = ev.currentTarget.getAttribute('data-category');
       buttons.forEach(function (b) {
         b.removeEventListener('click', handle);
       });
       document.removeEventListener('keydown', trap, true);
       modal.hidden = true;
-      onChoose(choice);
+      onChoose(choice, category);
     }
 
     buttons.forEach(function (b) {
@@ -6407,6 +6501,7 @@ footer {
 
     const VERBS = {
       sell: 'You sold everything',
+      'sell-cat': 'You sold just the part that was hit',
       hold: 'You sat through it',
       buy: 'You bought more'
     };
@@ -7887,8 +7982,20 @@ footer {
       change: before > 0 ? after / before - 1 : 0
     };
 
-    UI.showDecision(state, event, damage, function (choice) {
-      if (choice === 'sell') {
+    UI.showDecision(state, event, damage, function (choice, categoryId) {
+      if (choice === 'sell-cat') {
+        const cat = Market.categoryById(categoryId);
+        const r = Portfolio.sellCategory(state, categoryId);
+        setNotice(
+          'Sold your ' +
+            cat.name.toLowerCase() +
+            ' for ' +
+            UI.money(r.sold, 2) +
+            ', paying ' +
+            UI.money(r.fees, 2) +
+            ' in fees. Everything else is untouched.'
+        );
+      } else if (choice === 'sell') {
         const r = Portfolio.sellAll(state);
         setNotice(
           'Sold everything for ' + UI.money(r.sold, 2) + ', paying ' + UI.money(r.fees, 2) + ' in fees to get out.'

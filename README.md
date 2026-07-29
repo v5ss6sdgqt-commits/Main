@@ -253,7 +253,12 @@ be saved into — deliberately.
 **A crash stops the run and makes them choose.** When a recession or a crypto
 collapse lands and the student actually holds investments, the simulation freezes
 and shows the damage in dollars, with three buttons: sell everything, do nothing,
-buy more. This is the one decision in investing that genuinely separates
+buy more — and, when the headline hit one corner of the market, a fourth:
+*sell just the crypto*. "Sell everything" is the wrong instrument for a crypto
+collapse, since it dumps the bonds and the world fund the news had nothing to do
+with. The targeted option only appears when the student holds something in the
+hit category and something outside it, so it is a real alternative rather than a
+duplicate. This is the one decision in investing that genuinely separates
 outcomes, and watching it scroll past in an auto-playing chart teaches nothing.
 A crash also interrupts a skipped year rather than being discovered nine months
 late.
