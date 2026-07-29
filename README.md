@@ -34,7 +34,7 @@ light/dark theme preference.
 
 ### Handing it out as a single file
 
-`dist/market-lab.html` is the whole app inlined into one 77 KB file. Email it to
+`dist/market-lab.html` is the whole app inlined into one 179 KB file. Email it to
 a class, drop it on a shared drive, or put it on a USB stick — there is no
 folder structure to keep intact and nothing to load over the network.
 
@@ -136,6 +136,48 @@ fairly well, while past returns barely predict future returns at all.
 The table shows both numbers side by side — struck-through past next to bold
 expected — and the glossary explains the gap. Noticing it is the single most
 valuable thing a fifteen-year-old can take away from this.
+
+## Goals, crashes, and consequences
+
+Three connected features carry most of the engagement, and they only work
+together.
+
+**A goal gives the numbers a reason to matter.** Students pick what they are
+saving for — moving out, a first car, a big OE — and a progress bar sits under
+the headline figure with a live "needs about 7.5% a year from here" that
+recalculates every month. Without a target the app grows a number and there is no
+reason to prefer one number to another.
+
+Targets scale with the length of the run rather than being fixed dollar amounts,
+because a fixed $11,000 car is a stretch over ten years and trivial over twenty,
+which would quietly switch the feature off for longer runs. The multipliers in
+`js/goals.js` are the difficulty dial. Pure cash at 3% turns $7,000 of
+contributions into about $8,100 over ten years, so even the easiest goal cannot
+be saved into — deliberately.
+
+**A crash stops the run and makes them choose.** When a recession or a crypto
+collapse lands and the student actually holds investments, the simulation freezes
+and shows the damage in dollars, with three buttons: sell everything, do nothing,
+buy more. This is the one decision in investing that genuinely separates
+outcomes, and watching it scroll past in an auto-playing chart teaches nothing.
+A crash also interrupts a skipped year rather than being discovered nine months
+late.
+
+No option is styled as the correct answer. Selling pays a flat fee per holding,
+which is part of the lesson.
+
+**The end screen says what it cost.** Every sale records the *units* that left,
+not just the dollars, so the app can price those exact units at the final month
+and report the real consequence: *"You got $1,476 for those units. Left alone
+they would be worth $1,774 now — that one decision cost you $298."*
+
+That is arithmetic on units the student actually sold, not a guess about a path
+they did not take. Selling is not automatically punished either: when it genuinely
+saved money the app says so, which is what makes the rest of it credible.
+
+On the default seed, the three choices at the month-69 recession play out as
+buying more ($9,083) ahead of holding ($8,886) ahead of panic selling ($8,788).
+Nothing about that ordering is scripted — it falls out of the simulation.
 
 ## Explaining the words
 
@@ -241,6 +283,7 @@ css/styles.css        design tokens, light/dark themes, responsive layout
 js/rng.js             seeded PRNG and normal variates
 js/market.js          assets, price engine, news events, inflation
 js/portfolio.js       holdings, trades, fees, the benchmark, results
+js/goals.js           goal targets and the required-return maths
 js/charts.js          canvas line chart and sparklines
 js/ui.js              DOM rendering
 js/app.js             bootstrap and event wiring

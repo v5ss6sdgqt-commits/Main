@@ -107,6 +107,82 @@
     $('tile-trades').textContent = state.tradeCount === 1 ? '1 trade' : state.tradeCount + ' trades';
   }
 
+  /* ---------------- goal ---------------- */
+
+  function renderGoal(state) {
+    const box = $('goal-box');
+    const p = Goals.progress(state);
+    if (!p) {
+      box.hidden = true;
+      return;
+    }
+    box.hidden = false;
+
+    $('goal-name').textContent = state.goal.name + ' — ' + money(p.target);
+    $('goal-count').textContent = money(p.current) + ' of ' + money(p.target);
+    $('goal-fill').style.width = p.fraction * 100 + '%';
+    box.classList.toggle('reached', p.reached);
+
+    const note = $('goal-note');
+    if (p.reached) {
+      note.textContent = 'You have made it. Anything from here is extra.';
+      return;
+    }
+    if (state.finished) {
+      note.textContent = money(p.shortfall) + ' short.';
+      return;
+    }
+
+    const need = p.required;
+    if (need === Infinity) {
+      note.textContent = 'Out of reach now — nothing on this board grows that fast.';
+    } else if (need === -Infinity || need === null) {
+      note.textContent = money(p.shortfall) + ' to go.';
+    } else if (need <= 0) {
+      note.textContent = 'On track even if nothing grows from here.';
+    } else {
+      note.textContent =
+        'Needs about ' + plainPct(need) + ' a year from here' + (need > 0.14 ? ' — that is a lot.' : '.');
+    }
+  }
+
+  /* ---------------- the crash decision ---------------- */
+
+  function showDecision(state, event, damage, onChoose) {
+    const modal = $('decision-modal');
+    $('d-when').textContent = 'Year ' + Math.floor(state.month / 12) + ' · month ' + (state.month % 12);
+    $('d-headline').textContent = event.headline;
+    $('d-why').textContent = event.why;
+
+    /* Labelled as investments, not total, because cash did not move — claiming
+     * the whole portfolio fell would be the kind of small lie that makes a
+     * student stop trusting the rest of the numbers. */
+    $('d-money').innerHTML =
+      '<span class="d-money-label">Your investments</span><span class="d-before">' +
+      money(damage.before) +
+      '</span><span class="d-arrow">&rarr;</span><span class="d-after">' +
+      money(damage.after) +
+      '</span><span class="d-drop">' +
+      pct(damage.change) +
+      '</span>';
+
+    modal.hidden = false;
+
+    const buttons = modal.querySelectorAll('.d-choice');
+    function handle(ev) {
+      const choice = ev.currentTarget.getAttribute('data-choice');
+      buttons.forEach(function (b) {
+        b.removeEventListener('click', handle);
+      });
+      modal.hidden = true;
+      onChoose(choice);
+    }
+    buttons.forEach(function (b) {
+      b.addEventListener('click', handle);
+    });
+    buttons[1].focus();
+  }
+
   /* ---------------- main chart ---------------- */
 
   function chartSeries(state) {
@@ -427,8 +503,124 @@
 
   /* ---------------- results ---------------- */
 
+  /* The payoff for the crash decisions. Every claim here is arithmetic on units
+   * the student actually sold, not a guess about a path they didn't take. */
+  function renderCost(state) {
+    const block = $('cost-block');
+    const decisions = Portfolio.decisionAnalysis(state);
+    const sells = Portfolio.sellAnalysis(state);
+    const rows = [];
+
+    const VERBS = {
+      sell: 'You sold everything',
+      hold: 'You sat through it',
+      buy: 'You bought more'
+    };
+
+    decisions.forEach(function (d) {
+      const dir = d.change >= 0 ? 'rose' : 'fell';
+      rows.push(
+        '<div class="cost-row"><div class="cost-when">Month ' +
+          d.month +
+          '</div><div class="cost-what"><strong>' +
+          VERBS[d.choice] +
+          '</strong> during &ldquo;' +
+          d.headline +
+          '&rdquo;. You were left with ' +
+          money(d.after) +
+          ', and from there your portfolio ' +
+          dir +
+          ' ' +
+          pct(d.change) +
+          ' to ' +
+          money(d.finalValue) +
+          '.</div></div>'
+      );
+    });
+
+    /* Selling is not automatically a mistake — sometimes it genuinely saved
+     * money, and saying so is what makes the rest of this credible. */
+    if (sells.worst && Math.abs(sells.worst.cost) > 1) {
+      const w = sells.worst;
+      if (w.cost > 0) {
+        rows.push(
+          '<div class="cost-row bad"><div class="cost-when">Month ' +
+            w.month +
+            '</div><div class="cost-what">Your most expensive sale was <strong>' +
+            w.name +
+            '</strong>. You got ' +
+            money(w.proceeds) +
+            ' for those units. Left alone they would be worth ' +
+            money(w.wouldBeWorth) +
+            ' now — that one decision cost you <strong>' +
+            money(w.cost) +
+            '</strong>.</div></div>'
+        );
+      } else {
+        rows.push(
+          '<div class="cost-row good"><div class="cost-when">Month ' +
+            w.month +
+            '</div><div class="cost-what">Selling <strong>' +
+            w.name +
+            '</strong> was the right call. You got ' +
+            money(w.proceeds) +
+            ' for those units; they would only be worth ' +
+            money(w.wouldBeWorth) +
+            ' now, so you saved <strong>' +
+            money(-w.cost) +
+            '</strong>.</div></div>'
+        );
+      }
+    }
+
+    if (sells.rows.length > 1 && Math.abs(sells.totalCost) > 1) {
+      rows.push(
+        '<div class="cost-row total"><div class="cost-when">All ' +
+          sells.rows.length +
+          ' sales</div><div class="cost-what">Everything you sold, valued at today\'s prices, would be worth ' +
+          (sells.totalCost > 0 ? money(sells.totalCost) + ' <strong>more</strong>' : money(-sells.totalCost) + ' <strong>less</strong>') +
+          ' than the cash you took for it.</div></div>'
+      );
+    }
+
+    if (!rows.length) {
+      block.hidden = true;
+      return;
+    }
+    block.hidden = false;
+    $('cost-list').innerHTML = rows.join('');
+  }
+
   function buildVerdict(state, s) {
     const bullets = [];
+
+    // The goal comes first, because it is the only number they actually wanted.
+    const goal = Goals.progress(state);
+    if (goal) {
+      if (goal.reached) {
+        bullets.push(
+          '<strong>You made it.</strong> You needed ' +
+            money(goal.target) +
+            ' for ' +
+            state.goal.name.toLowerCase() +
+            ' and finished with ' +
+            money(goal.current) +
+            ' — ' +
+            money(goal.current - goal.target) +
+            ' more than you needed.'
+        );
+      } else {
+        bullets.push(
+          '<strong>You came up ' +
+            money(goal.shortfall) +
+            ' short</strong> of the ' +
+            money(goal.target) +
+            ' you needed for ' +
+            state.goal.name.toLowerCase() +
+            '. Worth running it again with the same seed and a different plan to see whether the market or the strategy was the problem.'
+        );
+      }
+    }
     const feeShare = s.contributed > 0 ? s.fees / s.contributed : 0;
     const heldCount = Market.ASSETS.filter(function (a) {
       return Portfolio.holdingValue(state, a.id) > 0.005;
@@ -593,6 +785,8 @@
       })
       .join('');
 
+    renderCost(state);
+
     $('verdict-list').innerHTML = buildVerdict(state, s)
       .map(function (b) {
         return '<li>' + b + '</li>';
@@ -612,6 +806,8 @@
     chartSeries: chartSeries,
     renderHeader: renderHeader,
     renderHero: renderHero,
+    renderGoal: renderGoal,
+    showDecision: showDecision,
     renderTiles: renderTiles,
     renderChartTable: renderChartTable,
     showTooltip: showTooltip,

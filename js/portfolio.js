@@ -30,7 +30,8 @@
   }
 
   function create(market, opts) {
-    const cfg = Object.assign({}, DEFAULTS, opts || {});
+    const options = opts || {};
+    const cfg = Object.assign({}, DEFAULTS, options);
     const shares = {};
     Market.ASSETS.forEach(function (a) {
       shares[a.id] = 0;
@@ -39,6 +40,7 @@
     const state = {
       market: market,
       cfg: cfg,
+      goal: options.goal || null,
       month: 0,
       cash: cfg.startingCash,
       shares: shares,
@@ -49,6 +51,12 @@
       benchFees: 0,
       history: [],
       log: [],
+      /* Every sale keeps the *units* that left, not just the dollars. That is
+       * what lets the end screen say what those exact units would have been
+       * worth if they had been left alone — the difference between "you sold
+       * some things" and "selling in month 47 cost you $1,840". */
+      sells: [],
+      decisions: [],
       finished: false
     };
 
@@ -159,13 +167,137 @@
     }
 
     const asset = Market.byId(assetId);
-    state.shares[assetId] -= amount / priceOf(state, assetId);
+    const unitsSold = amount / priceOf(state, assetId);
+    state.shares[assetId] -= unitsSold;
     if (state.shares[assetId] < 1e-9) state.shares[assetId] = 0;
     state.cash += amount - fee;
     state.totalFees += fee;
     state.tradeCount += 1;
+    state.sells.push({
+      month: state.month,
+      assetId: assetId,
+      units: unitsSold,
+      proceeds: amount - fee
+    });
     addLog(state, 'sell', 'Sold ' + money(amount) + ' of ' + asset.name + ' (fee ' + money(fee) + ')');
     return { ok: true, amount: amount, fee: fee };
+  }
+
+  /* Panic button. Sells every holding at this month's prices, paying the full
+   * fee on each one — which is part of the lesson, since bailing out of six
+   * positions costs six flat fees. */
+  function sellAll(state) {
+    let sold = 0;
+    let fees = 0;
+    const before = investedValue(state);
+    Market.ASSETS.forEach(function (a) {
+      const value = holdingValue(state, a.id);
+      if (value <= 0.005) return;
+      const result = sell(state, a.id, value);
+      if (result.ok) {
+        sold += result.amount;
+        fees += result.fee;
+      }
+    });
+    return { sold: sold, fees: fees, before: before };
+  }
+
+  /* Buy-the-dip button. Spreads all available cash across whatever the student
+   * already holds, in their existing proportions, so it reinforces their own
+   * strategy rather than quietly picking assets for them. With nothing held it
+   * falls back to the broad world fund. */
+  function investAllCash(state) {
+    const budget = maxBuy(state);
+    if (budget <= 0) return { invested: 0, fees: 0 };
+
+    const invested = investedValue(state);
+    const targets = [];
+    if (invested > 0.005) {
+      Market.ASSETS.forEach(function (a) {
+        const value = holdingValue(state, a.id);
+        if (value > 0.005) targets.push({ id: a.id, weight: value / invested });
+      });
+    } else {
+      targets.push({ id: Market.BENCHMARK_ID, weight: 1 });
+    }
+
+    /* Each purchase pays its own flat fee, so spreading across many holdings
+     * costs more. Budget per target is reduced accordingly rather than letting
+     * the last few buys fail for being a couple of dollars short. */
+    const perTargetFees = state.cfg.feeFlat * targets.length;
+    const spendable = Math.max(0, (state.cash - perTargetFees) / (1 + state.cfg.feeRate));
+
+    let total = 0;
+    let fees = 0;
+    targets.forEach(function (t) {
+      const amount = spendable * t.weight;
+      if (amount <= 0) return;
+      const result = buy(state, t.id, amount);
+      if (result.ok) {
+        total += result.amount;
+        fees += result.fee;
+      }
+    });
+    return { invested: total, fees: fees };
+  }
+
+  /* What every sale actually cost, valued at the end of the run.
+   *
+   * For each sale: the units that left, priced at the final price, against the
+   * cash actually received. A positive `cost` means those units would have been
+   * worth more than the money taken for them — the concrete price of selling.
+   * This is an honest statement about those units rather than a full
+   * counterfactual, which would have to guess what the student did next. */
+  function sellAnalysis(state) {
+    const finalMonth = state.month;
+    const rows = state.sells.map(function (s) {
+      const finalPrice = state.market.prices[s.assetId][finalMonth];
+      const wouldBeWorth = s.units * finalPrice;
+      return {
+        month: s.month,
+        assetId: s.assetId,
+        name: Market.byId(s.assetId).name,
+        proceeds: s.proceeds,
+        wouldBeWorth: wouldBeWorth,
+        cost: wouldBeWorth - s.proceeds
+      };
+    });
+
+    let worst = null;
+    let totalCost = 0;
+    rows.forEach(function (r) {
+      totalCost += r.cost;
+      if (!worst || r.cost > worst.cost) worst = r;
+    });
+    return { rows: rows, worst: worst, totalCost: totalCost };
+  }
+
+  function recordDecision(state, event, choice, before, after) {
+    state.decisions.push({
+      month: state.month,
+      eventId: event.id,
+      headline: event.headline,
+      choice: choice,
+      before: before,
+      after: after
+    });
+  }
+
+  /* How each crash decision turned out, judged the same way for all three
+   * choices: what the portfolio was worth right after the decision, against
+   * what it is worth now. */
+  function decisionAnalysis(state) {
+    const finalValue = totalValue(state);
+    return state.decisions.map(function (d) {
+      return {
+        month: d.month,
+        headline: d.headline,
+        choice: d.choice,
+        after: d.after,
+        finalValue: finalValue,
+        change: d.after > 0 ? finalValue / d.after - 1 : 0
+      };
+    });
   }
 
   /* Largest amount investable once both parts of the fee are covered:
@@ -294,6 +426,12 @@
     create: create,
     buy: buy,
     sell: sell,
+    sellAll: sellAll,
+    investAllCash: investAllCash,
+    sellAnalysis: sellAnalysis,
+    decisionAnalysis: decisionAnalysis,
+    recordDecision: recordDecision,
+    feeOn: feeOn,
     advance: advance,
     maxBuy: maxBuy,
     priceOf: priceOf,

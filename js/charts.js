@@ -105,12 +105,41 @@
       if (plotW <= 0 || plotH <= 0) return;
 
       const n = series[0].values.length;
+
+      /* `reveal` grows 0 -> 1 across the newest month so the line extends
+       * continuously instead of teleporting a month at a time. The final point
+       * of each series is replaced by one interpolated part-way along the last
+       * segment, at a fractional x index — so everything downstream (fills, end
+       * markers, labels) follows the growing tip without special-casing.
+       *
+       * The vertical jolt was never the line, it was the axis: adding a new high
+       * rescaled the whole plot in one frame. Measuring the range over the
+       * *revealed* points instead means the scale slides at exactly the rate the
+       * line grows, and no separate animation of the axis is needed. */
+      const reveal = Math.max(0, Math.min(1, typeof state.cfg.reveal === 'number' ? state.cfg.reveal : 1));
+
+      series.forEach(function (s) {
+        const v = s.values;
+        if (reveal >= 1 || v.length < 2) {
+          s.points = v.map(function (value, i) {
+            return { xi: i, v: value };
+          });
+          return;
+        }
+        const pts = [];
+        for (let i = 0; i < v.length - 1; i++) pts.push({ xi: i, v: v[i] });
+        const a = v[v.length - 2];
+        const b = v[v.length - 1];
+        pts.push({ xi: v.length - 2 + reveal, v: a + (b - a) * reveal });
+        s.points = pts;
+      });
+
       let lo = Infinity;
       let hi = -Infinity;
       series.forEach(function (s) {
-        s.values.forEach(function (v) {
-          if (v < lo) lo = v;
-          if (v > hi) hi = v;
+        s.points.forEach(function (p) {
+          if (p.v < lo) lo = p.v;
+          if (p.v > hi) hi = p.v;
         });
       });
       if (!isFinite(lo) || !isFinite(hi)) return;
@@ -124,7 +153,20 @@
       const pad = (hi - lo) * 0.08;
       const yMin = lo - pad;
       const yMax = hi + pad;
-      const step = niceStep((yMax - yMin) / 4);
+
+      /* Tick spacing comes from the full data range rather than the animating
+       * one, so gridlines slide smoothly instead of the step size flipping
+       * between frames and making labels pop in and out mid-animation. */
+      let fullLo = Infinity;
+      let fullHi = -Infinity;
+      series.forEach(function (s) {
+        s.values.forEach(function (v) {
+          if (v < fullLo) fullLo = v;
+          if (v > fullHi) fullHi = v;
+        });
+      });
+      const fullPad = (fullHi - fullLo) * 0.08 || 1;
+      const step = niceStep((fullHi + fullPad - (fullLo - fullPad)) / 4);
       const firstTick = Math.ceil(yMin / step) * step;
 
       const x = function (i) {
@@ -183,13 +225,13 @@
 
         ctx.fillStyle = grad;
         ctx.beginPath();
-        s.values.forEach(function (v, i) {
-          const px = x(i);
-          const py = y(v);
+        s.points.forEach(function (p, i) {
+          const px = x(p.xi);
+          const py = y(p.v);
           if (i === 0) ctx.moveTo(px, py);
           else ctx.lineTo(px, py);
         });
-        ctx.lineTo(x(n - 1), padT + plotH);
+        ctx.lineTo(x(s.points[s.points.length - 1].xi), padT + plotH);
         ctx.lineTo(x(0), padT + plotH);
         ctx.closePath();
         ctx.fill();
@@ -202,9 +244,9 @@
         ctx.lineJoin = 'round';
         ctx.lineCap = 'round';
         ctx.beginPath();
-        s.values.forEach(function (v, i) {
-          const px = x(i);
-          const py = y(v);
+        s.points.forEach(function (p, i) {
+          const px = x(p.xi);
+          const py = y(p.v);
           if (i === 0) ctx.moveTo(px, py);
           else ctx.lineTo(px, py);
         });
@@ -233,9 +275,10 @@
         });
       }
 
-      // End markers: 10px dots with a 2px surface ring.
+      // End markers ride the animating tip, not the final data point.
       const ends = series.map(function (s) {
-        return { s: s, px: x(n - 1), py: y(s.values[n - 1]) };
+        const tip = s.points[s.points.length - 1];
+        return { s: s, px: x(tip.xi), py: y(tip.v), value: tip.v };
       });
       ends.forEach(function (e) {
         ctx.beginPath();
@@ -278,7 +321,7 @@
         }
         // Labels wear text tokens; the colored dot beside them carries identity.
         ctx.fillStyle = t.secondary;
-        ctx.fillText(compactMoney(e.s.values[n - 1]), e.px + 14, e.labelY);
+        ctx.fillText(compactMoney(e.value), e.px + 14, e.labelY);
       });
     }
 

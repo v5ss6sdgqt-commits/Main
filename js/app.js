@@ -26,11 +26,18 @@
   let state = null;
   let chart = null;
 
-  function newGame(seed, years) {
+  function newGame(seed, years, goalId) {
     stopPlaying();
+    cancelAnimation();
     const months = years * Market.MONTHS_PER_YEAR;
     const market = Market.generate(seed, months);
-    state = Portfolio.create(market);
+
+    const chosen = Goals.byId(goalId || 'car');
+    const target = Goals.targetFor(chosen.id, Portfolio.DEFAULTS, months);
+    state = Portfolio.create(market, {
+      goal: target ? { id: chosen.id, name: chosen.name, target: target, blurb: chosen.blurb } : null
+    });
+
     UI.buildMarketRows(state, { onTrade: onTrade });
     UI.renderBanner(state, null);
     setNotice('');
@@ -41,6 +48,7 @@
   function renderAll() {
     UI.renderHeader(state);
     UI.renderHero(state);
+    UI.renderGoal(state);
     UI.renderTiles(state);
     UI.renderAllocation(state);
     UI.updateMarket(state);
@@ -53,6 +61,7 @@
   function drawChart() {
     const cfg = {
       series: UI.chartSeries(state),
+      reveal: chartReveal,
       onHover: function (idx) {
         UI.showTooltip(state, idx);
       }
@@ -63,6 +72,52 @@
     } else {
       chart.update(cfg);
     }
+  }
+
+  /* ---------------- chart animation ---------------- */
+
+  /* The newest month is drawn growing across its segment rather than appearing
+   * whole, which also slides the y-axis at the same rate and removes the jolt
+   * that used to come from rescaling in a single frame.
+   *
+   * Only the chart redraws per frame — running the full DOM render at 60fps
+   * would be wasteful and would fight the input the student is typing. */
+  let chartReveal = 1;
+  let revealFrame = null;
+
+  function reducedMotion() {
+    return window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  }
+
+  function animateNewMonth(duration) {
+    if (revealFrame) cancelAnimationFrame(revealFrame);
+    if (reducedMotion() || duration <= 0) {
+      chartReveal = 1;
+      drawChart();
+      return;
+    }
+
+    const start = performance.now();
+    chartReveal = 0;
+    // Linear: the point is a steady flow, and easing would make it pulse.
+    function frame(now) {
+      const p = Math.min(1, (now - start) / duration);
+      chartReveal = p;
+      drawChart();
+      if (p < 1) {
+        revealFrame = requestAnimationFrame(frame);
+      } else {
+        revealFrame = null;
+        chartReveal = 1;
+      }
+    }
+    revealFrame = requestAnimationFrame(frame);
+  }
+
+  function cancelAnimation() {
+    if (revealFrame) cancelAnimationFrame(revealFrame);
+    revealFrame = null;
+    chartReveal = 1;
   }
 
   function setNotice(text) {
@@ -94,22 +149,91 @@
   function step(count) {
     let lastEvent = null;
     let sawBigEvent = false;
+    let crash = null;
+    let valueBeforeCrash = 0;
+
     for (let i = 0; i < count; i++) {
       if (state.finished) break;
+      // Captured before advancing, so the modal can show the actual damage.
+      const before = Portfolio.investedValue(state);
       const ev = Portfolio.advance(state);
       if (ev) {
         lastEvent = ev;
         if (ev.big) sawBigEvent = true;
+        // Only the last crash in a batch gets asked about; three modals in a row
+        // for a skipped year would be punishment rather than teaching.
+        if (ev.crash && before > 0.005) {
+          crash = ev;
+          valueBeforeCrash = before;
+          /* Stop here rather than finishing the batch. A crash should interrupt
+           * a skipped year, not be discovered nine months after the fact — and
+           * it keeps state.month on the crash, so the modal and the end-of-run
+           * analysis both report the month it actually happened. */
+          break;
+        }
       }
     }
+
     UI.renderBanner(state, lastEvent);
     setNotice('');
     renderAll();
+
+    /* Only a single-month advance animates. Skipping a year adds twelve points
+     * at once, where growing just the last segment would be a lie about what
+     * happened. */
+    if (count === 1 && !state.finished) {
+      // Slightly under the tick so each month settles before the next begins.
+      animateNewMonth(isPlaying() ? Math.min(320, currentSpeed() * 0.8) : 260);
+    } else {
+      cancelAnimation();
+    }
+
+    if (crash && !state.finished) {
+      askDecision(crash, valueBeforeCrash);
+      return true;
+    }
+
     if (state.finished) {
       stopPlaying();
       $('results-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
     return sawBigEvent;
+  }
+
+  /* ---------------- the crash decision ---------------- */
+
+  /* Freezes the run and makes the student commit. This is the one decision in
+   * investing that actually separates outcomes, and letting it scroll past in an
+   * auto-playing chart teaches nothing at all. */
+  function askDecision(event, before) {
+    stopPlaying();
+    const after = Portfolio.investedValue(state);
+    const damage = {
+      before: before,
+      after: after,
+      change: before > 0 ? after / before - 1 : 0
+    };
+
+    UI.showDecision(state, event, damage, function (choice) {
+      if (choice === 'sell') {
+        const r = Portfolio.sellAll(state);
+        setNotice(
+          'Sold everything for ' + UI.money(r.sold, 2) + ', paying ' + UI.money(r.fees, 2) + ' in fees to get out.'
+        );
+      } else if (choice === 'buy') {
+        const r = Portfolio.investAllCash(state);
+        setNotice(
+          r.invested > 0
+            ? 'Put ' + UI.money(r.invested, 2) + ' of cash to work at the lower prices.'
+            : 'You had no spare cash to invest.'
+        );
+      } else {
+        setNotice('You held on. Nothing was bought or sold.');
+      }
+
+      Portfolio.recordDecision(state, event, choice, before, Portfolio.totalValue(state));
+      renderAll();
+    });
   }
 
   /* ---------------- auto-play ---------------- */
@@ -253,8 +377,31 @@
   function restart() {
     const seed = $('seed-input').value.trim() || DEFAULT_SEED;
     const years = parseInt($('years-input').value, 10) || 10;
-    newGame(seed, years);
+    newGame(seed, years, $('goal-input').value);
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  /* Targets depend on run length, so the option labels are rebuilt whenever the
+   * number of years changes — otherwise the menu would advertise a $10,500 car
+   * on a five-year run that can only ever reach $6,000. */
+  function fillGoalOptions() {
+    const select = $('goal-input');
+    const years = parseInt($('years-input').value, 10) || 10;
+    const months = years * Market.MONTHS_PER_YEAR;
+    const current = select.value || 'car';
+
+    select.innerHTML = Goals.GOALS.map(function (g) {
+      const target = Goals.targetFor(g.id, Portfolio.DEFAULTS, months);
+      return (
+        '<option value="' +
+        g.id +
+        '">' +
+        g.name +
+        (target ? ' — ' + UI.money(target) : '') +
+        '</option>'
+      );
+    }).join('');
+    select.value = current;
   }
 
   function randomSeed() {
@@ -291,6 +438,11 @@
     });
     $('restart-btn').addEventListener('click', restart);
     $('theme-btn').addEventListener('click', toggleTheme);
+
+    fillGoalOptions();
+    $('years-input').addEventListener('change', fillGoalOptions);
+    // Changing the goal mid-run would move the goalposts, so it starts fresh.
+    $('goal-input').addEventListener('change', restart);
 
     $('again-btn').addEventListener('click', function () {
       $('seed-input').value = randomSeed();
@@ -334,6 +486,6 @@
       else if (mq.addListener) mq.addListener(onChange);
     }
 
-    newGame($('seed-input').value.trim() || DEFAULT_SEED, 10);
+    newGame($('seed-input').value.trim() || DEFAULT_SEED, 10, 'car');
   });
 })();

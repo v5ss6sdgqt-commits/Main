@@ -1363,6 +1363,305 @@ footer {
   font-variant-numeric: tabular-nums;
 }
 
+/* ============================================================
+   The goal
+   ============================================================ */
+
+.goal {
+  margin-top: 14px;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface-2);
+}
+
+.goal.reached {
+  border-color: var(--up);
+  background: color-mix(in srgb, var(--up) 10%, var(--surface-2));
+}
+
+.goal-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.goal-name {
+  font-weight: 700;
+  font-size: 13.5px;
+}
+
+.goal-count {
+  font-size: 12.5px;
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+.goal-track {
+  height: 9px;
+  border-radius: 999px;
+  background: var(--grid);
+  overflow: hidden;
+}
+
+.goal-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--series-portfolio-fill), var(--accent));
+  /* Eased because this bar is a reward, unlike the chart which is a reading. */
+  transition: width 0.45s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+.goal.reached .goal-fill {
+  background: var(--up);
+}
+
+.goal-note {
+  margin-top: 7px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .goal-fill {
+    transition: none;
+  }
+}
+
+/* ============================================================
+   The crash decision
+   ============================================================ */
+
+.decision-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+  background: rgba(13, 17, 23, 0.62);
+  backdrop-filter: blur(2px);
+}
+
+.decision-backdrop[hidden] {
+  display: none;
+}
+
+.decision {
+  width: min(560px, 100%);
+  max-height: 90vh;
+  overflow-y: auto;
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 22px;
+  box-shadow: 0 20px 60px rgba(13, 17, 23, 0.35);
+}
+
+.d-tag {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--down);
+  font-weight: 700;
+}
+
+.decision h2 {
+  margin: 6px 0 8px;
+  font-size: 21px;
+  line-height: 1.25;
+  text-wrap: balance;
+}
+
+.d-why {
+  margin: 0 0 14px;
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--text-secondary);
+}
+
+/* The damage in dollars. This is the number that makes it feel real. */
+.d-money {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--down) 10%, var(--surface-2));
+  font-variant-numeric: tabular-nums;
+  margin-bottom: 16px;
+}
+
+.d-before {
+  font-size: 17px;
+  color: var(--text-muted);
+  text-decoration: line-through;
+}
+
+.d-arrow {
+  color: var(--text-muted);
+}
+
+.d-after {
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.d-drop {
+  font-weight: 700;
+  color: var(--down);
+  margin-left: auto;
+}
+
+.d-choices {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 9px;
+}
+
+.d-choice {
+  appearance: none;
+  font: inherit;
+  cursor: pointer;
+  text-align: left;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text-primary);
+  transition: border-color 0.12s ease, transform 0.12s ease;
+}
+
+.d-choice:hover {
+  transform: translateY(-1px);
+}
+
+.d-choice strong {
+  display: block;
+  font-size: 14px;
+  margin-bottom: 3px;
+}
+
+.d-choice small {
+  display: block;
+  font-size: 11.5px;
+  line-height: 1.4;
+  color: var(--text-muted);
+}
+
+/* No option is styled as the right answer — that is the student's call, and
+   the end screen is where they find out. */
+.d-choice.sell:hover {
+  border-color: var(--down);
+}
+
+.d-choice.hold:hover {
+  border-color: var(--accent);
+}
+
+.d-choice.buy:hover {
+  border-color: var(--up);
+}
+
+.d-foot {
+  margin: 14px 0 0;
+  font-size: 11.5px;
+  color: var(--text-muted);
+}
+
+@media (max-width: 560px) {
+  .d-choices {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .d-choice:hover {
+    transform: none;
+  }
+}
+
+/* ============================================================
+   What your decisions cost
+   ============================================================ */
+
+.cost-block {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+.cost-block h3 {
+  margin: 0 0 12px;
+  font-size: 15px;
+}
+
+.cost-row {
+  display: flex;
+  gap: 14px;
+  padding: 11px 13px;
+  border-radius: 10px;
+  background: var(--surface-2);
+  border-left: 3px solid var(--accent);
+  margin-bottom: 8px;
+}
+
+.cost-row.bad {
+  border-left-color: var(--down);
+}
+
+.cost-row.good {
+  border-left-color: var(--up);
+}
+
+.cost-row.total {
+  border-left-color: var(--text-muted);
+}
+
+.cost-when {
+  flex: none;
+  width: 82px;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--text-muted);
+  padding-top: 1px;
+}
+
+.cost-what {
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--text-secondary);
+}
+
+.cost-what strong {
+  color: var(--text-primary);
+}
+
+@media (max-width: 560px) {
+  .cost-row {
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .cost-when {
+    width: auto;
+  }
+}
+
+.d-money-label {
+  flex: 1 0 100%;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  margin-bottom: 2px;
+}
+
 </style>
 </head>
 <body>
@@ -1386,6 +1685,12 @@ footer {
       <span class="sub" id="results-sub"></span>
     </div>
     <div class="result-grid" id="results-grid"></div>
+    <!-- Filled only when the student actually faced a crash or sold something. -->
+    <div class="cost-block" id="cost-block" hidden>
+      <h3>What your decisions cost you</h3>
+      <div id="cost-list"></div>
+    </div>
+
     <div class="verdict">
       <h3>What the numbers say about your decisions</h3>
       <ul id="verdict-list"></ul>
@@ -1407,6 +1712,17 @@ footer {
             <div class="hero-figure" id="hero-value">$1,000</div>
             <div class="hero-delta" id="hero-delta">&mdash;</div>
           </div>
+        </div>
+
+        <!-- The goal is what gives every other number a reason to matter, so it
+             sits directly under the headline figure rather than off in a panel. -->
+        <div class="goal" id="goal-box" hidden>
+          <div class="goal-head">
+            <span class="goal-name" id="goal-name"></span>
+            <span class="goal-count" id="goal-count"></span>
+          </div>
+          <div class="goal-track"><div class="goal-fill" id="goal-fill"></div></div>
+          <div class="goal-note" id="goal-note"></div>
         </div>
 
         <!-- Every tile label opens its own explanation. These are the four
@@ -1468,6 +1784,10 @@ footer {
           <span class="sub">Everyone using the same seed gets the same market</span>
         </div>
         <div class="setup">
+          <div class="field">
+            <label for="goal-input">Saving for</label>
+            <select id="goal-input"></select>
+          </div>
           <div class="field">
             <!-- The explainer sits beside the label rather than inside it: a
                  button within a label activates the field as well as itself. -->
@@ -1611,6 +1931,33 @@ footer {
     modelled &mdash; <button type="button" class="term-link" data-term="currency">what that leaves out</button>.
   </footer>
 
+</div>
+
+<!-- The crash decision. Deliberately blocking and deliberately three buttons:
+     the moment a market falls 30% is the one real decision in investing, and
+     watching it scroll past teaches nothing. -->
+<div class="decision-backdrop" id="decision-modal" hidden>
+  <div class="decision" role="dialog" aria-modal="true" aria-labelledby="d-headline">
+    <div class="d-tag" id="d-when"></div>
+    <h2 id="d-headline"></h2>
+    <p class="d-why" id="d-why"></p>
+    <div class="d-money" id="d-money"></div>
+    <div class="d-choices">
+      <button type="button" class="d-choice sell" data-choice="sell">
+        <strong>Sell everything</strong>
+        <small>Get out before it falls further</small>
+      </button>
+      <button type="button" class="d-choice hold" data-choice="hold">
+        <strong>Do nothing</strong>
+        <small>Sit through it and wait</small>
+      </button>
+      <button type="button" class="d-choice buy" data-choice="buy">
+        <strong>Buy more</strong>
+        <small>Everything is on sale</small>
+      </button>
+    </div>
+    <p class="d-foot">Whatever you pick, the app will tell you at the end what it cost or earned you.</p>
+  </div>
 </div>
 
 <script>
@@ -2229,6 +2576,7 @@ footer {
         'There is no government guarantee and no company to sue. When a crypto exchange fails, people who kept coins there can lose everything, and the price of everything crypto falls with it.',
       weight: 6,
       big: true,
+      crash: true,
       cat: { crypto: -0.32 }
     },
     {
@@ -2238,6 +2586,7 @@ footer {
         'A recession means the economy shrank two quarters running. NZ companies feel it most; overseas ones barely notice. This is why holding only NZ shares is riskier than it looks.',
       weight: 5,
       big: true,
+      crash: true,
       cat: { nz: -0.11 },
       effects: { nzx50: -0.06, nzbond: 0.03, air: -0.06 }
     },
@@ -2248,6 +2597,7 @@ footer {
         'In a real downturn almost everything risky falls together, and government bonds usually rise as people run for safety. This is the moment diversification either earns its keep or does not.',
       weight: 4,
       big: true,
+      crash: true,
       cat: { funds: -0.12, nz: -0.13, world: -0.15, crypto: -0.25 },
       effects: { nzbond: 0.04, kiwisaver: -0.05 }
     },
@@ -2481,7 +2831,8 @@ footer {
   }
 
   function create(market, opts) {
-    const cfg = Object.assign({}, DEFAULTS, opts || {});
+    const options = opts || {};
+    const cfg = Object.assign({}, DEFAULTS, options);
     const shares = {};
     Market.ASSETS.forEach(function (a) {
       shares[a.id] = 0;
@@ -2490,6 +2841,7 @@ footer {
     const state = {
       market: market,
       cfg: cfg,
+      goal: options.goal || null,
       month: 0,
       cash: cfg.startingCash,
       shares: shares,
@@ -2500,6 +2852,12 @@ footer {
       benchFees: 0,
       history: [],
       log: [],
+      /* Every sale keeps the *units* that left, not just the dollars. That is
+       * what lets the end screen say what those exact units would have been
+       * worth if they had been left alone — the difference between "you sold
+       * some things" and "selling in month 47 cost you $1,840". */
+      sells: [],
+      decisions: [],
       finished: false
     };
 
@@ -2610,13 +2968,137 @@ footer {
     }
 
     const asset = Market.byId(assetId);
-    state.shares[assetId] -= amount / priceOf(state, assetId);
+    const unitsSold = amount / priceOf(state, assetId);
+    state.shares[assetId] -= unitsSold;
     if (state.shares[assetId] < 1e-9) state.shares[assetId] = 0;
     state.cash += amount - fee;
     state.totalFees += fee;
     state.tradeCount += 1;
+    state.sells.push({
+      month: state.month,
+      assetId: assetId,
+      units: unitsSold,
+      proceeds: amount - fee
+    });
     addLog(state, 'sell', 'Sold ' + money(amount) + ' of ' + asset.name + ' (fee ' + money(fee) + ')');
     return { ok: true, amount: amount, fee: fee };
+  }
+
+  /* Panic button. Sells every holding at this month's prices, paying the full
+   * fee on each one — which is part of the lesson, since bailing out of six
+   * positions costs six flat fees. */
+  function sellAll(state) {
+    let sold = 0;
+    let fees = 0;
+    const before = investedValue(state);
+    Market.ASSETS.forEach(function (a) {
+      const value = holdingValue(state, a.id);
+      if (value <= 0.005) return;
+      const result = sell(state, a.id, value);
+      if (result.ok) {
+        sold += result.amount;
+        fees += result.fee;
+      }
+    });
+    return { sold: sold, fees: fees, before: before };
+  }
+
+  /* Buy-the-dip button. Spreads all available cash across whatever the student
+   * already holds, in their existing proportions, so it reinforces their own
+   * strategy rather than quietly picking assets for them. With nothing held it
+   * falls back to the broad world fund. */
+  function investAllCash(state) {
+    const budget = maxBuy(state);
+    if (budget <= 0) return { invested: 0, fees: 0 };
+
+    const invested = investedValue(state);
+    const targets = [];
+    if (invested > 0.005) {
+      Market.ASSETS.forEach(function (a) {
+        const value = holdingValue(state, a.id);
+        if (value > 0.005) targets.push({ id: a.id, weight: value / invested });
+      });
+    } else {
+      targets.push({ id: Market.BENCHMARK_ID, weight: 1 });
+    }
+
+    /* Each purchase pays its own flat fee, so spreading across many holdings
+     * costs more. Budget per target is reduced accordingly rather than letting
+     * the last few buys fail for being a couple of dollars short. */
+    const perTargetFees = state.cfg.feeFlat * targets.length;
+    const spendable = Math.max(0, (state.cash - perTargetFees) / (1 + state.cfg.feeRate));
+
+    let total = 0;
+    let fees = 0;
+    targets.forEach(function (t) {
+      const amount = spendable * t.weight;
+      if (amount <= 0) return;
+      const result = buy(state, t.id, amount);
+      if (result.ok) {
+        total += result.amount;
+        fees += result.fee;
+      }
+    });
+    return { invested: total, fees: fees };
+  }
+
+  /* What every sale actually cost, valued at the end of the run.
+   *
+   * For each sale: the units that left, priced at the final price, against the
+   * cash actually received. A positive `cost` means those units would have been
+   * worth more than the money taken for them — the concrete price of selling.
+   * This is an honest statement about those units rather than a full
+   * counterfactual, which would have to guess what the student did next. */
+  function sellAnalysis(state) {
+    const finalMonth = state.month;
+    const rows = state.sells.map(function (s) {
+      const finalPrice = state.market.prices[s.assetId][finalMonth];
+      const wouldBeWorth = s.units * finalPrice;
+      return {
+        month: s.month,
+        assetId: s.assetId,
+        name: Market.byId(s.assetId).name,
+        proceeds: s.proceeds,
+        wouldBeWorth: wouldBeWorth,
+        cost: wouldBeWorth - s.proceeds
+      };
+    });
+
+    let worst = null;
+    let totalCost = 0;
+    rows.forEach(function (r) {
+      totalCost += r.cost;
+      if (!worst || r.cost > worst.cost) worst = r;
+    });
+    return { rows: rows, worst: worst, totalCost: totalCost };
+  }
+
+  function recordDecision(state, event, choice, before, after) {
+    state.decisions.push({
+      month: state.month,
+      eventId: event.id,
+      headline: event.headline,
+      choice: choice,
+      before: before,
+      after: after
+    });
+  }
+
+  /* How each crash decision turned out, judged the same way for all three
+   * choices: what the portfolio was worth right after the decision, against
+   * what it is worth now. */
+  function decisionAnalysis(state) {
+    const finalValue = totalValue(state);
+    return state.decisions.map(function (d) {
+      return {
+        month: d.month,
+        headline: d.headline,
+        choice: d.choice,
+        after: d.after,
+        finalValue: finalValue,
+        change: d.after > 0 ? finalValue / d.after - 1 : 0
+      };
+    });
   }
 
   /* Largest amount investable once both parts of the fee are covered:
@@ -2745,6 +3227,12 @@ footer {
     create: create,
     buy: buy,
     sell: sell,
+    sellAll: sellAll,
+    investAllCash: investAllCash,
+    sellAnalysis: sellAnalysis,
+    decisionAnalysis: decisionAnalysis,
+    recordDecision: recordDecision,
+    feeOn: feeOn,
     advance: advance,
     maxBuy: maxBuy,
     priceOf: priceOf,
@@ -2754,6 +3242,143 @@ footer {
     benchValue: benchValue,
     realValue: realValue,
     summarise: summarise
+  };
+})(window);
+
+</script>
+<script>
+/* Goals — the thing that makes any of this matter.
+ *
+ * Without a target, the app grows a number and the student has no reason to
+ * prefer one number over another. With one, "should I put it all in crypto"
+ * stops being idle curiosity and becomes a real question with a consequence.
+ *
+ * Targets scale with the length of the run rather than being fixed dollar
+ * amounts. A fixed $11,000 car is a stretch over ten years and trivial over
+ * twenty, which would quietly switch the feature off for longer runs. Scaling by
+ * total contributions keeps each goal about as hard whichever length is chosen,
+ * and the multipliers below are the actual difficulty dial:
+ *
+ *   1.25x — reachable with modest investing, out of reach for pure cash
+ *   1.55x — needs real exposure to shares
+ *   2.00x — needs either a strong decade or genuine risk-taking
+ *
+ * Pure cash at 3% turns $7,000 of contributions into about $8,100 over ten
+ * years, so even the easiest goal cannot be saved into. That is deliberate. */
+
+(function (global) {
+  'use strict';
+
+  const GOALS = [
+    {
+      id: 'flat',
+      name: 'Moving out',
+      multiple: 1.25,
+      blurb: 'Bond, a few weeks of rent up front, and something to sleep on.'
+    },
+    {
+      id: 'car',
+      name: 'First car',
+      multiple: 1.55,
+      blurb: 'A tidy second-hand car, on the road with a warrant and rego.'
+    },
+    {
+      id: 'oe',
+      name: 'Big OE',
+      multiple: 2.0,
+      blurb: 'Flights out, and enough left to land on your feet overseas.'
+    },
+    {
+      id: 'none',
+      name: 'No goal',
+      multiple: 0,
+      blurb: 'Just see what happens.'
+    }
+  ];
+
+  function byId(id) {
+    for (let i = 0; i < GOALS.length; i++) {
+      if (GOALS[i].id === id) return GOALS[i];
+    }
+    return GOALS[0];
+  }
+
+  /* What the student will have put in by the end of the run, which is what the
+   * target is priced against. */
+  function totalContributions(cfg, months) {
+    return cfg.startingCash + cfg.monthlyContribution * months;
+  }
+
+  // Rounded to something that reads like a real price rather than a computation.
+  function targetFor(goalId, cfg, months) {
+    const goal = byId(goalId);
+    if (!goal.multiple) return 0;
+    const raw = totalContributions(cfg, months) * goal.multiple;
+    return Math.round(raw / 500) * 500;
+  }
+
+  /* Value of the portfolio at the end of the run if it grew at `annualRate` from
+   * here, with contributions continuing every month. Used to answer "what would
+   * I need from here?", which is far more motivating than a static target. */
+  function project(current, monthlyContribution, monthsLeft, annualRate) {
+    const r = annualRate / 12;
+    if (monthsLeft <= 0) return current;
+    if (Math.abs(r) < 1e-9) return current + monthlyContribution * monthsLeft;
+    const growth = Math.pow(1 + r, monthsLeft);
+    return current * growth + monthlyContribution * ((growth - 1) / r);
+  }
+
+  /* The annual return needed from here to land exactly on the target.
+   *
+   * Projected value rises monotonically with the rate, so bisection always finds
+   * the single root. Returns null when the target is already met, or when even
+   * an absurd rate could not get there — in both cases the UI has something more
+   * useful to say than a number. */
+  function requiredReturn(state) {
+    const target = state.goal ? state.goal.target : 0;
+    if (!target) return null;
+
+    const current = Portfolio.totalValue(state);
+    if (current >= target) return null;
+
+    const monthsLeft = state.market.months - state.month;
+    if (monthsLeft <= 0) return null;
+
+    const contribution = state.cfg.monthlyContribution;
+    let lo = -0.95;
+    let hi = 3.0;
+    if (project(current, contribution, monthsLeft, hi) < target) return Infinity;
+    if (project(current, contribution, monthsLeft, lo) > target) return -Infinity;
+
+    for (let i = 0; i < 120; i++) {
+      const mid = (lo + hi) / 2;
+      if (project(current, contribution, monthsLeft, mid) < target) lo = mid;
+      else hi = mid;
+    }
+    return (lo + hi) / 2;
+  }
+
+  function progress(state) {
+    const target = state.goal ? state.goal.target : 0;
+    if (!target) return null;
+    const current = Portfolio.totalValue(state);
+    return {
+      target: target,
+      current: current,
+      fraction: Math.max(0, Math.min(1, current / target)),
+      reached: current >= target,
+      shortfall: Math.max(0, target - current),
+      required: requiredReturn(state)
+    };
+  }
+
+  global.Goals = {
+    GOALS: GOALS,
+    byId: byId,
+    targetFor: targetFor,
+    progress: progress,
+    requiredReturn: requiredReturn,
+    project: project
   };
 })(window);
 
@@ -2866,12 +3491,41 @@ footer {
       if (plotW <= 0 || plotH <= 0) return;
 
       const n = series[0].values.length;
+
+      /* `reveal` grows 0 -> 1 across the newest month so the line extends
+       * continuously instead of teleporting a month at a time. The final point
+       * of each series is replaced by one interpolated part-way along the last
+       * segment, at a fractional x index — so everything downstream (fills, end
+       * markers, labels) follows the growing tip without special-casing.
+       *
+       * The vertical jolt was never the line, it was the axis: adding a new high
+       * rescaled the whole plot in one frame. Measuring the range over the
+       * *revealed* points instead means the scale slides at exactly the rate the
+       * line grows, and no separate animation of the axis is needed. */
+      const reveal = Math.max(0, Math.min(1, typeof state.cfg.reveal === 'number' ? state.cfg.reveal : 1));
+
+      series.forEach(function (s) {
+        const v = s.values;
+        if (reveal >= 1 || v.length < 2) {
+          s.points = v.map(function (value, i) {
+            return { xi: i, v: value };
+          });
+          return;
+        }
+        const pts = [];
+        for (let i = 0; i < v.length - 1; i++) pts.push({ xi: i, v: v[i] });
+        const a = v[v.length - 2];
+        const b = v[v.length - 1];
+        pts.push({ xi: v.length - 2 + reveal, v: a + (b - a) * reveal });
+        s.points = pts;
+      });
+
       let lo = Infinity;
       let hi = -Infinity;
       series.forEach(function (s) {
-        s.values.forEach(function (v) {
-          if (v < lo) lo = v;
-          if (v > hi) hi = v;
+        s.points.forEach(function (p) {
+          if (p.v < lo) lo = p.v;
+          if (p.v > hi) hi = p.v;
         });
       });
       if (!isFinite(lo) || !isFinite(hi)) return;
@@ -2885,7 +3539,20 @@ footer {
       const pad = (hi - lo) * 0.08;
       const yMin = lo - pad;
       const yMax = hi + pad;
-      const step = niceStep((yMax - yMin) / 4);
+
+      /* Tick spacing comes from the full data range rather than the animating
+       * one, so gridlines slide smoothly instead of the step size flipping
+       * between frames and making labels pop in and out mid-animation. */
+      let fullLo = Infinity;
+      let fullHi = -Infinity;
+      series.forEach(function (s) {
+        s.values.forEach(function (v) {
+          if (v < fullLo) fullLo = v;
+          if (v > fullHi) fullHi = v;
+        });
+      });
+      const fullPad = (fullHi - fullLo) * 0.08 || 1;
+      const step = niceStep((fullHi + fullPad - (fullLo - fullPad)) / 4);
       const firstTick = Math.ceil(yMin / step) * step;
 
       const x = function (i) {
@@ -2944,13 +3611,13 @@ footer {
 
         ctx.fillStyle = grad;
         ctx.beginPath();
-        s.values.forEach(function (v, i) {
-          const px = x(i);
-          const py = y(v);
+        s.points.forEach(function (p, i) {
+          const px = x(p.xi);
+          const py = y(p.v);
           if (i === 0) ctx.moveTo(px, py);
           else ctx.lineTo(px, py);
         });
-        ctx.lineTo(x(n - 1), padT + plotH);
+        ctx.lineTo(x(s.points[s.points.length - 1].xi), padT + plotH);
         ctx.lineTo(x(0), padT + plotH);
         ctx.closePath();
         ctx.fill();
@@ -2963,9 +3630,9 @@ footer {
         ctx.lineJoin = 'round';
         ctx.lineCap = 'round';
         ctx.beginPath();
-        s.values.forEach(function (v, i) {
-          const px = x(i);
-          const py = y(v);
+        s.points.forEach(function (p, i) {
+          const px = x(p.xi);
+          const py = y(p.v);
           if (i === 0) ctx.moveTo(px, py);
           else ctx.lineTo(px, py);
         });
@@ -2994,9 +3661,10 @@ footer {
         });
       }
 
-      // End markers: 10px dots with a 2px surface ring.
+      // End markers ride the animating tip, not the final data point.
       const ends = series.map(function (s) {
-        return { s: s, px: x(n - 1), py: y(s.values[n - 1]) };
+        const tip = s.points[s.points.length - 1];
+        return { s: s, px: x(tip.xi), py: y(tip.v), value: tip.v };
       });
       ends.forEach(function (e) {
         ctx.beginPath();
@@ -3039,7 +3707,7 @@ footer {
         }
         // Labels wear text tokens; the colored dot beside them carries identity.
         ctx.fillStyle = t.secondary;
-        ctx.fillText(compactMoney(e.s.values[n - 1]), e.px + 14, e.labelY);
+        ctx.fillText(compactMoney(e.value), e.px + 14, e.labelY);
       });
     }
 
@@ -3263,6 +3931,82 @@ footer {
       'Prices up ' + plainPct(state.market.cpi[state.month] - 1) + ' since the start';
     $('tile-fees').textContent = money(state.totalFees, 2);
     $('tile-trades').textContent = state.tradeCount === 1 ? '1 trade' : state.tradeCount + ' trades';
+  }
+
+  /* ---------------- goal ---------------- */
+
+  function renderGoal(state) {
+    const box = $('goal-box');
+    const p = Goals.progress(state);
+    if (!p) {
+      box.hidden = true;
+      return;
+    }
+    box.hidden = false;
+
+    $('goal-name').textContent = state.goal.name + ' — ' + money(p.target);
+    $('goal-count').textContent = money(p.current) + ' of ' + money(p.target);
+    $('goal-fill').style.width = p.fraction * 100 + '%';
+    box.classList.toggle('reached', p.reached);
+
+    const note = $('goal-note');
+    if (p.reached) {
+      note.textContent = 'You have made it. Anything from here is extra.';
+      return;
+    }
+    if (state.finished) {
+      note.textContent = money(p.shortfall) + ' short.';
+      return;
+    }
+
+    const need = p.required;
+    if (need === Infinity) {
+      note.textContent = 'Out of reach now — nothing on this board grows that fast.';
+    } else if (need === -Infinity || need === null) {
+      note.textContent = money(p.shortfall) + ' to go.';
+    } else if (need <= 0) {
+      note.textContent = 'On track even if nothing grows from here.';
+    } else {
+      note.textContent =
+        'Needs about ' + plainPct(need) + ' a year from here' + (need > 0.14 ? ' — that is a lot.' : '.');
+    }
+  }
+
+  /* ---------------- the crash decision ---------------- */
+
+  function showDecision(state, event, damage, onChoose) {
+    const modal = $('decision-modal');
+    $('d-when').textContent = 'Year ' + Math.floor(state.month / 12) + ' · month ' + (state.month % 12);
+    $('d-headline').textContent = event.headline;
+    $('d-why').textContent = event.why;
+
+    /* Labelled as investments, not total, because cash did not move — claiming
+     * the whole portfolio fell would be the kind of small lie that makes a
+     * student stop trusting the rest of the numbers. */
+    $('d-money').innerHTML =
+      '<span class="d-money-label">Your investments</span><span class="d-before">' +
+      money(damage.before) +
+      '</span><span class="d-arrow">&rarr;</span><span class="d-after">' +
+      money(damage.after) +
+      '</span><span class="d-drop">' +
+      pct(damage.change) +
+      '</span>';
+
+    modal.hidden = false;
+
+    const buttons = modal.querySelectorAll('.d-choice');
+    function handle(ev) {
+      const choice = ev.currentTarget.getAttribute('data-choice');
+      buttons.forEach(function (b) {
+        b.removeEventListener('click', handle);
+      });
+      modal.hidden = true;
+      onChoose(choice);
+    }
+    buttons.forEach(function (b) {
+      b.addEventListener('click', handle);
+    });
+    buttons[1].focus();
   }
 
   /* ---------------- main chart ---------------- */
@@ -3585,8 +4329,124 @@ footer {
 
   /* ---------------- results ---------------- */
 
+  /* The payoff for the crash decisions. Every claim here is arithmetic on units
+   * the student actually sold, not a guess about a path they didn't take. */
+  function renderCost(state) {
+    const block = $('cost-block');
+    const decisions = Portfolio.decisionAnalysis(state);
+    const sells = Portfolio.sellAnalysis(state);
+    const rows = [];
+
+    const VERBS = {
+      sell: 'You sold everything',
+      hold: 'You sat through it',
+      buy: 'You bought more'
+    };
+
+    decisions.forEach(function (d) {
+      const dir = d.change >= 0 ? 'rose' : 'fell';
+      rows.push(
+        '<div class="cost-row"><div class="cost-when">Month ' +
+          d.month +
+          '</div><div class="cost-what"><strong>' +
+          VERBS[d.choice] +
+          '</strong> during &ldquo;' +
+          d.headline +
+          '&rdquo;. You were left with ' +
+          money(d.after) +
+          ', and from there your portfolio ' +
+          dir +
+          ' ' +
+          pct(d.change) +
+          ' to ' +
+          money(d.finalValue) +
+          '.</div></div>'
+      );
+    });
+
+    /* Selling is not automatically a mistake — sometimes it genuinely saved
+     * money, and saying so is what makes the rest of this credible. */
+    if (sells.worst && Math.abs(sells.worst.cost) > 1) {
+      const w = sells.worst;
+      if (w.cost > 0) {
+        rows.push(
+          '<div class="cost-row bad"><div class="cost-when">Month ' +
+            w.month +
+            '</div><div class="cost-what">Your most expensive sale was <strong>' +
+            w.name +
+            '</strong>. You got ' +
+            money(w.proceeds) +
+            ' for those units. Left alone they would be worth ' +
+            money(w.wouldBeWorth) +
+            ' now — that one decision cost you <strong>' +
+            money(w.cost) +
+            '</strong>.</div></div>'
+        );
+      } else {
+        rows.push(
+          '<div class="cost-row good"><div class="cost-when">Month ' +
+            w.month +
+            '</div><div class="cost-what">Selling <strong>' +
+            w.name +
+            '</strong> was the right call. You got ' +
+            money(w.proceeds) +
+            ' for those units; they would only be worth ' +
+            money(w.wouldBeWorth) +
+            ' now, so you saved <strong>' +
+            money(-w.cost) +
+            '</strong>.</div></div>'
+        );
+      }
+    }
+
+    if (sells.rows.length > 1 && Math.abs(sells.totalCost) > 1) {
+      rows.push(
+        '<div class="cost-row total"><div class="cost-when">All ' +
+          sells.rows.length +
+          ' sales</div><div class="cost-what">Everything you sold, valued at today\'s prices, would be worth ' +
+          (sells.totalCost > 0 ? money(sells.totalCost) + ' <strong>more</strong>' : money(-sells.totalCost) + ' <strong>less</strong>') +
+          ' than the cash you took for it.</div></div>'
+      );
+    }
+
+    if (!rows.length) {
+      block.hidden = true;
+      return;
+    }
+    block.hidden = false;
+    $('cost-list').innerHTML = rows.join('');
+  }
+
   function buildVerdict(state, s) {
     const bullets = [];
+
+    // The goal comes first, because it is the only number they actually wanted.
+    const goal = Goals.progress(state);
+    if (goal) {
+      if (goal.reached) {
+        bullets.push(
+          '<strong>You made it.</strong> You needed ' +
+            money(goal.target) +
+            ' for ' +
+            state.goal.name.toLowerCase() +
+            ' and finished with ' +
+            money(goal.current) +
+            ' — ' +
+            money(goal.current - goal.target) +
+            ' more than you needed.'
+        );
+      } else {
+        bullets.push(
+          '<strong>You came up ' +
+            money(goal.shortfall) +
+            ' short</strong> of the ' +
+            money(goal.target) +
+            ' you needed for ' +
+            state.goal.name.toLowerCase() +
+            '. Worth running it again with the same seed and a different plan to see whether the market or the strategy was the problem.'
+        );
+      }
+    }
     const feeShare = s.contributed > 0 ? s.fees / s.contributed : 0;
     const heldCount = Market.ASSETS.filter(function (a) {
       return Portfolio.holdingValue(state, a.id) > 0.005;
@@ -3751,6 +4611,8 @@ footer {
       })
       .join('');
 
+    renderCost(state);
+
     $('verdict-list').innerHTML = buildVerdict(state, s)
       .map(function (b) {
         return '<li>' + b + '</li>';
@@ -3770,6 +4632,8 @@ footer {
     chartSeries: chartSeries,
     renderHeader: renderHeader,
     renderHero: renderHero,
+    renderGoal: renderGoal,
+    showDecision: showDecision,
     renderTiles: renderTiles,
     renderChartTable: renderChartTable,
     showTooltip: showTooltip,
@@ -4628,11 +5492,18 @@ footer {
   let state = null;
   let chart = null;
 
-  function newGame(seed, years) {
+  function newGame(seed, years, goalId) {
     stopPlaying();
+    cancelAnimation();
     const months = years * Market.MONTHS_PER_YEAR;
     const market = Market.generate(seed, months);
-    state = Portfolio.create(market);
+
+    const chosen = Goals.byId(goalId || 'car');
+    const target = Goals.targetFor(chosen.id, Portfolio.DEFAULTS, months);
+    state = Portfolio.create(market, {
+      goal: target ? { id: chosen.id, name: chosen.name, target: target, blurb: chosen.blurb } : null
+    });
+
     UI.buildMarketRows(state, { onTrade: onTrade });
     UI.renderBanner(state, null);
     setNotice('');
@@ -4643,6 +5514,7 @@ footer {
   function renderAll() {
     UI.renderHeader(state);
     UI.renderHero(state);
+    UI.renderGoal(state);
     UI.renderTiles(state);
     UI.renderAllocation(state);
     UI.updateMarket(state);
@@ -4655,6 +5527,7 @@ footer {
   function drawChart() {
     const cfg = {
       series: UI.chartSeries(state),
+      reveal: chartReveal,
       onHover: function (idx) {
         UI.showTooltip(state, idx);
       }
@@ -4665,6 +5538,52 @@ footer {
     } else {
       chart.update(cfg);
     }
+  }
+
+  /* ---------------- chart animation ---------------- */
+
+  /* The newest month is drawn growing across its segment rather than appearing
+   * whole, which also slides the y-axis at the same rate and removes the jolt
+   * that used to come from rescaling in a single frame.
+   *
+   * Only the chart redraws per frame — running the full DOM render at 60fps
+   * would be wasteful and would fight the input the student is typing. */
+  let chartReveal = 1;
+  let revealFrame = null;
+
+  function reducedMotion() {
+    return window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  }
+
+  function animateNewMonth(duration) {
+    if (revealFrame) cancelAnimationFrame(revealFrame);
+    if (reducedMotion() || duration <= 0) {
+      chartReveal = 1;
+      drawChart();
+      return;
+    }
+
+    const start = performance.now();
+    chartReveal = 0;
+    // Linear: the point is a steady flow, and easing would make it pulse.
+    function frame(now) {
+      const p = Math.min(1, (now - start) / duration);
+      chartReveal = p;
+      drawChart();
+      if (p < 1) {
+        revealFrame = requestAnimationFrame(frame);
+      } else {
+        revealFrame = null;
+        chartReveal = 1;
+      }
+    }
+    revealFrame = requestAnimationFrame(frame);
+  }
+
+  function cancelAnimation() {
+    if (revealFrame) cancelAnimationFrame(revealFrame);
+    revealFrame = null;
+    chartReveal = 1;
   }
 
   function setNotice(text) {
@@ -4696,22 +5615,91 @@ footer {
   function step(count) {
     let lastEvent = null;
     let sawBigEvent = false;
+    let crash = null;
+    let valueBeforeCrash = 0;
+
     for (let i = 0; i < count; i++) {
       if (state.finished) break;
+      // Captured before advancing, so the modal can show the actual damage.
+      const before = Portfolio.investedValue(state);
       const ev = Portfolio.advance(state);
       if (ev) {
         lastEvent = ev;
         if (ev.big) sawBigEvent = true;
+        // Only the last crash in a batch gets asked about; three modals in a row
+        // for a skipped year would be punishment rather than teaching.
+        if (ev.crash && before > 0.005) {
+          crash = ev;
+          valueBeforeCrash = before;
+          /* Stop here rather than finishing the batch. A crash should interrupt
+           * a skipped year, not be discovered nine months after the fact — and
+           * it keeps state.month on the crash, so the modal and the end-of-run
+           * analysis both report the month it actually happened. */
+          break;
+        }
       }
     }
+
     UI.renderBanner(state, lastEvent);
     setNotice('');
     renderAll();
+
+    /* Only a single-month advance animates. Skipping a year adds twelve points
+     * at once, where growing just the last segment would be a lie about what
+     * happened. */
+    if (count === 1 && !state.finished) {
+      // Slightly under the tick so each month settles before the next begins.
+      animateNewMonth(isPlaying() ? Math.min(320, currentSpeed() * 0.8) : 260);
+    } else {
+      cancelAnimation();
+    }
+
+    if (crash && !state.finished) {
+      askDecision(crash, valueBeforeCrash);
+      return true;
+    }
+
     if (state.finished) {
       stopPlaying();
       $('results-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
     return sawBigEvent;
+  }
+
+  /* ---------------- the crash decision ---------------- */
+
+  /* Freezes the run and makes the student commit. This is the one decision in
+   * investing that actually separates outcomes, and letting it scroll past in an
+   * auto-playing chart teaches nothing at all. */
+  function askDecision(event, before) {
+    stopPlaying();
+    const after = Portfolio.investedValue(state);
+    const damage = {
+      before: before,
+      after: after,
+      change: before > 0 ? after / before - 1 : 0
+    };
+
+    UI.showDecision(state, event, damage, function (choice) {
+      if (choice === 'sell') {
+        const r = Portfolio.sellAll(state);
+        setNotice(
+          'Sold everything for ' + UI.money(r.sold, 2) + ', paying ' + UI.money(r.fees, 2) + ' in fees to get out.'
+        );
+      } else if (choice === 'buy') {
+        const r = Portfolio.investAllCash(state);
+        setNotice(
+          r.invested > 0
+            ? 'Put ' + UI.money(r.invested, 2) + ' of cash to work at the lower prices.'
+            : 'You had no spare cash to invest.'
+        );
+      } else {
+        setNotice('You held on. Nothing was bought or sold.');
+      }
+
+      Portfolio.recordDecision(state, event, choice, before, Portfolio.totalValue(state));
+      renderAll();
+    });
   }
 
   /* ---------------- auto-play ---------------- */
@@ -4855,8 +5843,31 @@ footer {
   function restart() {
     const seed = $('seed-input').value.trim() || DEFAULT_SEED;
     const years = parseInt($('years-input').value, 10) || 10;
-    newGame(seed, years);
+    newGame(seed, years, $('goal-input').value);
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  /* Targets depend on run length, so the option labels are rebuilt whenever the
+   * number of years changes — otherwise the menu would advertise a $10,500 car
+   * on a five-year run that can only ever reach $6,000. */
+  function fillGoalOptions() {
+    const select = $('goal-input');
+    const years = parseInt($('years-input').value, 10) || 10;
+    const months = years * Market.MONTHS_PER_YEAR;
+    const current = select.value || 'car';
+
+    select.innerHTML = Goals.GOALS.map(function (g) {
+      const target = Goals.targetFor(g.id, Portfolio.DEFAULTS, months);
+      return (
+        '<option value="' +
+        g.id +
+        '">' +
+        g.name +
+        (target ? ' — ' + UI.money(target) : '') +
+        '</option>'
+      );
+    }).join('');
+    select.value = current;
   }
 
   function randomSeed() {
@@ -4893,6 +5904,11 @@ footer {
     });
     $('restart-btn').addEventListener('click', restart);
     $('theme-btn').addEventListener('click', toggleTheme);
+
+    fillGoalOptions();
+    $('years-input').addEventListener('change', fillGoalOptions);
+    // Changing the goal mid-run would move the goalposts, so it starts fresh.
+    $('goal-input').addEventListener('change', restart);
 
     $('again-btn').addEventListener('click', function () {
       $('seed-input').value = randomSeed();
@@ -4936,7 +5952,7 @@ footer {
       else if (mq.addListener) mq.addListener(onChange);
     }
 
-    newGame($('seed-input').value.trim() || DEFAULT_SEED, 10);
+    newGame($('seed-input').value.trim() || DEFAULT_SEED, 10, 'car');
   });
 })();
 

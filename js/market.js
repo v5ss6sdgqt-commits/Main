@@ -551,6 +551,7 @@
         'There is no government guarantee and no company to sue. When a crypto exchange fails, people who kept coins there can lose everything, and the price of everything crypto falls with it.',
       weight: 6,
       big: true,
+      crash: true,
       cat: { crypto: -0.32 }
     },
     {
@@ -560,6 +561,7 @@
         'A recession means the economy shrank two quarters running. NZ companies feel it most; overseas ones barely notice. This is why holding only NZ shares is riskier than it looks.',
       weight: 5,
       big: true,
+      crash: true,
       cat: { nz: -0.11 },
       effects: { nzx50: -0.06, nzbond: 0.03, air: -0.06 }
     },
@@ -570,6 +572,7 @@
         'In a real downturn almost everything risky falls together, and government bonds usually rise as people run for safety. This is the moment diversification either earns its keep or does not.',
       weight: 4,
       big: true,
+      crash: true,
       cat: { funds: -0.12, nz: -0.13, world: -0.15, crypto: -0.25 },
       effects: { nzbond: 0.04, kiwisaver: -0.05 }
     },

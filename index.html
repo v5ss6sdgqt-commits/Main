@@ -39,6 +39,12 @@
       <span class="sub" id="results-sub"></span>
     </div>
     <div class="result-grid" id="results-grid"></div>
+    <!-- Filled only when the student actually faced a crash or sold something. -->
+    <div class="cost-block" id="cost-block" hidden>
+      <h3>What your decisions cost you</h3>
+      <div id="cost-list"></div>
+    </div>
+
     <div class="verdict">
       <h3>What the numbers say about your decisions</h3>
       <ul id="verdict-list"></ul>
@@ -60,6 +66,17 @@
             <div class="hero-figure" id="hero-value">$1,000</div>
             <div class="hero-delta" id="hero-delta">&mdash;</div>
           </div>
+        </div>
+
+        <!-- The goal is what gives every other number a reason to matter, so it
+             sits directly under the headline figure rather than off in a panel. -->
+        <div class="goal" id="goal-box" hidden>
+          <div class="goal-head">
+            <span class="goal-name" id="goal-name"></span>
+            <span class="goal-count" id="goal-count"></span>
+          </div>
+          <div class="goal-track"><div class="goal-fill" id="goal-fill"></div></div>
+          <div class="goal-note" id="goal-note"></div>
         </div>
 
         <!-- Every tile label opens its own explanation. These are the four
@@ -121,6 +138,10 @@
           <span class="sub">Everyone using the same seed gets the same market</span>
         </div>
         <div class="setup">
+          <div class="field">
+            <label for="goal-input">Saving for</label>
+            <select id="goal-input"></select>
+          </div>
           <div class="field">
             <!-- The explainer sits beside the label rather than inside it: a
                  button within a label activates the field as well as itself. -->
@@ -266,9 +287,37 @@
 
 </div>
 
+<!-- The crash decision. Deliberately blocking and deliberately three buttons:
+     the moment a market falls 30% is the one real decision in investing, and
+     watching it scroll past teaches nothing. -->
+<div class="decision-backdrop" id="decision-modal" hidden>
+  <div class="decision" role="dialog" aria-modal="true" aria-labelledby="d-headline">
+    <div class="d-tag" id="d-when"></div>
+    <h2 id="d-headline"></h2>
+    <p class="d-why" id="d-why"></p>
+    <div class="d-money" id="d-money"></div>
+    <div class="d-choices">
+      <button type="button" class="d-choice sell" data-choice="sell">
+        <strong>Sell everything</strong>
+        <small>Get out before it falls further</small>
+      </button>
+      <button type="button" class="d-choice hold" data-choice="hold">
+        <strong>Do nothing</strong>
+        <small>Sit through it and wait</small>
+      </button>
+      <button type="button" class="d-choice buy" data-choice="buy">
+        <strong>Buy more</strong>
+        <small>Everything is on sale</small>
+      </button>
+    </div>
+    <p class="d-foot">Whatever you pick, the app will tell you at the end what it cost or earned you.</p>
+  </div>
+</div>
+
 <script src="js/rng.js"></script>
 <script src="js/market.js"></script>
 <script src="js/portfolio.js"></script>
+<script src="js/goals.js"></script>
 <script src="js/charts.js"></script>
 <script src="js/ui.js"></script>
 <script src="js/glossary.js"></script>
