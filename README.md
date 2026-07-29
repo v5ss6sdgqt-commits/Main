@@ -399,20 +399,24 @@ would hand the player a 6%-a-month head start that no real investor enjoys.
 
 ### The default seed
 
-`classroom-2910` was chosen by scanning 6,000 seeds for a decade that is
-representative rather than flattering: the world fund near its expectation, a real
-crash to sit through, no absurd outcomes, and nothing falling further than crypto
-actually has.
+`classroom-4019` was re-picked after the business cycle and the volatility
+recalibration rewrote every price path. Chosen from 8,000 candidates for being
+representative rather than flattering: the world fund lands on its 8%
+expectation, there is a real crash to sit through, twelve months of recession,
+and three crashes that each ask the student what to do.
 
-What makes it worth teaching is how it turns out. The boring NZX 50 fund returns
-10.6% and beats almost everything. Nvidia, Xero and a2 Milk all finish
-**negative**. Bitcoin manages 6.2%, below the world fund, after an 87% fall along
-the way. And the best performer is Air New Zealand at 18.9% — the company with the
-worst real history on the board, which no student would ever have picked.
+| | Over ten years |
+|---|---|
+| Total World Fund | **+7.9%** a year |
+| S&P/NZX 50 Fund | +8.6% a year |
+| NZ Government Bonds | +3.8% a year |
+| Bitcoin | **-9.6%** a year |
+| Best single company | Fisher & Paykel, +9.3% |
 
-Those figures describe the **ten-year** run, which is what the seed was selected
-against. It holds up over twenty as well — the world fund compounds at 7.5%, the
-NZX 50 at 8.6%, bonds at 4.1%, and bitcoin at 6.7%, still below the boring fund.
+What makes it worth teaching is the ending: the boring diversified fund beat
+almost everything, the exciting bet lost money, and the best single company only
+just edged out the fund while carrying several times the risk. Nobody was
+rewarded for excitement, which is the entire point of the app.
 
 ## Files
 
