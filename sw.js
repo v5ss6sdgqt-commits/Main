@@ -12,7 +12,7 @@
  *
  * Bump CACHE when the shell changes; the old cache is deleted on activate. */
 
-const CACHE = 'market-lab-v3';
+const CACHE = 'market-lab-v4';
 
 const SHELL = [
   './',

@@ -166,21 +166,66 @@
       pct(damage.change) +
       '</span>';
 
+    /* Each option states what it would actually do to this portfolio. Generic
+     * labels made "Buy more" a dead end for anyone with no cash — it printed an
+     * apology after the fact instead of saying so up front. */
+    const held = Market.ASSETS.filter(function (a) {
+      return Portfolio.holdingValue(state, a.id) > 0.005;
+    }).length;
+    const sellFees = held * state.cfg.feeFlat + damage.after * state.cfg.feeRate;
+    const spare = Math.max(0, Portfolio.maxBuy(state));
+
+    const sellBtn = modal.querySelector('.d-choice.sell');
+    const buyBtn = modal.querySelector('.d-choice.buy');
+    sellBtn.querySelector('small').textContent =
+      'Cash out ' + (held === 1 ? 'your holding' : 'all ' + held + ' holdings') + ' · about ' + money(sellFees, 2) + ' in fees';
+    buyBtn.querySelector('small').textContent =
+      spare > 0 ? 'Put your ' + money(spare) + ' cash in at lower prices' : 'You have no spare cash';
+    buyBtn.disabled = spare <= 0;
+
     modal.hidden = false;
 
-    const buttons = modal.querySelectorAll('.d-choice');
+    const buttons = Array.prototype.slice.call(modal.querySelectorAll('.d-choice'));
+
+    /* A real trap. The dialog claims aria-modal and blocks pointer events, but
+     * Tab used to walk straight out to the page behind — where the keyboard
+     * could reach Start over and build a new run while this modal still held
+     * listeners bound to the old one. */
+    function trap(ev) {
+      if (ev.key !== 'Tab') return;
+      const live = buttons.filter(function (b) {
+        return !b.disabled;
+      });
+      const first = live[0];
+      const last = live[live.length - 1];
+      if (ev.shiftKey && document.activeElement === first) {
+        ev.preventDefault();
+        last.focus();
+      } else if (!ev.shiftKey && document.activeElement === last) {
+        ev.preventDefault();
+        first.focus();
+      } else if (live.indexOf(document.activeElement) === -1) {
+        ev.preventDefault();
+        first.focus();
+      }
+    }
+
     function handle(ev) {
       const choice = ev.currentTarget.getAttribute('data-choice');
       buttons.forEach(function (b) {
         b.removeEventListener('click', handle);
       });
+      document.removeEventListener('keydown', trap, true);
       modal.hidden = true;
       onChoose(choice);
     }
+
     buttons.forEach(function (b) {
       b.addEventListener('click', handle);
     });
-    buttons[1].focus();
+    document.addEventListener('keydown', trap, true);
+    // "Do nothing" holds focus: the middle option, and the one that acts least.
+    modal.querySelector('.d-choice.hold').focus();
   }
 
   /* ---------------- main chart ---------------- */

@@ -34,7 +34,7 @@ light/dark theme preference.
 
 ### Handing it out as a single file
 
-`dist/market-lab.html` is the whole app inlined into one 179 KB file. Email it to
+`dist/market-lab.html` is the whole app inlined into one 184 KB file. Email it to
 a class, drop it on a shared drive, or put it on a USB stick — there is no
 folder structure to keep intact and nothing to load over the network.
 
@@ -81,9 +81,12 @@ years of prices and news on every machine. Students face the same crash on the
 same month, which turns "how did you do?" into a real comparison of decisions
 rather than a comparison of luck.
 
-**Press play and let it run.** The simulation advances on its own and pauses
-itself on a crash or a recovery, which are the moments worth stopping to discuss.
-Speed is adjustable; the fast setting covers a decade in under half a minute.
+**Press play once and let it run.** The simulation advances on its own and stops
+only for a crash, where it asks the student what to do and then resumes on its
+own. Ordinary headlines and recoveries scroll past in the news banner without
+interrupting — stopping for those meant five presses of play to get through one
+ten-year run. Speed is adjustable; the fast setting covers a decade in under half
+a minute.
 
 Some things that work well:
 

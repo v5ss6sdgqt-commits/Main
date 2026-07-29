@@ -41,8 +41,11 @@
     UI.buildMarketRows(state, { onTrade: onTrade });
     UI.renderBanner(state, null);
     setNotice('');
+    // Any modal belongs to the run that just ended.
+    $('decision-modal').hidden = true;
     renderAll();
     reflectPlayState();
+    reflectPendingSettings();
   }
 
   function renderAll() {
@@ -174,18 +177,23 @@
       }
     }
 
+    /* Only a single-month advance animates. Skipping a year adds twelve points
+     * at once, where growing just the last segment would be a lie about what
+     * happened.
+     *
+     * Decided *before* the render: cancelling afterwards would reset the reveal
+     * without redrawing, leaving the previous animation's half-drawn segment on
+     * screen until something unrelated triggered a repaint. */
+    const willAnimate = count === 1 && !state.finished;
+    if (!willAnimate) cancelAnimation();
+
     UI.renderBanner(state, lastEvent);
     setNotice('');
     renderAll();
 
-    /* Only a single-month advance animates. Skipping a year adds twelve points
-     * at once, where growing just the last segment would be a lie about what
-     * happened. */
-    if (count === 1 && !state.finished) {
+    if (willAnimate) {
       // Slightly under the tick so each month settles before the next begins.
       animateNewMonth(isPlaying() ? Math.min(320, currentSpeed() * 0.8) : 260);
-    } else {
-      cancelAnimation();
     }
 
     if (crash && !state.finished) {
@@ -206,6 +214,8 @@
    * investing that actually separates outcomes, and letting it scroll past in an
    * auto-playing chart teaches nothing at all. */
   function askDecision(event, before) {
+    // Resumed after the choice, so one press of play still carries the run.
+    const wasPlaying = isPlaying();
     stopPlaying();
     const after = Portfolio.investedValue(state);
     const damage = {
@@ -224,7 +234,11 @@
         const r = Portfolio.investAllCash(state);
         setNotice(
           r.invested > 0
-            ? 'Put ' + UI.money(r.invested, 2) + ' of cash to work at the lower prices.'
+            ? 'Put ' +
+                UI.money(r.invested, 2) +
+                ' of cash to work at the lower prices, paying ' +
+                UI.money(r.fees, 2) +
+                ' in fees.'
             : 'You had no spare cash to invest.'
         );
       } else {
@@ -233,6 +247,7 @@
 
       Portfolio.recordDecision(state, event, choice, before, Portfolio.totalValue(state));
       renderAll();
+      if (wasPlaying && !state.finished) startPlaying();
     });
   }
 
@@ -252,16 +267,17 @@
     return parseInt($('speed-input').value, 10) || 450;
   }
 
+  /* Only a crash interrupts the run, and it does so by opening the decision
+   * modal from inside `step`. Recoveries and ordinary headlines used to stop
+   * playback too, which meant five presses of play to get through one ten-year
+   * run — the opposite of a button you press once and watch. The news banner
+   * carries those without halting anything. */
   function tick() {
     if (state.finished) {
       stopPlaying();
       return;
     }
-    const big = step(1);
-    if (big) {
-      stopPlaying();
-      setNotice('Paused — something big just happened. Read the headline, then decide what to do.');
-    }
+    step(1);
   }
 
   function startPlaying() {
@@ -381,6 +397,27 @@
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
+  /* True when the controls describe a different run from the one being played. */
+  function settingsPending() {
+    if (!state) return false;
+    const seed = $('seed-input').value.trim() || DEFAULT_SEED;
+    const years = parseInt($('years-input').value, 10) || 10;
+    const goalId = $('goal-input').value;
+    const activeGoal = state.goal ? state.goal.id : 'none';
+    return (
+      seed !== state.market.seed ||
+      years !== state.market.months / Market.MONTHS_PER_YEAR ||
+      goalId !== activeGoal
+    );
+  }
+
+  function reflectPendingSettings() {
+    const hint = $('setup-hint');
+    const pending = settingsPending();
+    hint.hidden = !pending;
+    $('restart-btn').classList.toggle('pending', pending);
+  }
+
   /* Targets depend on run length, so the option labels are rebuilt whenever the
    * number of years changes — otherwise the menu would advertise a $10,500 car
    * on a five-year run that can only ever reach $6,000. */
@@ -439,10 +476,17 @@
     $('restart-btn').addEventListener('click', restart);
     $('theme-btn').addEventListener('click', toggleTheme);
 
+    /* Neither dropdown takes effect on its own. Goal used to restart instantly,
+     * which threw away an eight-year run for anyone who opened it out of
+     * curiosity; years used to do nothing, leaving the menu advertising a target
+     * the live run was not playing. Both now just flag that a restart is needed. */
     fillGoalOptions();
-    $('years-input').addEventListener('change', fillGoalOptions);
-    // Changing the goal mid-run would move the goalposts, so it starts fresh.
-    $('goal-input').addEventListener('change', restart);
+    $('years-input').addEventListener('change', function () {
+      fillGoalOptions();
+      reflectPendingSettings();
+    });
+    $('goal-input').addEventListener('change', reflectPendingSettings);
+    $('seed-input').addEventListener('input', reflectPendingSettings);
 
     $('again-btn').addEventListener('click', function () {
       $('seed-input').value = randomSeed();
