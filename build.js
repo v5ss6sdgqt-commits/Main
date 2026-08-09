@@ -39,7 +39,15 @@ html = replaceOnce(html, /<!-- pwa:start[\s\S]*?pwa:end -->\n?/, '');
  * It is irrelevant to a single inlined file, so the patterns below tolerate it
  * rather than requiring it — and `replaceOnce` throws if one stops matching, so
  * a change to those tags can never silently produce a half-bundled file. */
-const css = read('css/styles.css');
+/* The stylesheet references font files as sibling paths, which resolve fine
+ * for the served app but mean nothing once inlined into a single document
+ * with no folder structure around it — so those become data URIs here,
+ * exactly the same reasoning as everything else in this file. */
+let css = read('css/styles.css');
+css = css.replace(/url\('\.\.\/fonts\/([\w.-]+\.woff2)'\)/g, (match, filename) => {
+  const font = fs.readFileSync(path.join(root, 'fonts', filename)).toString('base64');
+  return `url(data:font/woff2;base64,${font})`;
+});
 html = replaceOnce(
   html,
   /<link rel="stylesheet" href="css\/styles\.css(\?[^"]*)?">/,

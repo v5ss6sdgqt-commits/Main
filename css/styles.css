@@ -1,3 +1,31 @@
+/* Poppins carries every role through weight alone — labels and body text at
+   400, interface text at 600, the numbers that matter at 700. Chosen to read
+   as warm and approachable rather than another default system-font finance
+   app; falls back to the system stack for the handful of symbols (the arrows
+   in "Past → expected") Poppins itself doesn't include glyphs for, which is
+   normal font-stack behaviour, not a gap to work around. */
+@font-face {
+  font-family: 'Poppins';
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  src: url('../fonts/poppins-regular.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Poppins';
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+  src: url('../fonts/poppins-semibold.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Poppins';
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+  src: url('../fonts/poppins-bold.woff2') format('woff2');
+}
+
 /* Design tokens. Every color in the app resolves through these, including the
    canvas charts, which read them at draw time — so light/dark is one swap here
    rather than a branch in the drawing code.
@@ -10,7 +38,9 @@
    the six greens never have to be distinguished from each other in isolation.
 
    The neutrals are cool rather than grey — a faint blue bias that sits under
-   the indigo accent instead of fighting it. */
+   the accent instead of fighting it. The accent itself is a warm forest green,
+   deliberately picked to sit apart from the "NZ companies" category green
+   (--cat-nz) so the two never get mistaken for each other. */
 :root {
   color-scheme: light;
 
@@ -63,7 +93,7 @@
 
   --up: #15803d;
   --down: #dc2626;
-  --accent: #4f46e5;
+  --accent: #3f6b35;
   --accent-ink: #ffffff;
 
   /* Risk badges: a green-to-red severity ramp. The word inside each badge
@@ -77,7 +107,7 @@
 
   --radius: 10px;
   --shadow: 0 1px 2px rgba(13, 17, 23, 0.06);
-  --font: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font: 'Poppins', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
 }
 
 /* The dark column is the same hues re-stepped for a dark ground, not an
@@ -133,8 +163,8 @@
 
     --up: #4ade80;
     --down: #f87171;
-    --accent: #818cf8;
-    --accent-ink: #0f1115;
+    --accent: #7fb56a;
+    --accent-ink: #10190c;
 
     --risk-1-bg: #064e3b; --risk-1-ink: #6ee7b7;
     --risk-2-bg: #1e3a5f; --risk-2-ink: #93c5fd;
@@ -195,8 +225,8 @@
 
   --up: #4ade80;
   --down: #f87171;
-  --accent: #818cf8;
-  --accent-ink: #0f1115;
+  --accent: #7fb56a;
+  --accent-ink: #10190c;
 
   --risk-1-bg: #064e3b; --risk-1-ink: #6ee7b7;
   --risk-2-bg: #1e3a5f; --risk-2-ink: #93c5fd;
@@ -284,8 +314,8 @@ button {
   background: var(--surface-1);
   border: 1px solid var(--border);
   color: var(--text-secondary);
-  border-radius: 8px;
-  padding: 7px 12px;
+  border-radius: 999px;
+  padding: 7px 14px;
   font-size: 13px;
 }
 
@@ -768,8 +798,8 @@ tbody tr:last-child td {
   background: var(--accent);
   color: var(--accent-ink);
   border: none;
-  border-radius: 8px;
-  padding: 11px 20px;
+  border-radius: 999px;
+  padding: 11px 22px;
   font-size: 14.5px;
   font-weight: 600;
 }
@@ -787,8 +817,8 @@ tbody tr:last-child td {
   background: var(--surface-1);
   border: 1px solid var(--border);
   color: var(--text-secondary);
-  border-radius: 8px;
-  padding: 11px 16px;
+  border-radius: 999px;
+  padding: 11px 18px;
   font-size: 14px;
   font-weight: 600;
 }
