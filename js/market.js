@@ -95,7 +95,7 @@
       where: 'NZX',
       category: 'defensive',
       color: 'var(--series-nzbond)',
-      start: 1.35,
+      start: 3.03,
       past: { ret: 0.035, since: 'past 11 years' },
       mu: 0.04,
       sigma: 0.025,
@@ -137,7 +137,7 @@
       where: 'NZX',
       category: 'funds',
       color: 'var(--series-nzx50)',
-      start: 3.6,
+      start: 3.15,
       past: { ret: 0.068, since: 'past 19 years' },
       mu: 0.075,
       sigma: 0.116,
@@ -157,7 +157,7 @@
       where: 'USA',
       category: 'funds',
       color: 'var(--series-sp500)',
-      start: 12.5,
+      start: 23.0,
       past: { ret: 0.149, since: 'past 11 years' },
       mu: 0.08,
       sigma: 0.135,
@@ -177,7 +177,7 @@
       where: 'Global',
       category: 'funds',
       color: 'var(--series-world)',
-      start: 4.8,
+      start: 5.31,
       past: { ret: 0.122, since: 'past 11 years' },
       mu: 0.08,
       sigma: 0.126,
@@ -199,7 +199,7 @@
       where: 'NZX',
       category: 'nz',
       color: 'var(--series-fph)',
-      start: 33.5,
+      start: 41.7,
       past: { ret: 0.153, since: 'past 20 years' },
       mu: 0.06,
       sigma: 0.244,
@@ -219,7 +219,7 @@
       where: 'NZX',
       category: 'nz',
       color: 'var(--series-mft)',
-      start: 68.0,
+      start: 69.33,
       past: { ret: 0.155, since: 'past 20 years' },
       mu: 0.058,
       sigma: 0.223,
@@ -239,7 +239,7 @@
       where: 'ASX',
       category: 'nz',
       color: 'var(--series-xro)',
-      start: 175.0,
+      start: 76.56,
       past: { ret: 0.203, since: 'past 14 years' },
       mu: 0.04,
       sigma: 0.428,
@@ -259,7 +259,7 @@
       where: 'NZX',
       category: 'nz',
       color: 'var(--series-mel)',
-      start: 5.9,
+      start: 5.61,
       past: { ret: 0.165, since: 'since 2013' },
       mu: 0.063,
       sigma: 0.193,
@@ -279,7 +279,7 @@
       where: 'NZX',
       category: 'nz',
       color: 'var(--series-atm)',
-      start: 7.2,
+      start: 8.25,
       past: { ret: 0.266, since: 'past 20 years' },
       mu: 0.035,
       sigma: 0.615,
@@ -302,7 +302,7 @@
       where: 'NZX',
       category: 'nz',
       color: 'var(--series-air)',
-      start: 0.62,
+      start: 0.425,
       past: { ret: 0.027, since: 'past 20 years' },
       mu: 0.03,
       sigma: 0.348,
@@ -324,7 +324,7 @@
       where: 'USA',
       category: 'world',
       color: 'var(--series-aapl)',
-      start: 228.0,
+      start: 313.33,
       past: { ret: 0.278, since: 'past 20 years' },
       mu: 0.06,
       sigma: 0.297,
@@ -344,7 +344,7 @@
       where: 'USA',
       category: 'world',
       color: 'var(--series-nvda)',
-      start: 185.0,
+      start: 223.96,
       past: { ret: 0.364, since: 'past 20 years' },
       mu: 0.04,
       sigma: 0.464,
@@ -364,7 +364,7 @@
       where: 'USA',
       category: 'world',
       color: 'var(--series-tsla)',
-      start: 330.0,
+      start: 328.58,
       past: { ret: 0.406, since: 'since 2010' },
       mu: 0.03,
       sigma: 0.623,
@@ -386,7 +386,7 @@
       where: 'Crypto',
       category: 'crypto',
       color: 'var(--series-btc)',
-      start: 178000,
+      start: 64738,
       past: { ret: 0.554, since: 'since 2014' },
       mu: 0.03,
       sigma: 0.713,
@@ -406,7 +406,7 @@
       where: 'Crypto',
       category: 'crypto',
       color: 'var(--series-eth)',
-      start: 6500,
+      start: 1913,
       past: { ret: 0.112, since: 'since 2017' },
       mu: 0.025,
       sigma: 0.922,
@@ -841,14 +841,23 @@
   /* Precomputes the entire price history up front. Doing it this way keeps the
    * benchmark portfolio honest: it runs on exactly the same numbers the player
    * saw, so the end-of-game comparison is a true counterfactual rather than a
-   * separately generated path that got luckier or unluckier. */
-  function generate(seedText, months) {
+   * separately generated path that got luckier or unluckier.
+   *
+   * `liveStart` is an optional { assetId: price } map — a real price fetched
+   * moments ago, standing in for the asset's usual fixed `start`. Anything
+   * missing, zero, or not a number just falls back to `start`, so a slow or
+   * failed fetch degrades to exactly today's default behaviour rather than
+   * breaking the run. */
+  function generate(seedText, months, liveStart) {
     const rng = Rng.make(seedText);
     const prices = {};
     const returns = {};
+    const startPrice = {};
 
     ASSETS.forEach(function (a) {
-      prices[a.id] = [a.start];
+      const live = liveStart && liveStart[a.id];
+      startPrice[a.id] = typeof live === 'number' && live > 0 ? live : a.start;
+      prices[a.id] = [startPrice[a.id]];
       returns[a.id] = [0];
     });
 
@@ -926,7 +935,10 @@
          * double-count and every asset would quietly beat its stated figure. */
         const priceMu = a.mu - (a.dividend || 0);
         const trend = Math.log(1 + priceMu) * (m - 1) * DT;
-        const gap = Math.log(prices[a.id][m - 1] / a.start) - trend;
+        // Anchored to the price this run actually started at, not the fixed
+        // `a.start` constant — otherwise a live starting price would look
+        // permanently "off-trend" and get pulled back toward the old default.
+        const gap = Math.log(prices[a.id][m - 1] / startPrice[a.id]) - trend;
         const pull = -MEAN_REVERSION * gap * DT;
 
         const cyclical = a.cyclical * (regime.drift - bias) * DT;

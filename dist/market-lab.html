@@ -2988,7 +2988,7 @@ footer {
       where: 'NZX',
       category: 'defensive',
       color: 'var(--series-nzbond)',
-      start: 1.35,
+      start: 3.03,
       past: { ret: 0.035, since: 'past 11 years' },
       mu: 0.04,
       sigma: 0.025,
@@ -3030,7 +3030,7 @@ footer {
       where: 'NZX',
       category: 'funds',
       color: 'var(--series-nzx50)',
-      start: 3.6,
+      start: 3.15,
       past: { ret: 0.068, since: 'past 19 years' },
       mu: 0.075,
       sigma: 0.116,
@@ -3050,7 +3050,7 @@ footer {
       where: 'USA',
       category: 'funds',
       color: 'var(--series-sp500)',
-      start: 12.5,
+      start: 23.0,
       past: { ret: 0.149, since: 'past 11 years' },
       mu: 0.08,
       sigma: 0.135,
@@ -3070,7 +3070,7 @@ footer {
       where: 'Global',
       category: 'funds',
       color: 'var(--series-world)',
-      start: 4.8,
+      start: 5.31,
       past: { ret: 0.122, since: 'past 11 years' },
       mu: 0.08,
       sigma: 0.126,
@@ -3092,7 +3092,7 @@ footer {
       where: 'NZX',
       category: 'nz',
       color: 'var(--series-fph)',
-      start: 33.5,
+      start: 41.7,
       past: { ret: 0.153, since: 'past 20 years' },
       mu: 0.06,
       sigma: 0.244,
@@ -3112,7 +3112,7 @@ footer {
       where: 'NZX',
       category: 'nz',
       color: 'var(--series-mft)',
-      start: 68.0,
+      start: 69.33,
       past: { ret: 0.155, since: 'past 20 years' },
       mu: 0.058,
       sigma: 0.223,
@@ -3132,7 +3132,7 @@ footer {
       where: 'ASX',
       category: 'nz',
       color: 'var(--series-xro)',
-      start: 175.0,
+      start: 76.56,
       past: { ret: 0.203, since: 'past 14 years' },
       mu: 0.04,
       sigma: 0.428,
@@ -3152,7 +3152,7 @@ footer {
       where: 'NZX',
       category: 'nz',
       color: 'var(--series-mel)',
-      start: 5.9,
+      start: 5.61,
       past: { ret: 0.165, since: 'since 2013' },
       mu: 0.063,
       sigma: 0.193,
@@ -3172,7 +3172,7 @@ footer {
       where: 'NZX',
       category: 'nz',
       color: 'var(--series-atm)',
-      start: 7.2,
+      start: 8.25,
       past: { ret: 0.266, since: 'past 20 years' },
       mu: 0.035,
       sigma: 0.615,
@@ -3195,7 +3195,7 @@ footer {
       where: 'NZX',
       category: 'nz',
       color: 'var(--series-air)',
-      start: 0.62,
+      start: 0.425,
       past: { ret: 0.027, since: 'past 20 years' },
       mu: 0.03,
       sigma: 0.348,
@@ -3217,7 +3217,7 @@ footer {
       where: 'USA',
       category: 'world',
       color: 'var(--series-aapl)',
-      start: 228.0,
+      start: 313.33,
       past: { ret: 0.278, since: 'past 20 years' },
       mu: 0.06,
       sigma: 0.297,
@@ -3237,7 +3237,7 @@ footer {
       where: 'USA',
       category: 'world',
       color: 'var(--series-nvda)',
-      start: 185.0,
+      start: 223.96,
       past: { ret: 0.364, since: 'past 20 years' },
       mu: 0.04,
       sigma: 0.464,
@@ -3257,7 +3257,7 @@ footer {
       where: 'USA',
       category: 'world',
       color: 'var(--series-tsla)',
-      start: 330.0,
+      start: 328.58,
       past: { ret: 0.406, since: 'since 2010' },
       mu: 0.03,
       sigma: 0.623,
@@ -3279,7 +3279,7 @@ footer {
       where: 'Crypto',
       category: 'crypto',
       color: 'var(--series-btc)',
-      start: 178000,
+      start: 64738,
       past: { ret: 0.554, since: 'since 2014' },
       mu: 0.03,
       sigma: 0.713,
@@ -3299,7 +3299,7 @@ footer {
       where: 'Crypto',
       category: 'crypto',
       color: 'var(--series-eth)',
-      start: 6500,
+      start: 1913,
       past: { ret: 0.112, since: 'since 2017' },
       mu: 0.025,
       sigma: 0.922,
@@ -3734,14 +3734,23 @@ footer {
   /* Precomputes the entire price history up front. Doing it this way keeps the
    * benchmark portfolio honest: it runs on exactly the same numbers the player
    * saw, so the end-of-game comparison is a true counterfactual rather than a
-   * separately generated path that got luckier or unluckier. */
-  function generate(seedText, months) {
+   * separately generated path that got luckier or unluckier.
+   *
+   * `liveStart` is an optional { assetId: price } map — a real price fetched
+   * moments ago, standing in for the asset's usual fixed `start`. Anything
+   * missing, zero, or not a number just falls back to `start`, so a slow or
+   * failed fetch degrades to exactly today's default behaviour rather than
+   * breaking the run. */
+  function generate(seedText, months, liveStart) {
     const rng = Rng.make(seedText);
     const prices = {};
     const returns = {};
+    const startPrice = {};
 
     ASSETS.forEach(function (a) {
-      prices[a.id] = [a.start];
+      const live = liveStart && liveStart[a.id];
+      startPrice[a.id] = typeof live === 'number' && live > 0 ? live : a.start;
+      prices[a.id] = [startPrice[a.id]];
       returns[a.id] = [0];
     });
 
@@ -3819,7 +3828,10 @@ footer {
          * double-count and every asset would quietly beat its stated figure. */
         const priceMu = a.mu - (a.dividend || 0);
         const trend = Math.log(1 + priceMu) * (m - 1) * DT;
-        const gap = Math.log(prices[a.id][m - 1] / a.start) - trend;
+        // Anchored to the price this run actually started at, not the fixed
+        // `a.start` constant — otherwise a live starting price would look
+        // permanently "off-trend" and get pulled back toward the old default.
+        const gap = Math.log(prices[a.id][m - 1] / startPrice[a.id]) - trend;
         const pull = -MEAN_REVERSION * gap * DT;
 
         const cyclical = a.cyclical * (regime.drift - bias) * DT;
@@ -3879,6 +3891,7 @@ footer {
 })(window);
 
 </script>
+<script src="js/live-prices.js?v=12"></script>
 <script>
 /* Player state, trading, and the benchmark counterfactual.
  *
@@ -8073,6 +8086,16 @@ footer {
 
   const $ = UI.$;
 
+  /* The single-file bundle deliberately omits live-prices.js — its whole
+   * point is making zero network requests, so it always plays with static
+   * starting prices, same as before this feature existed. This is what lets
+   * the served app call the real LivePrices without app.js needing to know
+   * or care which version of itself it is. */
+  function fetchLivePrices(maxWaitMs) {
+    if (typeof LivePrices === 'undefined') return Promise.resolve({});
+    return LivePrices.ready(maxWaitMs);
+  }
+
   /* One default seed per run length, because a decade that teaches the right
    * lesson is not the same decade stretched to twenty years.
    *
@@ -8119,11 +8142,11 @@ footer {
   let mode = 'solo';
   let opponent = null;
 
-  function newGame(seed, years, goalId) {
+  function newGame(seed, years, goalId, liveStartPrices) {
     stopPlaying();
     cancelAnimation();
     const months = years * Market.MONTHS_PER_YEAR;
-    const market = Market.generate(seed, months);
+    const market = Market.generate(seed, months, liveStartPrices);
 
     const chosen = Goals.byId(goalId || 'car');
     const target = Goals.targetFor(chosen.id, Portfolio.DEFAULTS, months);
@@ -8531,10 +8554,15 @@ footer {
 
   /* ---------------- wiring ---------------- */
 
-  function restart() {
+  async function restart() {
     const years = parseInt($('years-input').value, 10) || 10;
     const seed = $('seed-input').value.trim() || defaultSeedFor(years);
-    newGame(seed, years, $('goal-input').value);
+    // A fresh "start over" is usually seconds or minutes after the page
+    // opened, so the background fetch kicked off at load time has almost
+    // certainly already landed — this wait is a safety margin, not the
+    // normal path.
+    const live = await fetchLivePrices(3000);
+    newGame(seed, years, $('goal-input').value, live);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
@@ -8767,8 +8795,15 @@ footer {
     }
 
     const openingYears = parseInt($('years-input').value, 10) || 10;
-    newGame($('seed-input').value.trim() || defaultSeedFor(openingYears), openingYears, 'car');
-    Intro.maybeOpen();
+    const openingSeed = $('seed-input').value.trim() || defaultSeedFor(openingYears);
+    // Short wait on the very first load — LivePrices.start() fired as soon as
+    // its script loaded, before any of this ran, so it already has a head
+    // start; this is just a brief grace period for a fast response, not the
+    // 3s margin a later "start over" can afford to give it.
+    fetchLivePrices(1200).then(function (live) {
+      newGame(openingSeed, openingYears, 'car', live);
+      Intro.maybeOpen();
+    });
   });
 })();
 

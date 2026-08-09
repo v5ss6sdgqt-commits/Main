@@ -5,6 +5,16 @@
 
   const $ = UI.$;
 
+  /* The single-file bundle deliberately omits live-prices.js — its whole
+   * point is making zero network requests, so it always plays with static
+   * starting prices, same as before this feature existed. This is what lets
+   * the served app call the real LivePrices without app.js needing to know
+   * or care which version of itself it is. */
+  function fetchLivePrices(maxWaitMs) {
+    if (typeof LivePrices === 'undefined') return Promise.resolve({});
+    return LivePrices.ready(maxWaitMs);
+  }
+
   /* One default seed per run length, because a decade that teaches the right
    * lesson is not the same decade stretched to twenty years.
    *
@@ -51,11 +61,11 @@
   let mode = 'solo';
   let opponent = null;
 
-  function newGame(seed, years, goalId) {
+  function newGame(seed, years, goalId, liveStartPrices) {
     stopPlaying();
     cancelAnimation();
     const months = years * Market.MONTHS_PER_YEAR;
-    const market = Market.generate(seed, months);
+    const market = Market.generate(seed, months, liveStartPrices);
 
     const chosen = Goals.byId(goalId || 'car');
     const target = Goals.targetFor(chosen.id, Portfolio.DEFAULTS, months);
@@ -463,10 +473,15 @@
 
   /* ---------------- wiring ---------------- */
 
-  function restart() {
+  async function restart() {
     const years = parseInt($('years-input').value, 10) || 10;
     const seed = $('seed-input').value.trim() || defaultSeedFor(years);
-    newGame(seed, years, $('goal-input').value);
+    // A fresh "start over" is usually seconds or minutes after the page
+    // opened, so the background fetch kicked off at load time has almost
+    // certainly already landed — this wait is a safety margin, not the
+    // normal path.
+    const live = await fetchLivePrices(3000);
+    newGame(seed, years, $('goal-input').value, live);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
@@ -699,7 +714,14 @@
     }
 
     const openingYears = parseInt($('years-input').value, 10) || 10;
-    newGame($('seed-input').value.trim() || defaultSeedFor(openingYears), openingYears, 'car');
-    Intro.maybeOpen();
+    const openingSeed = $('seed-input').value.trim() || defaultSeedFor(openingYears);
+    // Short wait on the very first load — LivePrices.start() fired as soon as
+    // its script loaded, before any of this ran, so it already has a head
+    // start; this is just a brief grace period for a fast response, not the
+    // 3s margin a later "start over" can afford to give it.
+    fetchLivePrices(1200).then(function (live) {
+      newGame(openingSeed, openingYears, 'car', live);
+      Intro.maybeOpen();
+    });
   });
 })();
