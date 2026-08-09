@@ -268,7 +268,7 @@ button {
 .wrap {
   max-width: 1180px;
   margin: 0 auto;
-  padding: 20px 20px 64px;
+  padding: 28px 24px 72px;
 }
 
 /* ---------- header ---------- */
@@ -349,11 +349,11 @@ button {
   border: 1px solid var(--border);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
-  padding: 18px;
+  padding: 26px;
 }
 
 .card + .card {
-  margin-top: 16px;
+  margin-top: 22px;
 }
 
 .card-head {
@@ -361,7 +361,7 @@ button {
   align-items: baseline;
   gap: 12px;
   flex-wrap: wrap;
-  margin-bottom: 4px;
+  margin-bottom: 10px;
 }
 
 .card-head h2 {
@@ -379,7 +379,7 @@ button {
 .grid {
   display: grid;
   grid-template-columns: minmax(0, 1.72fr) minmax(0, 1fr);
-  gap: 16px;
+  gap: 22px;
   align-items: start;
 }
 
@@ -428,14 +428,14 @@ button {
 .tiles {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(128px, 1fr));
-  gap: 10px;
-  margin-top: 18px;
+  gap: 14px;
+  margin-top: 22px;
 }
 
 .tile {
   background: var(--surface-2);
-  border-radius: 8px;
-  padding: 10px 12px;
+  border-radius: 12px;
+  padding: 16px;
 }
 
 .tile .k {
@@ -579,7 +579,7 @@ th {
   font-weight: 500;
   color: var(--text-muted);
   font-size: 12px;
-  padding: 8px 10px;
+  padding: 11px 12px;
   border-bottom: 1px solid var(--border);
   white-space: nowrap;
 }
@@ -591,7 +591,7 @@ td:first-child {
 
 td {
   text-align: right;
-  padding: 10px;
+  padding: 13px 12px;
   border-bottom: 1px solid var(--border);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
@@ -909,14 +909,14 @@ tbody tr:last-child td {
 .learn {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
-  gap: 12px;
-  margin-top: 10px;
+  gap: 16px;
+  margin-top: 14px;
 }
 
 .learn .item {
   background: var(--surface-2);
-  border-radius: 8px;
-  padding: 12px 14px;
+  border-radius: 12px;
+  padding: 18px;
 }
 
 .learn h3 {
