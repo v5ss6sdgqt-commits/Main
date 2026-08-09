@@ -841,14 +841,23 @@
   /* Precomputes the entire price history up front. Doing it this way keeps the
    * benchmark portfolio honest: it runs on exactly the same numbers the player
    * saw, so the end-of-game comparison is a true counterfactual rather than a
-   * separately generated path that got luckier or unluckier. */
-  function generate(seedText, months) {
+   * separately generated path that got luckier or unluckier.
+   *
+   * `liveStart` is an optional { assetId: price } map — a real price fetched
+   * moments ago, standing in for the asset's usual fixed `start`. Anything
+   * missing, zero, or not a number just falls back to `start`, so a slow or
+   * failed fetch degrades to exactly today's default behaviour rather than
+   * breaking the run. */
+  function generate(seedText, months, liveStart) {
     const rng = Rng.make(seedText);
     const prices = {};
     const returns = {};
+    const startPrice = {};
 
     ASSETS.forEach(function (a) {
-      prices[a.id] = [a.start];
+      const live = liveStart && liveStart[a.id];
+      startPrice[a.id] = typeof live === 'number' && live > 0 ? live : a.start;
+      prices[a.id] = [startPrice[a.id]];
       returns[a.id] = [0];
     });
 
@@ -926,7 +935,10 @@
          * double-count and every asset would quietly beat its stated figure. */
         const priceMu = a.mu - (a.dividend || 0);
         const trend = Math.log(1 + priceMu) * (m - 1) * DT;
-        const gap = Math.log(prices[a.id][m - 1] / a.start) - trend;
+        // Anchored to the price this run actually started at, not the fixed
+        // `a.start` constant — otherwise a live starting price would look
+        // permanently "off-trend" and get pulled back toward the old default.
+        const gap = Math.log(prices[a.id][m - 1] / startPrice[a.id]) - trend;
         const pull = -MEAN_REVERSION * gap * DT;
 
         const cyclical = a.cyclical * (regime.drift - bias) * DT;
