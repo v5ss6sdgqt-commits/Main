@@ -7,7 +7,7 @@ const CFG = require('./config');
   p.on('pageerror', e => errs.push('PAGEERROR: ' + e.message));
   p.on('console', m => { if (m.type() === 'error') errs.push('CONSOLE: ' + m.text()); });
 
-  await p.addInitScript(()=>{try{localStorage.setItem('marketlab-intro-seen','1')}catch(e){}});
+  await p.addInitScript(()=>{try{localStorage.setItem('marketlab-intro-seen','1'); localStorage.setItem('marketlab_gate_bypass','1');}catch(e){}});
   await p.goto(CFG.BUNDLE, { waitUntil: 'load' });
   await p.waitForTimeout(500);
 

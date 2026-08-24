@@ -14,7 +14,7 @@ const URL = CFG.APP;
   p.on('pageerror', (e) => problems.push('PAGEERROR: ' + e.message));
 
   await p.addInitScript(() => {
-    try { localStorage.setItem('marketlab-intro-seen', '1'); } catch (e) {}
+    try { localStorage.setItem('marketlab-intro-seen', '1'); localStorage.setItem('marketlab_gate_bypass','1'); } catch (e) {}
   });
   await p.goto(URL, { waitUntil: 'networkidle' });
 

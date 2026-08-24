@@ -9,7 +9,7 @@ const URL = CFG.APP;
   const problems = [];
   p.on('console', (m) => { if (m.type() === 'error') problems.push('CONSOLE: ' + m.text()); });
   p.on('pageerror', (e) => problems.push('PAGEERROR: ' + e.message));
-  await p.addInitScript(() => { try { localStorage.setItem('marketlab-intro-seen', '1'); } catch (e) {} });
+  await p.addInitScript(() => { try { localStorage.setItem('marketlab-intro-seen', '1'); localStorage.setItem('marketlab_gate_bypass','1'); } catch (e) {} });
   await p.goto(URL, { waitUntil: 'networkidle' });
 
   const probe = await p.evaluate(() => {

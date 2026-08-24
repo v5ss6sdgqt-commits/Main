@@ -1010,6 +1010,54 @@ tbody tr:last-child td {
   color: var(--text-muted);
 }
 
+/* ---------- entry gate ---------- */
+
+/* CSS-only, so the app underneath is hidden before any script runs (no
+   flash of the unlocked game) and reappears the instant js/app.js marks
+   #gate-screen [hidden] on a successful login/signup - no JS needed to
+   toggle #app-wrap itself. Only ever matches when #gate-screen exists in the
+   document at all, so the offline single-file bundle (which strips the gate
+   entirely - see build.js) is never affected by this rule. */
+#gate-screen:not([hidden]) ~ #app-wrap {
+  display: none;
+}
+
+.gate-screen {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 28px;
+  background: var(--page);
+}
+
+.gate-panel {
+  max-width: 720px;
+  width: 100%;
+}
+
+.gate-lede {
+  color: var(--text-secondary);
+  margin: 4px 0 24px;
+}
+
+.gate-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 28px;
+}
+
+.gate-col h2 {
+  font-size: 16px;
+  margin-bottom: 4px;
+}
+
+@media (max-width: 640px) {
+  .gate-columns {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* ---------- table view toggle ---------- */
 
 .data-table {

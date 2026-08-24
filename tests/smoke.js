@@ -13,7 +13,7 @@ const OUT = '/tmp/claude-0/-home-user-Main/39cb3cd4-a90c-5e9d-ba2e-647438e42e07/
   page.on('console', m => { if (m.type() === 'error') errors.push('CONSOLE: ' + m.text()); });
   page.on('pageerror', e => errors.push('PAGEERROR: ' + e.message));
 
-  await page.addInitScript(()=>{try{localStorage.setItem('marketlab-intro-seen','1');}catch(e){}});
+  await page.addInitScript(()=>{try{localStorage.setItem('marketlab-intro-seen','1'); localStorage.setItem('marketlab_gate_bypass','1');}catch(e){}});
   await page.goto(URL, { waitUntil: 'load' });
   await page.waitForTimeout(400);
   await page.evaluate(()=>{ if(window.Intro&&Intro.close) Intro.close(); const b=document.querySelector('.intro-backdrop'); if(b) b.remove(); });
@@ -94,7 +94,7 @@ const OUT = '/tmp/claude-0/-home-user-Main/39cb3cd4-a90c-5e9d-ba2e-647438e42e07/
 
   // Mobile: the page body must never scroll horizontally.
   const phone = await browser.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2 });
-  await phone.addInitScript(()=>{try{localStorage.setItem('marketlab-intro-seen','1');}catch(e){}});
+  await phone.addInitScript(()=>{try{localStorage.setItem('marketlab-intro-seen','1'); localStorage.setItem('marketlab_gate_bypass','1');}catch(e){}});
   await phone.goto(URL, { waitUntil: 'load' });
   await phone.waitForTimeout(400);
   await phone.click('#next-year');

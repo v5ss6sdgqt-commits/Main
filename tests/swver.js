@@ -17,7 +17,7 @@ const URL_ = CFG.APP;
 async function probe(cacheKey, expectStale) {
   const b = await chromium.launch();
   const p = await b.newPage();
-  await p.addInitScript(() => { try { localStorage.setItem('marketlab-intro-seen', '1'); } catch (e) {} });
+  await p.addInitScript(() => { try { localStorage.setItem('marketlab-intro-seen', '1'); localStorage.setItem('marketlab_gate_bypass','1'); } catch (e) {} });
 
   await p.goto(URL_, { waitUntil: 'networkidle' });
   await p.waitForFunction(() => !!navigator.serviceWorker.controller, null, { timeout: 20000 }).catch(() => {});

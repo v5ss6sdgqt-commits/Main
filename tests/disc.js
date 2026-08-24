@@ -5,7 +5,7 @@ const CFG = require('./config');
   const p=await b.newPage({viewport:{width:1280,height:1000},deviceScaleFactor:2});
   const errs=[]; p.on('pageerror',e=>errs.push(e.message));
   p.on('console',m=>{if(m.type()==='error')errs.push(m.text());});
-  await p.addInitScript(()=>{try{localStorage.setItem('marketlab-intro-seen','1')}catch(e){}});
+  await p.addInitScript(()=>{try{localStorage.setItem('marketlab-intro-seen','1'); localStorage.setItem('marketlab_gate_bypass','1');}catch(e){}});
   await p.goto(CFG.BUNDLE,{waitUntil:'load'});
   await p.waitForTimeout(300);
   const d = await p.evaluate(()=>{

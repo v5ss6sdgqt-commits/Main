@@ -6,7 +6,7 @@ const F = CFG.BUNDLE;
   const p=await b.newPage({viewport:{width:1280,height:1100},deviceScaleFactor:2});
   const errs=[]; p.on('pageerror',e=>errs.push('PAGEERROR: '+e.message));
   p.on('console',m=>{if(m.type()==='error')errs.push('CONSOLE: '+m.text());});
-  await p.addInitScript(()=>{try{localStorage.setItem('marketlab-intro-seen','1');}catch(e){}});
+  await p.addInitScript(()=>{try{localStorage.setItem('marketlab-intro-seen','1'); localStorage.setItem('marketlab_gate_bypass','1');}catch(e){}});
   await p.goto(F,{waitUntil:'load'}); await p.waitForTimeout(300);
 
   console.log('economy at start:', JSON.stringify(await p.evaluate(()=>({

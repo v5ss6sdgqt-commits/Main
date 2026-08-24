@@ -10,7 +10,7 @@ const F = CFG.BUNDLE;
   p.on('console', m => { if (m.type() === 'error') errs.push('CONSOLE: ' + m.text()); });
 
   // --- A. "No goal" option ---
-  await p.addInitScript(()=>{try{localStorage.setItem('marketlab-intro-seen','1')}catch(e){}});
+  await p.addInitScript(()=>{try{localStorage.setItem('marketlab-intro-seen','1'); localStorage.setItem('marketlab_gate_bypass','1');}catch(e){}});
   await p.goto(F, { waitUntil: 'load' });
   await p.selectOption('#goal-input', 'none');
   await p.click('#restart-btn');
@@ -30,14 +30,14 @@ const F = CFG.BUNDLE;
   }))));
 
   // --- B. 5-year run targets ---
-  await p.addInitScript(()=>{try{localStorage.setItem('marketlab-intro-seen','1')}catch(e){}});
+  await p.addInitScript(()=>{try{localStorage.setItem('marketlab-intro-seen','1'); localStorage.setItem('marketlab_gate_bypass','1');}catch(e){}});
   await p.goto(F, { waitUntil: 'load' });
   await p.selectOption('#years-input', '5');
   await p.waitForTimeout(100);
   console.log('B. 5y goal targets ->', JSON.stringify(await p.$$eval('#goal-input option', o => o.map(x => x.textContent))));
 
   // --- C. Buy-the-dip with almost no cash: is it a trap? ---
-  await p.addInitScript(()=>{try{localStorage.setItem('marketlab-intro-seen','1')}catch(e){}});
+  await p.addInitScript(()=>{try{localStorage.setItem('marketlab-intro-seen','1'); localStorage.setItem('marketlab_gate_bypass','1');}catch(e){}});
   await p.goto(F, { waitUntil: 'load' });
   const trap = await p.evaluate(() => {
     // Drain cash to just above the flat fee, then read what the buy option offers.
@@ -48,7 +48,7 @@ const F = CFG.BUNDLE;
   console.log('C. $4 cash -> offers to invest $' + trap.spare + ' for a $' + trap.feeOnThat + ' fee');
 
   // --- D. Fuzz: random legal actions, watch for errors ---
-  await p.addInitScript(()=>{try{localStorage.setItem('marketlab-intro-seen','1')}catch(e){}});
+  await p.addInitScript(()=>{try{localStorage.setItem('marketlab-intro-seen','1'); localStorage.setItem('marketlab_gate_bypass','1');}catch(e){}});
   await p.goto(F, { waitUntil: 'load' });
   let acted = 0;
   for (let i = 0; i < 220; i++) {

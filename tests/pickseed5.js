@@ -4,7 +4,7 @@ const CFG = require('./config');
 (async () => {
   const b = await chromium.launch();
   const p = await b.newPage();
-  await p.addInitScript(() => { try { localStorage.setItem('marketlab-intro-seen','1'); } catch(e){} });
+  await p.addInitScript(() => { try { localStorage.setItem('marketlab-intro-seen','1'); localStorage.setItem('marketlab_gate_bypass','1'); } catch(e){} });
   await p.goto(CFG.APP, { waitUntil: 'networkidle' });
 
   const out = await p.evaluate(() => {

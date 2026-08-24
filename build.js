@@ -35,6 +35,13 @@ function replaceOnce(source, pattern, text) {
  * — it checks the protocol and no-ops on file:// URLs. */
 html = replaceOnce(html, /<!-- pwa:start[\s\S]*?pwa:end -->\n?/, '');
 
+/* The entry gate needs a live backend to sign in against, which the
+ * single-file handout (opened straight off a USB stick, no server, no
+ * network) can never provide - so it comes out entirely rather than locking
+ * every offline student out permanently. See js/app.js's gateUnlocked(),
+ * which no-ops when #gate-screen isn't in the document at all. */
+html = replaceOnce(html, /<!-- gate:start[\s\S]*?gate:end -->\n?/, '');
+
 /* The `?v=` on every asset URL is the cache-busting version described in sw.js.
  * It is irrelevant to a single inlined file, so the patterns below tolerate it
  * rather than requiring it — and `replaceOnce` throws if one stops matching, so

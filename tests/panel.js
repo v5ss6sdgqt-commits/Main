@@ -8,7 +8,7 @@ const sel = n => `.spark-btn[data-asset="${n}"]`;
   const p=await b.newPage({viewport:{width:1280,height:1000}});
   const errs=[]; p.on('pageerror',e=>errs.push('PAGEERROR: '+e.message));
   p.on('console',m=>{if(m.type()==='error')errs.push('CONSOLE: '+m.text());});
-  await p.addInitScript(()=>{try{localStorage.setItem('marketlab-intro-seen','1')}catch(e){}});
+  await p.addInitScript(()=>{try{localStorage.setItem('marketlab-intro-seen','1'); localStorage.setItem('marketlab_gate_bypass','1');}catch(e){}});
   await p.goto(F,{waitUntil:'load'}); await p.waitForTimeout(300);
   // Advance so there is a real price history to draw.
   for(let i=0;i<3;i++){ await p.click('#next-year'); await p.waitForTimeout(80);
@@ -79,7 +79,7 @@ const sel = n => `.spark-btn[data-asset="${n}"]`;
   const ctx=await b.newContext({...devices['iPhone 13']});
   const m=await ctx.newPage();
   m.on('pageerror',e=>errs.push('MOBILE: '+e.message));
-  await m.addInitScript(()=>{try{localStorage.setItem('marketlab-intro-seen','1')}catch(e){}});
+  await m.addInitScript(()=>{try{localStorage.setItem('marketlab-intro-seen','1'); localStorage.setItem('marketlab_gate_bypass','1');}catch(e){}});
   await m.goto(F,{waitUntil:'load'}); await m.waitForTimeout(300);
   const vis = await m.evaluate(()=>{const el=document.querySelector('.spark-btn'); return getComputedStyle(el.parentElement).display; });
   console.log('mobile history cell display:', vis);

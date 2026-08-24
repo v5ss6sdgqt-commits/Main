@@ -1018,6 +1018,54 @@ tbody tr:last-child td {
   color: var(--text-muted);
 }
 
+/* ---------- entry gate ---------- */
+
+/* CSS-only, so the app underneath is hidden before any script runs (no
+   flash of the unlocked game) and reappears the instant js/app.js marks
+   #gate-screen [hidden] on a successful login/signup - no JS needed to
+   toggle #app-wrap itself. Only ever matches when #gate-screen exists in the
+   document at all, so the offline single-file bundle (which strips the gate
+   entirely - see build.js) is never affected by this rule. */
+#gate-screen:not([hidden]) ~ #app-wrap {
+  display: none;
+}
+
+.gate-screen {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 28px;
+  background: var(--page);
+}
+
+.gate-panel {
+  max-width: 720px;
+  width: 100%;
+}
+
+.gate-lede {
+  color: var(--text-secondary);
+  margin: 4px 0 24px;
+}
+
+.gate-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 28px;
+}
+
+.gate-col h2 {
+  font-size: 16px;
+  margin-bottom: 4px;
+}
+
+@media (max-width: 640px) {
+  .gate-columns {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* ---------- table view toggle ---------- */
 
 .data-table {
@@ -2434,7 +2482,7 @@ footer {
 </style>
 </head>
 <body>
-<div class="wrap">
+<div class="wrap" id="app-wrap">
 
   <header class="topbar">
     <div class="brand">
@@ -3998,7 +4046,7 @@ footer {
 })(window);
 
 </script>
-<script src="js/live-prices.js?v=15"></script>
+<script src="js/live-prices.js?v=16"></script>
 <script>
 /* Player state, trading, and the benchmark counterfactual.
  *
@@ -9002,6 +9050,7 @@ footer {
   registerServiceWorker();
 
   document.addEventListener('DOMContentLoaded', function () {
+    initGate();
     restoreTheme();
     setupInstall();
 
@@ -9189,9 +9238,150 @@ footer {
     // 3s margin a later "start over" can afford to give it.
     fetchLivePrices(1200).then(function (live) {
       newGame(openingSeed, openingYears, 'car', live);
-      Intro.maybeOpen();
+      // Skip the opening briefing while the gate is still up - it belongs to
+      // the first look at the game itself, not stacked behind a locked door.
+      if (gateUnlocked()) Intro.maybeOpen();
     });
   });
+
+  /* ---------------- shared login/signup wiring ----------------
+   *
+   * Both the entry gate and the "national leaderboard account" card inside
+   * the app run the same login/signup flow against the same backend session
+   * - they just use different id prefixes for their copies of the form
+   * (`gate-*` / `account-*`) so the two can be shown/hidden independently.
+   * Wiring this once and re-running it per prefix keeps the school-picker
+   * logic in one place rather than two copies that could drift. */
+  function wireAuthForm(prefix, onAuthed) {
+    const errorEl = $(prefix + '-error');
+    function formError(message) {
+      errorEl.hidden = !message;
+      errorEl.textContent = message || '';
+    }
+
+    $(prefix + '-signup-toggle').addEventListener('click', function () {
+      const showing = !$(prefix + '-signup-fields').hidden;
+      $(prefix + '-signup-fields').hidden = showing;
+      $(prefix + '-signup-controls').hidden = showing;
+    });
+
+    // School picker: debounced search against the public schools endpoint,
+    // fed into a <datalist> so the browser handles the actual dropdown/typeahead.
+    // schoolsByName tracks the last search results so submit can resolve the
+    // typed text back to an id without a second round trip.
+    let schoolsByName = {};
+    let schoolSearchTimer = null;
+    $(prefix + '-school').addEventListener('input', function () {
+      const q = this.value.trim();
+      clearTimeout(schoolSearchTimer);
+      if (q.length < 2) return;
+      schoolSearchTimer = setTimeout(function () {
+        Account.searchSchools(q).then(function (schools) {
+          schoolsByName = {};
+          const list = $(prefix + '-school-options');
+          list.innerHTML = '';
+          schools.forEach(function (school) {
+            schoolsByName[school.name.toLowerCase()] = school;
+            const option = document.createElement('option');
+            option.value = school.name;
+            list.appendChild(option);
+          });
+        }, function () {
+          /* search failing shouldn't block typing - "isn't listed" still works */
+        });
+      }, 250);
+    });
+
+    $(prefix + '-school-unlisted').addEventListener('change', function () {
+      $(prefix + '-school-other-field').hidden = !this.checked;
+      $(prefix + '-school').disabled = this.checked;
+      if (this.checked) $(prefix + '-school').value = '';
+    });
+
+    $(prefix + '-login-btn').addEventListener('click', function () {
+      formError('');
+      Account.login($(prefix + '-username').value.trim(), $(prefix + '-password').value).then(
+        onAuthed,
+        function (err) {
+          formError(err.message);
+        }
+      );
+    });
+
+    $(prefix + '-signup-btn').addEventListener('click', function () {
+      formError('');
+
+      const unlisted = $(prefix + '-school-unlisted').checked;
+      const schoolTyped = $(prefix + '-school').value.trim();
+      let school_id = null;
+      let school_other = null;
+      if (unlisted) {
+        school_other = $(prefix + '-school-other').value.trim() || null;
+      } else if (schoolTyped) {
+        const match = schoolsByName[schoolTyped.toLowerCase()];
+        if (!match) {
+          formError('Pick your school from the list, or check "My school isn\'t listed".');
+          return;
+        }
+        school_id = match.id;
+      }
+
+      Account.signup({
+        email: $(prefix + '-email').value.trim(),
+        username: $(prefix + '-username').value.trim(),
+        password: $(prefix + '-password').value,
+        display_name: $(prefix + '-display-name').value.trim(),
+        school_id: school_id,
+        school_other: school_other,
+        city: $(prefix + '-city').value.trim() || null,
+        age_bracket: $(prefix + '-age-bracket').value
+      }).then(onAuthed, function (err) {
+        formError(err.message);
+      });
+    });
+  }
+
+  /* ---------------- entry gate ----------------
+   *
+   * Market Lab is free for schools, and a paid personal membership (not yet
+   * open - no payment provider is wired up) covers everyone else. "Signed in
+   * through a school" means the logged-in account has a school attached,
+   * verified or not (school verification is a later, separate feature) - see
+   * the paywall note in the project plan. `marketlab_gate_bypass` exists
+   * purely so tests can get past the gate deterministically without a live
+   * backend round trip.
+   *
+   * Absent entirely from the offline single-file bundle (see build.js) -
+   * that handout has no backend to sign in against, so it must never be able
+   * to lock anyone out. `$('gate-screen')` is null there, and every function
+   * below no-ops in that case. */
+  function gateUnlocked() {
+    if (localStorage.getItem('marketlab_gate_bypass') === '1') return true;
+    if (!Account.isConfigured()) return true;
+    const user = Account.getUser();
+    return !!(user && (user.school_id || user.school_other));
+  }
+
+  function applyGateState() {
+    const gate = $('gate-screen');
+    if (!gate) return;
+    const unlocked = gateUnlocked();
+    gate.hidden = unlocked;
+    $('app-wrap').hidden = !unlocked;
+    return unlocked;
+  }
+
+  function initGate() {
+    const gate = $('gate-screen');
+    if (!gate) return;
+
+    wireAuthForm('gate', function () {
+      reflectAccountState();
+      applyGateState();
+    });
+
+    applyGateState();
+  }
 
   /* ---------------- national leaderboard (account-gated, opt-in) ---------------- */
 
@@ -9210,90 +9400,12 @@ footer {
       this.setAttribute('aria-expanded', String(!showing));
     });
 
-    $('account-signup-toggle').addEventListener('click', function () {
-      const showing = !$('account-signup-fields').hidden;
-      $('account-signup-fields').hidden = showing;
-      $('account-signup-controls').hidden = showing;
-    });
-
-    // School picker: debounced search against the public schools endpoint,
-    // fed into a <datalist> so the browser handles the actual dropdown/typeahead.
-    // schoolsByName tracks the last search results so submit can resolve the
-    // typed text back to an id without a second round trip.
-    let schoolsByName = {};
-    let schoolSearchTimer = null;
-    $('account-school').addEventListener('input', function () {
-      const q = this.value.trim();
-      clearTimeout(schoolSearchTimer);
-      if (q.length < 2) return;
-      schoolSearchTimer = setTimeout(function () {
-        Account.searchSchools(q).then(function (schools) {
-          schoolsByName = {};
-          const list = $('account-school-options');
-          list.innerHTML = '';
-          schools.forEach(function (school) {
-            schoolsByName[school.name.toLowerCase()] = school;
-            const option = document.createElement('option');
-            option.value = school.name;
-            list.appendChild(option);
-          });
-        }, function () {
-          /* search failing shouldn't block typing - "isn't listed" still works */
-        });
-      }, 250);
-    });
-
-    $('account-school-unlisted').addEventListener('change', function () {
-      $('account-school-other-field').hidden = !this.checked;
-      $('account-school').disabled = this.checked;
-      if (this.checked) $('account-school').value = '';
-    });
-
-    $('account-login-btn').addEventListener('click', function () {
-      accountError('');
-      Account.login($('account-username').value.trim(), $('account-password').value).then(
-        reflectAccountState,
-        function (err) {
-          accountError(err.message);
-        }
-      );
-    });
-
-    $('account-signup-btn').addEventListener('click', function () {
-      accountError('');
-
-      const unlisted = $('account-school-unlisted').checked;
-      const schoolTyped = $('account-school').value.trim();
-      let school_id = null;
-      let school_other = null;
-      if (unlisted) {
-        school_other = $('account-school-other').value.trim() || null;
-      } else if (schoolTyped) {
-        const match = schoolsByName[schoolTyped.toLowerCase()];
-        if (!match) {
-          accountError('Pick your school from the list, or check "My school isn\'t listed".');
-          return;
-        }
-        school_id = match.id;
-      }
-
-      Account.signup({
-        email: $('account-email').value.trim(),
-        username: $('account-username').value.trim(),
-        password: $('account-password').value,
-        display_name: $('account-display-name').value.trim(),
-        school_id: school_id,
-        school_other: school_other,
-        city: $('account-city').value.trim() || null,
-        age_bracket: $('account-age-bracket').value
-      }).then(reflectAccountState, function (err) {
-        accountError(err.message);
-      });
-    });
+    wireAuthForm('account', reflectAccountState);
 
     $('account-logout-btn').addEventListener('click', function () {
       Account.logout();
       reflectAccountState();
+      applyGateState();
     });
 
     $('national-board-toggle').addEventListener('click', function () {
@@ -9313,12 +9425,6 @@ footer {
 
     $('scope-select').addEventListener('change', refreshNationalBoard);
     $('national-board-refresh').addEventListener('click', refreshNationalBoard);
-  }
-
-  function accountError(message) {
-    const el = $('account-error');
-    el.hidden = !message;
-    el.textContent = message || '';
   }
 
   function reflectAccountState() {

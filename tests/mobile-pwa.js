@@ -5,7 +5,7 @@ const { chromium, devices } = require('playwright');
   // Mobile: the glossary must become a bottom sheet and the table a card list.
   const ctx = await b.newContext({ ...devices['iPhone 13'] });
   const p = await ctx.newPage();
-  await p.addInitScript(()=>{try{localStorage.setItem('marketlab-intro-seen','1')}catch(e){}});
+  await p.addInitScript(()=>{try{localStorage.setItem('marketlab-intro-seen','1'); localStorage.setItem('marketlab_gate_bypass','1');}catch(e){}});
   const errs = [];
   p.on('pageerror', e => errs.push(e.message));
   await p.goto(CFG.APP, { waitUntil: 'load' });
@@ -26,7 +26,7 @@ const { chromium, devices } = require('playwright');
   // Offline still works with the new shell.
   const ctx2 = await b.newContext();
   const p2 = await ctx2.newPage();
-  await p2.addInitScript(()=>{try{localStorage.setItem('marketlab-intro-seen','1')}catch(e){}});
+  await p2.addInitScript(()=>{try{localStorage.setItem('marketlab-intro-seen','1'); localStorage.setItem('marketlab_gate_bypass','1');}catch(e){}});
   p2.on('pageerror', e => errs.push(e.message));
   await p2.goto(CFG.APP, { waitUntil: 'load' });
   await p2.evaluate(() => navigator.serviceWorker.ready);

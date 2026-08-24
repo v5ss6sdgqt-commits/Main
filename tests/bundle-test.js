@@ -8,7 +8,7 @@ const CFG = require('./config');
   p.on('console', m => { if (m.type() === 'error') errs.push(m.text()); });
   p.on('request', r => { const u = r.url(); if (!u.startsWith('file://') && !u.startsWith('data:')) errs.push('EXTERNAL REQUEST: ' + u); });
 
-  await p.addInitScript(()=>{try{localStorage.setItem('marketlab-intro-seen','1');}catch(e){}});
+  await p.addInitScript(()=>{try{localStorage.setItem('marketlab-intro-seen','1'); localStorage.setItem('marketlab_gate_bypass','1');}catch(e){}});
   await p.goto(CFG.BUNDLE, { waitUntil: 'load' });
   await p.waitForTimeout(400);
   await p.evaluate(() => {

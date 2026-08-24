@@ -37,10 +37,88 @@
 <meta property="og:image:alt" content="Market Lab — an investing simulator for the classroom">
 <meta name="twitter:card" content="summary_large_image">
 <!-- pwa:end -->
-<link rel="stylesheet" href="css/styles.css?v=15">
+<link rel="stylesheet" href="css/styles.css?v=16">
 </head>
 <body>
-<div class="wrap">
+<!-- gate:start — stripped from the single-file bundle (see build.js), which
+     has no backend to sign in against and must never be able to lock anyone
+     out of the offline handout. -->
+<div class="gate-screen" id="gate-screen">
+  <div class="gate-panel card">
+    <div class="card-head">
+      <h1>Market Lab</h1>
+      <span class="sub">Real companies. Real trade-offs. Your call.</span>
+    </div>
+    <p class="gate-lede">Free for schools. For personal use, a small membership applies.</p>
+
+    <div class="gate-columns">
+      <div class="gate-col">
+        <h2>Sign in through your school</h2>
+        <p class="board-help">Free for students — log in, or create an account with your school.</p>
+        <div class="setup">
+          <div class="field">
+            <label for="gate-username">Username</label>
+            <input id="gate-username" type="text" autocomplete="username">
+          </div>
+          <div class="field">
+            <label for="gate-password">Password</label>
+            <input id="gate-password" type="password" autocomplete="current-password">
+          </div>
+        </div>
+        <div class="controls">
+          <button class="primary" id="gate-login-btn" type="button">Log in</button>
+          <button class="ghost" id="gate-signup-toggle" type="button">New here? Sign up</button>
+        </div>
+        <div class="setup" id="gate-signup-fields" hidden>
+          <div class="field">
+            <label for="gate-email">Email</label>
+            <input id="gate-email" type="email" autocomplete="email">
+          </div>
+          <div class="field">
+            <label for="gate-display-name">Display name (shown on the leaderboard)</label>
+            <input id="gate-display-name" type="text">
+          </div>
+          <div class="field">
+            <label for="gate-school">School</label>
+            <input id="gate-school" type="text" list="gate-school-options" autocomplete="off" placeholder="Start typing your school's name">
+            <datalist id="gate-school-options"></datalist>
+          </div>
+          <div class="field field-check">
+            <label><input id="gate-school-unlisted" type="checkbox"> My school isn't listed</label>
+          </div>
+          <div class="field" id="gate-school-other-field" hidden>
+            <label for="gate-school-other">School name</label>
+            <input id="gate-school-other" type="text">
+          </div>
+          <div class="field">
+            <label for="gate-city">City</label>
+            <input id="gate-city" type="text">
+          </div>
+          <div class="field">
+            <label for="gate-age-bracket">Year group</label>
+            <select id="gate-age-bracket">
+              <option value="Y7-8">Year 7-8</option>
+              <option value="Y9-10">Year 9-10</option>
+              <option value="Y11-13" selected>Year 11-13</option>
+            </select>
+          </div>
+        </div>
+        <div class="controls" id="gate-signup-controls" hidden>
+          <button class="primary" id="gate-signup-btn" type="button">Create account</button>
+        </div>
+        <div id="gate-error" class="board-warn soft" hidden></div>
+      </div>
+
+      <div class="gate-col">
+        <h2>Personal use</h2>
+        <p class="board-help">Not signing in through a school? A small membership fee applies.</p>
+        <div class="board-warn soft">Personal memberships aren't open yet — check back soon.</div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- gate:end -->
+<div class="wrap" id="app-wrap">
 
   <header class="topbar">
     <div class="brand">
@@ -541,20 +619,20 @@
   </div>
 </div>
 
-<script src="js/rng.js?v=15"></script>
-<script src="js/market.js?v=15"></script>
-<script src="js/live-prices.js?v=15"></script>
-<script src="js/portfolio.js?v=15"></script>
-<script src="js/goals.js?v=15"></script>
-<script src="js/opponents.js?v=15"></script>
-<script src="js/share.js?v=15"></script>
-<script src="js/charts.js?v=15"></script>
-<script src="js/asset-panel.js?v=15"></script>
-<script src="js/intro.js?v=15"></script>
-<script src="js/ui.js?v=15"></script>
-<script src="js/glossary.js?v=15"></script>
-<script src="js/account.js?v=15"></script>
-<script src="js/leaderboard.js?v=15"></script>
-<script src="js/app.js?v=15"></script>
+<script src="js/rng.js?v=16"></script>
+<script src="js/market.js?v=16"></script>
+<script src="js/live-prices.js?v=16"></script>
+<script src="js/portfolio.js?v=16"></script>
+<script src="js/goals.js?v=16"></script>
+<script src="js/opponents.js?v=16"></script>
+<script src="js/share.js?v=16"></script>
+<script src="js/charts.js?v=16"></script>
+<script src="js/asset-panel.js?v=16"></script>
+<script src="js/intro.js?v=16"></script>
+<script src="js/ui.js?v=16"></script>
+<script src="js/glossary.js?v=16"></script>
+<script src="js/account.js?v=16"></script>
+<script src="js/leaderboard.js?v=16"></script>
+<script src="js/app.js?v=16"></script>
 </body>
 </html>

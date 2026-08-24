@@ -45,7 +45,7 @@ module.exports = {
   // modal backdrop. Pass to page.addInitScript.
   skipIntro: function () {
     try {
-      localStorage.setItem('marketlab-intro-seen', '1');
+      localStorage.setItem('marketlab-intro-seen', '1'); localStorage.setItem('marketlab_gate_bypass','1');
     } catch (e) {
       /* file:// denies localStorage in some browsers; the intro just shows */
     }
