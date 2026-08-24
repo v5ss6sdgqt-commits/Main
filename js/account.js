@@ -84,6 +84,12 @@
     return result.user;
   }
 
+  // Public endpoint (no token needed) - powers the signup school picker.
+  // Returns [{id, name, city}, ...], capped server-side at 50 results.
+  function searchSchools(q) {
+    return apiFetch('/api/leaderboard/schools?q=' + encodeURIComponent(q));
+  }
+
   global.Account = {
     isConfigured: isConfigured,
     isLoggedIn: isLoggedIn,
@@ -92,6 +98,7 @@
     signup: signup,
     login: login,
     logout: logout,
+    searchSchools: searchSchools,
     apiFetch: apiFetch
   };
 })(window);

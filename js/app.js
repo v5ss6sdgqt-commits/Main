@@ -768,6 +768,39 @@
       $('account-signup-controls').hidden = showing;
     });
 
+    // School picker: debounced search against the public schools endpoint,
+    // fed into a <datalist> so the browser handles the actual dropdown/typeahead.
+    // schoolsByName tracks the last search results so submit can resolve the
+    // typed text back to an id without a second round trip.
+    let schoolsByName = {};
+    let schoolSearchTimer = null;
+    $('account-school').addEventListener('input', function () {
+      const q = this.value.trim();
+      clearTimeout(schoolSearchTimer);
+      if (q.length < 2) return;
+      schoolSearchTimer = setTimeout(function () {
+        Account.searchSchools(q).then(function (schools) {
+          schoolsByName = {};
+          const list = $('account-school-options');
+          list.innerHTML = '';
+          schools.forEach(function (school) {
+            schoolsByName[school.name.toLowerCase()] = school;
+            const option = document.createElement('option');
+            option.value = school.name;
+            list.appendChild(option);
+          });
+        }, function () {
+          /* search failing shouldn't block typing - "isn't listed" still works */
+        });
+      }, 250);
+    });
+
+    $('account-school-unlisted').addEventListener('change', function () {
+      $('account-school-other-field').hidden = !this.checked;
+      $('account-school').disabled = this.checked;
+      if (this.checked) $('account-school').value = '';
+    });
+
     $('account-login-btn').addEventListener('click', function () {
       accountError('');
       Account.login($('account-username').value.trim(), $('account-password').value).then(
@@ -780,11 +813,29 @@
 
     $('account-signup-btn').addEventListener('click', function () {
       accountError('');
+
+      const unlisted = $('account-school-unlisted').checked;
+      const schoolTyped = $('account-school').value.trim();
+      let school_id = null;
+      let school_other = null;
+      if (unlisted) {
+        school_other = $('account-school-other').value.trim() || null;
+      } else if (schoolTyped) {
+        const match = schoolsByName[schoolTyped.toLowerCase()];
+        if (!match) {
+          accountError('Pick your school from the list, or check "My school isn\'t listed".');
+          return;
+        }
+        school_id = match.id;
+      }
+
       Account.signup({
         email: $('account-email').value.trim(),
         username: $('account-username').value.trim(),
         password: $('account-password').value,
         display_name: $('account-display-name').value.trim(),
+        school_id: school_id,
+        school_other: school_other,
         city: $('account-city').value.trim() || null,
         age_bracket: $('account-age-bracket').value
       }).then(reflectAccountState, function (err) {

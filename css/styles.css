@@ -1002,6 +1002,14 @@ tbody tr:last-child td {
   width: 132px;
 }
 
+.field-check label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
 /* ---------- table view toggle ---------- */
 
 .data-table {

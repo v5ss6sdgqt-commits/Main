@@ -37,7 +37,7 @@
 <meta property="og:image:alt" content="Market Lab — an investing simulator for the classroom">
 <meta name="twitter:card" content="summary_large_image">
 <!-- pwa:end -->
-<link rel="stylesheet" href="css/styles.css?v=14">
+<link rel="stylesheet" href="css/styles.css?v=15">
 </head>
 <body>
 <div class="wrap">
@@ -415,6 +415,18 @@
             <input id="account-display-name" type="text">
           </div>
           <div class="field">
+            <label for="account-school">School</label>
+            <input id="account-school" type="text" list="account-school-options" autocomplete="off" placeholder="Start typing your school's name">
+            <datalist id="account-school-options"></datalist>
+          </div>
+          <div class="field field-check">
+            <label><input id="account-school-unlisted" type="checkbox"> My school isn't listed</label>
+          </div>
+          <div class="field" id="account-school-other-field" hidden>
+            <label for="account-school-other">School name</label>
+            <input id="account-school-other" type="text">
+          </div>
+          <div class="field">
             <label for="account-city">City</label>
             <input id="account-city" type="text">
           </div>
@@ -529,20 +541,20 @@
   </div>
 </div>
 
-<script src="js/rng.js?v=14"></script>
-<script src="js/market.js?v=14"></script>
-<script src="js/live-prices.js?v=14"></script>
-<script src="js/portfolio.js?v=14"></script>
-<script src="js/goals.js?v=14"></script>
-<script src="js/opponents.js?v=14"></script>
-<script src="js/share.js?v=14"></script>
-<script src="js/charts.js?v=14"></script>
-<script src="js/asset-panel.js?v=14"></script>
-<script src="js/intro.js?v=14"></script>
-<script src="js/ui.js?v=14"></script>
-<script src="js/glossary.js?v=14"></script>
-<script src="js/account.js?v=14"></script>
-<script src="js/leaderboard.js?v=14"></script>
-<script src="js/app.js?v=14"></script>
+<script src="js/rng.js?v=15"></script>
+<script src="js/market.js?v=15"></script>
+<script src="js/live-prices.js?v=15"></script>
+<script src="js/portfolio.js?v=15"></script>
+<script src="js/goals.js?v=15"></script>
+<script src="js/opponents.js?v=15"></script>
+<script src="js/share.js?v=15"></script>
+<script src="js/charts.js?v=15"></script>
+<script src="js/asset-panel.js?v=15"></script>
+<script src="js/intro.js?v=15"></script>
+<script src="js/ui.js?v=15"></script>
+<script src="js/glossary.js?v=15"></script>
+<script src="js/account.js?v=15"></script>
+<script src="js/leaderboard.js?v=15"></script>
+<script src="js/app.js?v=15"></script>
 </body>
 </html>
