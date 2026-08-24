@@ -95,12 +95,12 @@
       where: 'NZX',
       category: 'defensive',
       color: 'var(--series-nzbond)',
-      start: 1.35,
-      past: { ret: 0.045, since: 'past 20 years' },
+      start: 3.03,
+      past: { ret: 0.035, since: 'past 11 years' },
       mu: 0.04,
-      sigma: 0.05,
+      sigma: 0.025,
       cyclical: -0.25,
-      dividend: 0.038,
+      dividend: 0.036,
       rhoW: 0.1,
       rhoNz: 0.1,
       risk: 1,
@@ -137,12 +137,12 @@
       where: 'NZX',
       category: 'funds',
       color: 'var(--series-nzx50)',
-      start: 3.6,
-      past: { ret: 0.095, since: 'past 20 years' },
+      start: 3.15,
+      past: { ret: 0.068, since: 'past 19 years' },
       mu: 0.075,
-      sigma: 0.13,
+      sigma: 0.116,
       cyclical: 1,
-      dividend: 0.035,
+      dividend: 0.037,
       rhoW: 0.5,
       rhoNz: 0.62,
       risk: 2,
@@ -157,12 +157,12 @@
       where: 'USA',
       category: 'funds',
       color: 'var(--series-sp500)',
-      start: 12.5,
-      past: { ret: 0.105, since: 'past 20 years' },
+      start: 23.0,
+      past: { ret: 0.149, since: 'past 11 years' },
       mu: 0.08,
-      sigma: 0.155,
+      sigma: 0.135,
       cyclical: 1,
-      dividend: 0.013,
+      dividend: 0.014,
       rhoW: 0.96,
       rhoNz: 0,
       risk: 2,
@@ -177,12 +177,12 @@
       where: 'Global',
       category: 'funds',
       color: 'var(--series-world)',
-      start: 4.8,
-      past: { ret: 0.085, since: 'past 20 years' },
+      start: 5.31,
+      past: { ret: 0.122, since: 'past 11 years' },
       mu: 0.08,
-      sigma: 0.145,
+      sigma: 0.126,
       cyclical: 1,
-      dividend: 0.018,
+      dividend: 0.015,
       rhoW: 1.0,
       rhoNz: 0,
       risk: 2,
@@ -199,12 +199,12 @@
       where: 'NZX',
       category: 'nz',
       color: 'var(--series-fph)',
-      start: 33.5,
-      past: { ret: 0.16, since: 'past 20 years' },
+      start: 41.7,
+      past: { ret: 0.153, since: 'past 20 years' },
       mu: 0.06,
-      sigma: 0.24,
+      sigma: 0.244,
       cyclical: 0.8,
-      dividend: 0.015,
+      dividend: 0.013,
       rhoW: 0.42,
       rhoNz: 0.42,
       risk: 3,
@@ -219,12 +219,12 @@
       where: 'NZX',
       category: 'nz',
       color: 'var(--series-mft)',
-      start: 68.0,
-      past: { ret: 0.15, since: 'past 20 years' },
+      start: 69.33,
+      past: { ret: 0.155, since: 'past 20 years' },
       mu: 0.058,
-      sigma: 0.25,
+      sigma: 0.223,
       cyclical: 1.1,
-      dividend: 0.018,
+      dividend: 0.025,
       rhoW: 0.45,
       rhoNz: 0.45,
       risk: 3,
@@ -236,13 +236,13 @@
       id: 'xro',
       name: 'Xero',
       ticker: 'XRO',
-      where: 'NZX / ASX',
+      where: 'ASX',
       category: 'nz',
       color: 'var(--series-xro)',
-      start: 175.0,
-      past: { ret: 0.22, since: 'since 2007' },
+      start: 76.56,
+      past: { ret: 0.203, since: 'past 14 years' },
       mu: 0.04,
-      sigma: 0.38,
+      sigma: 0.428,
       cyclical: 1.2,
       dividend: 0,
       rhoW: 0.55,
@@ -259,12 +259,12 @@
       where: 'NZX',
       category: 'nz',
       color: 'var(--series-mel)',
-      start: 5.9,
-      past: { ret: 0.11, since: 'since 2013' },
+      start: 5.61,
+      past: { ret: 0.165, since: 'since 2013' },
       mu: 0.063,
-      sigma: 0.2,
+      sigma: 0.193,
       cyclical: 0.6,
-      dividend: 0.045,
+      dividend: 0.038,
       rhoW: 0.22,
       rhoNz: 0.5,
       risk: 3,
@@ -279,12 +279,15 @@
       where: 'NZX',
       category: 'nz',
       color: 'var(--series-atm)',
-      start: 7.2,
-      past: { ret: 0.13, since: 'past 20 years' },
+      start: 8.25,
+      past: { ret: 0.266, since: 'past 20 years' },
       mu: 0.035,
-      sigma: 0.44,
+      sigma: 0.615,
       cyclical: 0.9,
-      dividend: 0,
+      /* a2 Milk's real trailing yield is ~7.8%, but that includes a one-off
+         NZ$300m special dividend paid July 2026 — not a repeatable annual
+         payout. This is the ordinary/recurring dividend only. */
+      dividend: 0.028,
       rhoW: 0.25,
       rhoNz: 0.38,
       risk: 4,
@@ -299,12 +302,12 @@
       where: 'NZX',
       category: 'nz',
       color: 'var(--series-air)',
-      start: 0.62,
-      past: { ret: 0.02, since: 'past 20 years' },
+      start: 0.425,
+      past: { ret: 0.027, since: 'past 20 years' },
       mu: 0.03,
-      sigma: 0.34,
+      sigma: 0.348,
       cyclical: 1.3,
-      dividend: 0.025,
+      dividend: 0.029,
       rhoW: 0.38,
       rhoNz: 0.45,
       risk: 4,
@@ -321,12 +324,12 @@
       where: 'USA',
       category: 'world',
       color: 'var(--series-aapl)',
-      start: 228.0,
-      past: { ret: 0.24, since: 'past 20 years' },
+      start: 313.33,
+      past: { ret: 0.278, since: 'past 20 years' },
       mu: 0.06,
-      sigma: 0.27,
+      sigma: 0.297,
       cyclical: 1,
-      dividend: 0.005,
+      dividend: 0.003,
       rhoW: 0.78,
       rhoNz: 0,
       risk: 3,
@@ -341,12 +344,12 @@
       where: 'USA',
       category: 'world',
       color: 'var(--series-nvda)',
-      start: 185.0,
-      past: { ret: 0.33, since: 'past 20 years' },
+      start: 223.96,
+      past: { ret: 0.364, since: 'past 20 years' },
       mu: 0.04,
-      sigma: 0.48,
+      sigma: 0.464,
       cyclical: 1.3,
-      dividend: 0.0003,
+      dividend: 0.0013,
       rhoW: 0.72,
       rhoNz: 0,
       risk: 4,
@@ -361,10 +364,10 @@
       where: 'USA',
       category: 'world',
       color: 'var(--series-tsla)',
-      start: 330.0,
-      past: { ret: 0.35, since: 'since 2010' },
+      start: 328.58,
+      past: { ret: 0.406, since: 'since 2010' },
       mu: 0.03,
-      sigma: 0.55,
+      sigma: 0.623,
       cyclical: 1.4,
       dividend: 0,
       rhoW: 0.62,
@@ -383,10 +386,10 @@
       where: 'Crypto',
       category: 'crypto',
       color: 'var(--series-btc)',
-      start: 178000,
-      past: { ret: 0.6, since: 'since 2013' },
+      start: 64738,
+      past: { ret: 0.554, since: 'since 2014' },
       mu: 0.03,
-      sigma: 0.55,
+      sigma: 0.713,
       cyclical: 1.2,
       dividend: 0,
       rhoW: 0.32,
@@ -403,10 +406,10 @@
       where: 'Crypto',
       category: 'crypto',
       color: 'var(--series-eth)',
-      start: 6500,
-      past: { ret: 0.45, since: 'since 2015' },
+      start: 1913,
+      past: { ret: 0.112, since: 'since 2017' },
       mu: 0.025,
-      sigma: 0.65,
+      sigma: 0.922,
       cyclical: 1.3,
       dividend: 0,
       rhoW: 0.35,
@@ -838,14 +841,23 @@
   /* Precomputes the entire price history up front. Doing it this way keeps the
    * benchmark portfolio honest: it runs on exactly the same numbers the player
    * saw, so the end-of-game comparison is a true counterfactual rather than a
-   * separately generated path that got luckier or unluckier. */
-  function generate(seedText, months) {
+   * separately generated path that got luckier or unluckier.
+   *
+   * `liveStart` is an optional { assetId: price } map — a real price fetched
+   * moments ago, standing in for the asset's usual fixed `start`. Anything
+   * missing, zero, or not a number just falls back to `start`, so a slow or
+   * failed fetch degrades to exactly today's default behaviour rather than
+   * breaking the run. */
+  function generate(seedText, months, liveStart) {
     const rng = Rng.make(seedText);
     const prices = {};
     const returns = {};
+    const startPrice = {};
 
     ASSETS.forEach(function (a) {
-      prices[a.id] = [a.start];
+      const live = liveStart && liveStart[a.id];
+      startPrice[a.id] = typeof live === 'number' && live > 0 ? live : a.start;
+      prices[a.id] = [startPrice[a.id]];
       returns[a.id] = [0];
     });
 
@@ -923,7 +935,10 @@
          * double-count and every asset would quietly beat its stated figure. */
         const priceMu = a.mu - (a.dividend || 0);
         const trend = Math.log(1 + priceMu) * (m - 1) * DT;
-        const gap = Math.log(prices[a.id][m - 1] / a.start) - trend;
+        // Anchored to the price this run actually started at, not the fixed
+        // `a.start` constant — otherwise a live starting price would look
+        // permanently "off-trend" and get pulled back toward the old default.
+        const gap = Math.log(prices[a.id][m - 1] / startPrice[a.id]) - trend;
         const pull = -MEAN_REVERSION * gap * DT;
 
         const cyclical = a.cyclical * (regime.drift - bias) * DT;
