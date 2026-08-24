@@ -875,6 +875,18 @@
     return unlocked;
   }
 
+  /* Personal (non-school) membership entry point. No payment provider is
+   * chosen yet - this is deliberately just a stub so wiring up real checkout
+   * later is a one-function change rather than a new button/handler to add:
+   * swap the body for a redirect to (or fetch of) a real checkout session
+   * once a provider (Stripe is the likely pick) is set up. Until then it
+   * just states the plan in place of a working purchase flow. */
+  function startPersonalMembership() {
+    const note = $('gate-personal-note');
+    note.hidden = false;
+    note.textContent = 'Personal memberships aren’t open yet — check back soon.';
+  }
+
   function initGate() {
     const gate = $('gate-screen');
     if (!gate) return;
@@ -883,6 +895,8 @@
       reflectAccountState();
       applyGateState();
     });
+
+    $('gate-personal-btn').addEventListener('click', startPersonalMembership);
 
     applyGateState();
   }
