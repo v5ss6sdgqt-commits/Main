@@ -20,12 +20,17 @@
     return !!API_BASE;
   }
 
+  /* "Remember me" decides which storage a session lands in.
+   * localStorage survives closing the browser entirely - that's the
+   * "remembered" case. sessionStorage clears when the tab/window closes,
+   * for a student on a shared or public device who unticks it. Reads check
+   * both, since either could hold the live session. */
   function getToken() {
-    return localStorage.getItem(TOKEN_KEY);
+    return localStorage.getItem(TOKEN_KEY) || sessionStorage.getItem(TOKEN_KEY);
   }
 
   function getUser() {
-    const raw = localStorage.getItem(USER_KEY);
+    const raw = localStorage.getItem(USER_KEY) || sessionStorage.getItem(USER_KEY);
     return raw ? JSON.parse(raw) : null;
   }
 
@@ -33,14 +38,18 @@
     return !!getToken();
   }
 
-  function setSession(token, user) {
-    localStorage.setItem(TOKEN_KEY, token);
-    localStorage.setItem(USER_KEY, JSON.stringify(user));
+  function setSession(token, user, remember) {
+    logout(); // clear whichever storage might hold a previous/other session
+    const store = remember === false ? sessionStorage : localStorage;
+    store.setItem(TOKEN_KEY, token);
+    store.setItem(USER_KEY, JSON.stringify(user));
   }
 
   function logout() {
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(USER_KEY);
+    sessionStorage.removeItem(TOKEN_KEY);
+    sessionStorage.removeItem(USER_KEY);
   }
 
   async function apiFetch(path, opts) {
@@ -66,21 +75,21 @@
     return body;
   }
 
-  async function signup(data) {
+  async function signup(data, remember) {
     const result = await apiFetch('/api/auth/signup', {
       method: 'POST',
       body: JSON.stringify(data)
     });
-    setSession(result.access_token, result.user);
+    setSession(result.access_token, result.user, remember);
     return result.user;
   }
 
-  async function login(username, password) {
+  async function login(username, password, remember) {
     const result = await apiFetch('/api/auth/login', {
       method: 'POST',
       body: JSON.stringify({ username: username, password: password })
     });
-    setSession(result.access_token, result.user);
+    setSession(result.access_token, result.user, remember);
     return result.user;
   }
 

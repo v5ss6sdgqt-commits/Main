@@ -292,6 +292,20 @@ button {
   font-size: 19px;
 }
 
+.brand-home {
+  all: unset;
+  font: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+.brand-home:hover,
+.brand-home:focus-visible {
+  text-decoration: underline;
+}
+
 .brand .tag {
   color: var(--text-muted);
   font-size: 13px;

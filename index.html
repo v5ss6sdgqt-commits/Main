@@ -37,7 +37,7 @@
 <meta property="og:image:alt" content="Market Lab — an investing simulator for the classroom">
 <meta name="twitter:card" content="summary_large_image">
 <!-- pwa:end -->
-<link rel="stylesheet" href="css/styles.css?v=18">
+<link rel="stylesheet" href="css/styles.css?v=19">
 </head>
 <body>
 <!-- gate:start — stripped from the single-file bundle (see build.js), which
@@ -64,6 +64,9 @@
             <label for="gate-password">Password</label>
             <input id="gate-password" type="password" autocomplete="current-password">
           </div>
+        </div>
+        <div class="field field-check">
+          <label><input id="gate-remember" type="checkbox" checked> Remember me on this device</label>
         </div>
         <div class="controls">
           <button class="primary" id="gate-login-btn" type="button">Log in</button>
@@ -148,7 +151,7 @@
 
   <header class="topbar">
     <div class="brand">
-      <h1>Market Lab</h1>
+      <h1><button class="brand-home" id="brand-home-btn" type="button">Market Lab</button></h1>
       <span class="tag">Real companies. Real trade-offs. Your call.</span>
     </div>
     <div class="clock"><span id="clock-text">Start &middot; Year 0</span></div>
@@ -645,20 +648,20 @@
   </div>
 </div>
 
-<script src="js/rng.js?v=18"></script>
-<script src="js/market.js?v=18"></script>
-<script src="js/live-prices.js?v=18"></script>
-<script src="js/portfolio.js?v=18"></script>
-<script src="js/goals.js?v=18"></script>
-<script src="js/opponents.js?v=18"></script>
-<script src="js/share.js?v=18"></script>
-<script src="js/charts.js?v=18"></script>
-<script src="js/asset-panel.js?v=18"></script>
-<script src="js/intro.js?v=18"></script>
-<script src="js/ui.js?v=18"></script>
-<script src="js/glossary.js?v=18"></script>
-<script src="js/account.js?v=18"></script>
-<script src="js/leaderboard.js?v=18"></script>
-<script src="js/app.js?v=18"></script>
+<script src="js/rng.js?v=19"></script>
+<script src="js/market.js?v=19"></script>
+<script src="js/live-prices.js?v=19"></script>
+<script src="js/portfolio.js?v=19"></script>
+<script src="js/goals.js?v=19"></script>
+<script src="js/opponents.js?v=19"></script>
+<script src="js/share.js?v=19"></script>
+<script src="js/charts.js?v=19"></script>
+<script src="js/asset-panel.js?v=19"></script>
+<script src="js/intro.js?v=19"></script>
+<script src="js/ui.js?v=19"></script>
+<script src="js/glossary.js?v=19"></script>
+<script src="js/account.js?v=19"></script>
+<script src="js/leaderboard.js?v=19"></script>
+<script src="js/app.js?v=19"></script>
 </body>
 </html>

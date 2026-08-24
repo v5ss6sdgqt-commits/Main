@@ -300,6 +300,20 @@ button {
   font-size: 19px;
 }
 
+.brand-home {
+  all: unset;
+  font: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+.brand-home:hover,
+.brand-home:focus-visible {
+  text-decoration: underline;
+}
+
 .brand .tag {
   color: var(--text-muted);
   font-size: 13px;
@@ -2492,7 +2506,7 @@ footer {
 
   <header class="topbar">
     <div class="brand">
-      <h1>Market Lab</h1>
+      <h1><button class="brand-home" id="brand-home-btn" type="button">Market Lab</button></h1>
       <span class="tag">Real companies. Real trade-offs. Your call.</span>
     </div>
     <div class="clock"><span id="clock-text">Start &middot; Year 0</span></div>
@@ -4052,7 +4066,7 @@ footer {
 })(window);
 
 </script>
-<script src="js/live-prices.js?v=18"></script>
+<script src="js/live-prices.js?v=19"></script>
 <script>
 /* Player state, trading, and the benchmark counterfactual.
  *
@@ -8284,12 +8298,17 @@ footer {
     return !!API_BASE;
   }
 
+  /* "Remember me" decides which storage a session lands in.
+   * localStorage survives closing the browser entirely - that's the
+   * "remembered" case. sessionStorage clears when the tab/window closes,
+   * for a student on a shared or public device who unticks it. Reads check
+   * both, since either could hold the live session. */
   function getToken() {
-    return localStorage.getItem(TOKEN_KEY);
+    return localStorage.getItem(TOKEN_KEY) || sessionStorage.getItem(TOKEN_KEY);
   }
 
   function getUser() {
-    const raw = localStorage.getItem(USER_KEY);
+    const raw = localStorage.getItem(USER_KEY) || sessionStorage.getItem(USER_KEY);
     return raw ? JSON.parse(raw) : null;
   }
 
@@ -8297,14 +8316,18 @@ footer {
     return !!getToken();
   }
 
-  function setSession(token, user) {
-    localStorage.setItem(TOKEN_KEY, token);
-    localStorage.setItem(USER_KEY, JSON.stringify(user));
+  function setSession(token, user, remember) {
+    logout(); // clear whichever storage might hold a previous/other session
+    const store = remember === false ? sessionStorage : localStorage;
+    store.setItem(TOKEN_KEY, token);
+    store.setItem(USER_KEY, JSON.stringify(user));
   }
 
   function logout() {
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(USER_KEY);
+    sessionStorage.removeItem(TOKEN_KEY);
+    sessionStorage.removeItem(USER_KEY);
   }
 
   async function apiFetch(path, opts) {
@@ -8330,21 +8353,21 @@ footer {
     return body;
   }
 
-  async function signup(data) {
+  async function signup(data, remember) {
     const result = await apiFetch('/api/auth/signup', {
       method: 'POST',
       body: JSON.stringify(data)
     });
-    setSession(result.access_token, result.user);
+    setSession(result.access_token, result.user, remember);
     return result.user;
   }
 
-  async function login(username, password) {
+  async function login(username, password, remember) {
     const result = await apiFetch('/api/auth/login', {
       method: 'POST',
       body: JSON.stringify({ username: username, password: password })
     });
-    setSession(result.access_token, result.user);
+    setSession(result.access_token, result.user, remember);
     return result.user;
   }
 
@@ -9304,9 +9327,17 @@ footer {
       if (this.checked) $(prefix + '-school').value = '';
     });
 
+    // Only the gate offers "remember me" - the account card has no such
+    // field, and defaults to remembered (Account.login/signup treat a
+    // missing/undefined remember argument as true).
+    function rememberChecked() {
+      const el = $(prefix + '-remember');
+      return el ? el.checked : undefined;
+    }
+
     $(prefix + '-login-btn').addEventListener('click', function () {
       formError('');
-      Account.login($(prefix + '-username').value.trim(), $(prefix + '-password').value).then(
+      Account.login($(prefix + '-username').value.trim(), $(prefix + '-password').value, rememberChecked()).then(
         onAuthed,
         function (err) {
           formError(err.message);
@@ -9341,7 +9372,7 @@ footer {
         school_other: school_other,
         city: $(prefix + '-city').value.trim() || null,
         age_bracket: $(prefix + '-age-bracket').value
-      }).then(onAuthed, function (err) {
+      }, rememberChecked()).then(onAuthed, function (err) {
         formError(err.message);
       });
     });
@@ -9420,6 +9451,15 @@ footer {
     });
   }
 
+  // Fully signs out (including the admin bypass) and drops back to the gate
+  // - the brand link's "take me home" action, not a soft "just show it".
+  function signOutToGate() {
+    Account.logout();
+    localStorage.removeItem('marketlab_gate_bypass');
+    reflectAccountState();
+    applyGateState();
+  }
+
   function initGate() {
     const gate = $('gate-screen');
     if (!gate) return;
@@ -9431,6 +9471,7 @@ footer {
 
     $('gate-personal-btn').addEventListener('click', startPersonalMembership);
     initGateAdmin();
+    $('brand-home-btn').addEventListener('click', signOutToGate);
 
     applyGateState();
   }

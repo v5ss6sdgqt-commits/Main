@@ -802,9 +802,17 @@
       if (this.checked) $(prefix + '-school').value = '';
     });
 
+    // Only the gate offers "remember me" - the account card has no such
+    // field, and defaults to remembered (Account.login/signup treat a
+    // missing/undefined remember argument as true).
+    function rememberChecked() {
+      const el = $(prefix + '-remember');
+      return el ? el.checked : undefined;
+    }
+
     $(prefix + '-login-btn').addEventListener('click', function () {
       formError('');
-      Account.login($(prefix + '-username').value.trim(), $(prefix + '-password').value).then(
+      Account.login($(prefix + '-username').value.trim(), $(prefix + '-password').value, rememberChecked()).then(
         onAuthed,
         function (err) {
           formError(err.message);
@@ -839,7 +847,7 @@
         school_other: school_other,
         city: $(prefix + '-city').value.trim() || null,
         age_bracket: $(prefix + '-age-bracket').value
-      }).then(onAuthed, function (err) {
+      }, rememberChecked()).then(onAuthed, function (err) {
         formError(err.message);
       });
     });
@@ -918,6 +926,15 @@
     });
   }
 
+  // Fully signs out (including the admin bypass) and drops back to the gate
+  // - the brand link's "take me home" action, not a soft "just show it".
+  function signOutToGate() {
+    Account.logout();
+    localStorage.removeItem('marketlab_gate_bypass');
+    reflectAccountState();
+    applyGateState();
+  }
+
   function initGate() {
     const gate = $('gate-screen');
     if (!gate) return;
@@ -929,6 +946,7 @@
 
     $('gate-personal-btn').addEventListener('click', startPersonalMembership);
     initGateAdmin();
+    $('brand-home-btn').addEventListener('click', signOutToGate);
 
     applyGateState();
   }
