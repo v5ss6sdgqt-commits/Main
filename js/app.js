@@ -880,6 +880,11 @@
     const unlocked = gateUnlocked();
     gate.hidden = unlocked;
     $('app-wrap').hidden = !unlocked;
+    // Whenever the gate is (re)shown, it should show the homepage, not a
+    // login modal left open from before - most obviously after signing out,
+    // where it would otherwise sit on top of the nav's own login button.
+    const modal = $('gate-login-backdrop');
+    if (modal) modal.hidden = true;
     return unlocked;
   }
 
@@ -935,6 +940,114 @@
     applyGateState();
   }
 
+  function initGateLoginModal() {
+    const backdrop = $('gate-login-backdrop');
+    function openModal() {
+      backdrop.hidden = false;
+    }
+    function closeModal() {
+      backdrop.hidden = true;
+    }
+    $('gate-open-login').addEventListener('click', openModal);
+    $('gate-open-login-hero').addEventListener('click', openModal);
+    $('gate-login-close').addEventListener('click', closeModal);
+    // Click on the dimmed backdrop itself (not the panel) closes it.
+    backdrop.addEventListener('click', function (ev) {
+      if (ev.target === backdrop) closeModal();
+    });
+    backdrop.addEventListener('keydown', function (ev) {
+      if (ev.key === 'Escape') closeModal();
+    });
+  }
+
+  /* Public preview of the competition leaderboard, shown on the gate before
+   * anyone signs in - reuses Leaderboard's fetch/render functions rather
+   * than duplicating the in-game #national-board-card, which stays as-is
+   * for logged-in play. There are no competitions running as this is
+   * written, so the empty state is the default view most visitors will
+   * actually see, not a rare edge case. */
+  function initPublicLeaderboard() {
+    let schoolsByName = {};
+    let schoolSearchTimer = null;
+
+    function showEmpty() {
+      $('home-board-loading').hidden = true;
+      $('home-board-empty').hidden = false;
+      $('home-board-live').hidden = true;
+    }
+
+    function refreshBoard() {
+      const compId = parseInt($('home-competition-select').value, 10);
+      if (!compId) return;
+      const scope = $('home-scope-select').value;
+      const filters = {};
+      if (scope === 'school') {
+        const match = schoolsByName[$('home-school').value.trim().toLowerCase()];
+        if (!match) {
+          $('home-board-rows').innerHTML = '<p class="board-help">Pick a school above to see its leaderboard.</p>';
+          return;
+        }
+        filters.school_id = match.id;
+      }
+      Leaderboard.fetchLeaderboard(compId, scope, filters).then(
+        function (board) {
+          $('home-board-rows').innerHTML = Leaderboard.renderRows(board);
+        },
+        function () {
+          $('home-board-rows').innerHTML = '<p class="board-help">Couldn\'t load the leaderboard right now.</p>';
+        }
+      );
+    }
+
+    $('home-competition-select').addEventListener('change', refreshBoard);
+    $('home-scope-select').addEventListener('change', function () {
+      $('home-school-field').hidden = this.value !== 'school';
+      refreshBoard();
+    });
+    $('home-school').addEventListener('input', function () {
+      const q = this.value.trim();
+      clearTimeout(schoolSearchTimer);
+      if (q.length < 2) return;
+      schoolSearchTimer = setTimeout(function () {
+        Account.searchSchools(q).then(function (schools) {
+          schoolsByName = {};
+          const list = $('home-school-options');
+          list.innerHTML = '';
+          schools.forEach(function (school) {
+            schoolsByName[school.name.toLowerCase()] = school;
+            const option = document.createElement('option');
+            option.value = school.name;
+            list.appendChild(option);
+          });
+        }, function () {});
+      }, 250);
+    });
+
+    if (!Account.isConfigured()) {
+      showEmpty();
+      return;
+    }
+
+    Leaderboard.listCompetitions().then(function (competitions) {
+      const live = competitions.filter(function (c) {
+        return c.status !== 'ended';
+      });
+      $('home-board-loading').hidden = true;
+      if (!live.length) {
+        showEmpty();
+        return;
+      }
+      $('home-board-empty').hidden = true;
+      $('home-board-live').hidden = false;
+      $('home-competition-select').innerHTML = live
+        .map(function (c) {
+          return '<option value="' + c.id + '">' + c.name.replace(/</g, '&lt;') + ' (' + c.status + ')</option>';
+        })
+        .join('');
+      refreshBoard();
+    }, showEmpty);
+  }
+
   function initGate() {
     const gate = $('gate-screen');
     if (!gate) return;
@@ -946,6 +1059,8 @@
 
     $('gate-personal-btn').addEventListener('click', startPersonalMembership);
     initGateAdmin();
+    initGateLoginModal();
+    initPublicLeaderboard();
     $('brand-home-btn').addEventListener('click', signOutToGate);
 
     applyGateState();

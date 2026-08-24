@@ -37,111 +37,209 @@
 <meta property="og:image:alt" content="Market Lab — an investing simulator for the classroom">
 <meta name="twitter:card" content="summary_large_image">
 <!-- pwa:end -->
-<link rel="stylesheet" href="css/styles.css?v=19">
+<link rel="stylesheet" href="css/styles.css?v=20">
 </head>
 <body>
 <!-- gate:start — stripped from the single-file bundle (see build.js), which
      has no backend to sign in against and must never be able to lock anyone
      out of the offline handout. -->
 <div class="gate-screen" id="gate-screen">
-  <div class="gate-panel card">
-    <div class="card-head">
-      <h1>Market Lab</h1>
-      <span class="sub">Real companies. Real trade-offs. Your call.</span>
-    </div>
-    <p class="gate-lede">Free for schools. For personal use, a small membership applies.</p>
 
-    <div class="gate-columns">
-      <div class="gate-col">
+  <nav class="site-nav">
+    <div class="site-brand">Market Lab</div>
+    <div class="site-nav-links">
+      <a href="#competition-section">Competition</a>
+      <a href="#how-it-works-section">How it works</a>
+      <a href="#mission-section">The Mission</a>
+    </div>
+    <button class="primary" id="gate-open-login" type="button">Login to start investing</button>
+  </nav>
+
+  <section class="hero-section">
+    <div class="hero-copy">
+      <h1>Learn to invest with real companies, real risk, and none of the real money.</h1>
+      <p class="gate-lede">Free for schools — sign in with your school to start. Personal accounts are a small paid membership.</p>
+      <button class="primary" id="gate-open-login-hero" type="button">Login to start investing</button>
+    </div>
+    <svg class="hero-art" viewBox="0 0 240 160" aria-hidden="true" focusable="false">
+      <polyline points="10,130 50,110 80,120 115,70 150,85 185,40 230,20" fill="none" stroke="var(--accent)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="230" cy="20" r="6" fill="var(--accent)"/>
+      <line x1="10" y1="150" x2="230" y2="150" stroke="var(--axis)" stroke-width="2"/>
+    </svg>
+  </section>
+
+  <section class="home-section" id="mission-section">
+    <h2>The Mission</h2>
+    <!-- Placeholder - content to follow once the layout above is settled. -->
+  </section>
+
+  <section class="home-section" id="how-it-works-section">
+    <h2>How it works</h2>
+    <p>Every run plays out a made-up decade of prices for sixteen real assets — NZ
+      companies, index funds, US stocks, crypto and bonds. Nothing is replayed
+      from history; each price path is generated fresh, month by month, so no
+      two runs (and no two students) see the same market.</p>
+
+    <div class="how-grid">
+      <div class="how-card">
+        <h3>Two numbers, on purpose</h3>
+        <p>Every asset carries a <em>past</em> return (roughly what the real
+          thing has actually returned) and an <em>expected</em> return the
+          simulation actually uses, which is pulled back toward an ordinary
+          share-like return. If the game rewarded whatever won last decade,
+          it would teach exactly the wrong lesson. What stays different
+          between assets is risk, not the promise of a repeat performance.</p>
+      </div>
+      <div class="how-card">
+        <h3>A random walk, not a coin flip</h3>
+        <p>Prices move using geometric Brownian motion — a small random step
+          every month, compounding over the decade. Each asset's step is
+          split between a world-market factor, a New-Zealand factor, and its
+          own noise, which is why an NZX company and an Auckland-listed fund
+          move together more than an NZX company and a US tech stock do.</p>
+      </div>
+      <div class="how-card">
+        <h3>A real economic cycle</h3>
+        <p>The market moves through expansion, overheating, recession and
+          recovery, each with its own effect on drift, volatility and how
+          much everything starts moving together. Diversification failing
+          exactly when it's needed most — in a recession — is one of the
+          truest things about real markets, and it's built in on purpose.</p>
+      </div>
+      <div class="how-card">
+        <h3>Fees and dividends, not just prices</h3>
+        <p>Every trade costs a flat fee plus a percentage of the trade, the
+          same shape a real brokerage charges. Some assets pay dividends
+          along the way. Both show up in your results at the end, so "what
+          did fees actually cost me" has a real answer, not a guess.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="home-section" id="competition-section">
+    <h2>Competition</h2>
+    <p>Time-bound competitions run in seasons, each with its own prize.
+      Students sign in through their school, play a run, and their best
+      result counts toward national, school, city and year-group
+      leaderboards for that season. A practice run with no competition
+      selected never touches a leaderboard at all.</p>
+
+    <div id="home-board-loading" class="board-help">Loading competitions…</div>
+    <div id="home-board-empty" class="board-warn soft" hidden>No competition is running right now. When one is, the national and school leaderboards for it will show up here.</div>
+
+    <div id="home-board-live" hidden>
+      <div class="controls">
+        <select id="home-competition-select"></select>
+        <select id="home-scope-select">
+          <option value="national">National</option>
+          <option value="school">By school</option>
+        </select>
+      </div>
+      <div class="field" id="home-school-field" hidden>
+        <label for="home-school">School</label>
+        <input id="home-school" type="text" list="home-school-options" autocomplete="off" placeholder="Start typing a school's name">
+        <datalist id="home-school-options"></datalist>
+      </div>
+      <div id="home-board-rows"></div>
+    </div>
+  </section>
+
+  <!-- The actual login/signup form, opened from the nav/hero buttons above.
+       Kept as one modal (not per-section) so wireAuthForm('gate', ...) still
+       binds a single, unchanged set of ids. -->
+  <div class="gate-login-backdrop" id="gate-login-backdrop" hidden>
+    <div class="gate-login-modal card">
+      <div class="card-head">
         <h2>Sign in through your school</h2>
-        <p class="board-help">Free for students — log in, or create an account with your school.</p>
-        <div class="setup">
-          <div class="field">
-            <label for="gate-username">Username</label>
-            <input id="gate-username" type="text" autocomplete="username">
-          </div>
-          <div class="field">
-            <label for="gate-password">Password</label>
-            <input id="gate-password" type="password" autocomplete="current-password">
-          </div>
+        <button class="icon-btn" id="gate-login-close" type="button" aria-label="Close">Close</button>
+      </div>
+      <p class="board-help">Free for students — log in, or create an account with your school.</p>
+      <div class="setup">
+        <div class="field">
+          <label for="gate-username">Username</label>
+          <input id="gate-username" type="text" autocomplete="username">
+        </div>
+        <div class="field">
+          <label for="gate-password">Password</label>
+          <input id="gate-password" type="password" autocomplete="current-password">
+        </div>
+      </div>
+      <div class="field field-check">
+        <label><input id="gate-remember" type="checkbox" checked> Remember me on this device</label>
+      </div>
+      <div class="controls">
+        <button class="primary" id="gate-login-btn" type="button">Log in</button>
+        <button class="ghost" id="gate-signup-toggle" type="button">New here? Sign up</button>
+      </div>
+      <div class="setup" id="gate-signup-fields" hidden>
+        <div class="field">
+          <label for="gate-email">Email</label>
+          <input id="gate-email" type="email" autocomplete="email">
+        </div>
+        <div class="field">
+          <label for="gate-display-name">Display name (shown on the leaderboard)</label>
+          <input id="gate-display-name" type="text">
+        </div>
+        <div class="field">
+          <label for="gate-school">School</label>
+          <input id="gate-school" type="text" list="gate-school-options" autocomplete="off" placeholder="Start typing your school's name">
+          <datalist id="gate-school-options"></datalist>
         </div>
         <div class="field field-check">
-          <label><input id="gate-remember" type="checkbox" checked> Remember me on this device</label>
+          <label><input id="gate-school-unlisted" type="checkbox"> My school isn't listed</label>
         </div>
-        <div class="controls">
-          <button class="primary" id="gate-login-btn" type="button">Log in</button>
-          <button class="ghost" id="gate-signup-toggle" type="button">New here? Sign up</button>
+        <div class="field" id="gate-school-other-field" hidden>
+          <label for="gate-school-other">School name</label>
+          <input id="gate-school-other" type="text">
         </div>
-        <div class="setup" id="gate-signup-fields" hidden>
-          <div class="field">
-            <label for="gate-email">Email</label>
-            <input id="gate-email" type="email" autocomplete="email">
-          </div>
-          <div class="field">
-            <label for="gate-display-name">Display name (shown on the leaderboard)</label>
-            <input id="gate-display-name" type="text">
-          </div>
-          <div class="field">
-            <label for="gate-school">School</label>
-            <input id="gate-school" type="text" list="gate-school-options" autocomplete="off" placeholder="Start typing your school's name">
-            <datalist id="gate-school-options"></datalist>
-          </div>
-          <div class="field field-check">
-            <label><input id="gate-school-unlisted" type="checkbox"> My school isn't listed</label>
-          </div>
-          <div class="field" id="gate-school-other-field" hidden>
-            <label for="gate-school-other">School name</label>
-            <input id="gate-school-other" type="text">
-          </div>
-          <div class="field">
-            <label for="gate-city">City</label>
-            <input id="gate-city" type="text">
-          </div>
-          <div class="field">
-            <label for="gate-age-bracket">Year group</label>
-            <select id="gate-age-bracket">
-              <option value="Y7-8">Year 7-8</option>
-              <option value="Y9-10">Year 9-10</option>
-              <option value="Y11-13" selected>Year 11-13</option>
-            </select>
-          </div>
+        <div class="field">
+          <label for="gate-city">City</label>
+          <input id="gate-city" type="text">
         </div>
-        <div class="controls" id="gate-signup-controls" hidden>
-          <button class="primary" id="gate-signup-btn" type="button">Create account</button>
+        <div class="field">
+          <label for="gate-age-bracket">Year group</label>
+          <select id="gate-age-bracket">
+            <option value="Y7-8">Year 7-8</option>
+            <option value="Y9-10">Year 9-10</option>
+            <option value="Y11-13" selected>Year 11-13</option>
+          </select>
         </div>
-        <div id="gate-error" class="board-warn soft" hidden></div>
       </div>
+      <div class="controls" id="gate-signup-controls" hidden>
+        <button class="primary" id="gate-signup-btn" type="button">Create account</button>
+      </div>
+      <div id="gate-error" class="board-warn soft" hidden></div>
 
-      <div class="gate-col">
+      <div class="gate-col gate-personal-inline">
         <h2>Personal use</h2>
         <p class="board-help">Not signing in through a school? A small membership fee applies.</p>
         <div class="controls">
-          <button class="primary" id="gate-personal-btn" type="button">Get personal access</button>
+          <button class="ghost" id="gate-personal-btn" type="button">Get personal access</button>
         </div>
         <div id="gate-personal-note" class="board-warn soft" hidden></div>
       </div>
-    </div>
 
-    <!-- Not a real account or a security boundary - a plain local unlock for
-         testing the gate itself, same mechanism as marketlab_gate_bypass in
-         the test suite. Visible to anyone who reads the page source, which
-         is fine for kicking the tyres but must never guard anything that
-         actually matters. -->
-    <div class="gate-admin">
-      <button class="ghost" id="gate-admin-toggle" type="button">Admin access</button>
-      <div class="setup" id="gate-admin-fields" hidden>
-        <div class="field">
-          <label for="gate-admin-username">Username</label>
-          <input id="gate-admin-username" type="text" autocomplete="off">
+      <!-- Not a real account or a security boundary - a plain local unlock for
+           testing the gate itself, same mechanism as marketlab_gate_bypass in
+           the test suite. Visible to anyone who reads the page source, which
+           is fine for kicking the tyres but must never guard anything that
+           actually matters. -->
+      <div class="gate-admin">
+        <button class="ghost" id="gate-admin-toggle" type="button">Admin access</button>
+        <div class="setup" id="gate-admin-fields" hidden>
+          <div class="field">
+            <label for="gate-admin-username">Username</label>
+            <input id="gate-admin-username" type="text" autocomplete="off">
+          </div>
+          <div class="field">
+            <label for="gate-admin-password">Password</label>
+            <input id="gate-admin-password" type="password" autocomplete="off">
+          </div>
+          <div class="controls">
+            <button class="ghost" id="gate-admin-btn" type="button">Unlock</button>
+          </div>
+          <div id="gate-admin-error" class="board-warn soft" hidden></div>
         </div>
-        <div class="field">
-          <label for="gate-admin-password">Password</label>
-          <input id="gate-admin-password" type="password" autocomplete="off">
-        </div>
-        <div class="controls">
-          <button class="ghost" id="gate-admin-btn" type="button">Unlock</button>
-        </div>
-        <div id="gate-admin-error" class="board-warn soft" hidden></div>
       </div>
     </div>
   </div>
@@ -648,20 +746,20 @@
   </div>
 </div>
 
-<script src="js/rng.js?v=19"></script>
-<script src="js/market.js?v=19"></script>
-<script src="js/live-prices.js?v=19"></script>
-<script src="js/portfolio.js?v=19"></script>
-<script src="js/goals.js?v=19"></script>
-<script src="js/opponents.js?v=19"></script>
-<script src="js/share.js?v=19"></script>
-<script src="js/charts.js?v=19"></script>
-<script src="js/asset-panel.js?v=19"></script>
-<script src="js/intro.js?v=19"></script>
-<script src="js/ui.js?v=19"></script>
-<script src="js/glossary.js?v=19"></script>
-<script src="js/account.js?v=19"></script>
-<script src="js/leaderboard.js?v=19"></script>
-<script src="js/app.js?v=19"></script>
+<script src="js/rng.js?v=20"></script>
+<script src="js/market.js?v=20"></script>
+<script src="js/live-prices.js?v=20"></script>
+<script src="js/portfolio.js?v=20"></script>
+<script src="js/goals.js?v=20"></script>
+<script src="js/opponents.js?v=20"></script>
+<script src="js/share.js?v=20"></script>
+<script src="js/charts.js?v=20"></script>
+<script src="js/asset-panel.js?v=20"></script>
+<script src="js/intro.js?v=20"></script>
+<script src="js/ui.js?v=20"></script>
+<script src="js/glossary.js?v=20"></script>
+<script src="js/account.js?v=20"></script>
+<script src="js/leaderboard.js?v=20"></script>
+<script src="js/app.js?v=20"></script>
 </body>
 </html>
