@@ -37,7 +37,7 @@
 <meta property="og:image:alt" content="Market Lab — an investing simulator for the classroom">
 <meta name="twitter:card" content="summary_large_image">
 <!-- pwa:end -->
-<link rel="stylesheet" href="css/styles.css?v=22">
+<link rel="stylesheet" href="css/styles.css?v=23">
 </head>
 <body>
 <!-- gate:start — stripped from the single-file bundle (see build.js), which
@@ -287,6 +287,16 @@
       Comp mode<small>Race an AI on the same prices</small>
     </button>
   </div>
+
+  <!-- A separate tablist from game mode above - this one is purely about
+       which part of the screen you're looking at, not the run itself, so
+       switching tabs never restarts anything. -->
+  <div class="page-tabs" role="tablist" aria-label="Page section">
+    <button class="page-tab is-on" id="page-tab-play" type="button" role="tab" aria-selected="true">Play</button>
+    <button class="page-tab" id="page-tab-leaderboards" type="button" role="tab" aria-selected="false">Leaderboards</button>
+  </div>
+
+  <div id="tab-play">
 
   <!-- Shown only once the run is up. -->
   <section class="card" id="results-card" hidden aria-live="polite">
@@ -587,6 +597,10 @@
     </div>
   </section>
 
+  </div><!-- /tab-play -->
+
+  <div id="tab-leaderboards" hidden>
+
   <section class="card">
     <div class="card-head">
       <h2>Class leaderboard</h2>
@@ -702,6 +716,8 @@
     </div>
   </section>
 
+  </div><!-- /tab-leaderboards -->
+
   <footer>
     <div class="disclaimer">
       <strong>This is a teaching tool, not financial advice.</strong>
@@ -764,20 +780,20 @@
   </div>
 </div>
 
-<script src="js/rng.js?v=22"></script>
-<script src="js/market.js?v=22"></script>
-<script src="js/live-prices.js?v=22"></script>
-<script src="js/portfolio.js?v=22"></script>
-<script src="js/goals.js?v=22"></script>
-<script src="js/opponents.js?v=22"></script>
-<script src="js/share.js?v=22"></script>
-<script src="js/charts.js?v=22"></script>
-<script src="js/asset-panel.js?v=22"></script>
-<script src="js/intro.js?v=22"></script>
-<script src="js/ui.js?v=22"></script>
-<script src="js/glossary.js?v=22"></script>
-<script src="js/account.js?v=22"></script>
-<script src="js/leaderboard.js?v=22"></script>
-<script src="js/app.js?v=22"></script>
+<script src="js/rng.js?v=23"></script>
+<script src="js/market.js?v=23"></script>
+<script src="js/live-prices.js?v=23"></script>
+<script src="js/portfolio.js?v=23"></script>
+<script src="js/goals.js?v=23"></script>
+<script src="js/opponents.js?v=23"></script>
+<script src="js/share.js?v=23"></script>
+<script src="js/charts.js?v=23"></script>
+<script src="js/asset-panel.js?v=23"></script>
+<script src="js/intro.js?v=23"></script>
+<script src="js/ui.js?v=23"></script>
+<script src="js/glossary.js?v=23"></script>
+<script src="js/account.js?v=23"></script>
+<script src="js/leaderboard.js?v=23"></script>
+<script src="js/app.js?v=23"></script>
 </body>
 </html>

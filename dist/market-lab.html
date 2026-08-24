@@ -2080,6 +2080,41 @@ footer {
   background: color-mix(in srgb, var(--accent) 9%, var(--surface-1));
 }
 
+.page-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.page-tab {
+  appearance: none;
+  font: inherit;
+  cursor: pointer;
+  padding: 10px 4px;
+  margin-bottom: -1px;
+  border: none;
+  border-bottom: 2px solid transparent;
+  background: none;
+  color: var(--text-secondary);
+  font-weight: 700;
+  font-size: 14px;
+  transition: border-color 0.12s ease, color 0.12s ease;
+}
+
+.page-tab + .page-tab {
+  margin-left: 12px;
+}
+
+.page-tab:hover {
+  color: var(--text-primary);
+}
+
+.page-tab.is-on {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
 /* ============================================================
    The opponent
    ============================================================ */
@@ -2746,6 +2781,16 @@ footer {
     </button>
   </div>
 
+  <!-- A separate tablist from game mode above - this one is purely about
+       which part of the screen you're looking at, not the run itself, so
+       switching tabs never restarts anything. -->
+  <div class="page-tabs" role="tablist" aria-label="Page section">
+    <button class="page-tab is-on" id="page-tab-play" type="button" role="tab" aria-selected="true">Play</button>
+    <button class="page-tab" id="page-tab-leaderboards" type="button" role="tab" aria-selected="false">Leaderboards</button>
+  </div>
+
+  <div id="tab-play">
+
   <!-- Shown only once the run is up. -->
   <section class="card" id="results-card" hidden aria-live="polite">
     <div class="card-head">
@@ -3045,6 +3090,10 @@ footer {
     </div>
   </section>
 
+  </div><!-- /tab-play -->
+
+  <div id="tab-leaderboards" hidden>
+
   <section class="card">
     <div class="card-head">
       <h2>Class leaderboard</h2>
@@ -3159,6 +3208,8 @@ footer {
       <div id="national-board-out"></div>
     </div>
   </section>
+
+  </div><!-- /tab-leaderboards -->
 
   <footer>
     <div class="disclaimer">
@@ -4285,7 +4336,7 @@ footer {
 })(window);
 
 </script>
-<script src="js/live-prices.js?v=22"></script>
+<script src="js/live-prices.js?v=23"></script>
 <script>
 /* Player state, trading, and the benchmark counterfactual.
  *
@@ -9375,6 +9426,24 @@ footer {
       if (mode !== 'comp') return;
       restart();
       setNotice('New run started against ' + Opponents.byId(this.value).name + '.');
+    });
+
+    // Page tabs: purely which cards are visible, unrelated to game mode
+    // above - switching never touches the run in progress.
+    function setPageTab(next) {
+      const showLeaderboards = next === 'leaderboards';
+      $('tab-play').hidden = showLeaderboards;
+      $('tab-leaderboards').hidden = !showLeaderboards;
+      $('page-tab-play').classList.toggle('is-on', !showLeaderboards);
+      $('page-tab-leaderboards').classList.toggle('is-on', showLeaderboards);
+      $('page-tab-play').setAttribute('aria-selected', String(!showLeaderboards));
+      $('page-tab-leaderboards').setAttribute('aria-selected', String(showLeaderboards));
+    }
+    $('page-tab-play').addEventListener('click', function () {
+      setPageTab('play');
+    });
+    $('page-tab-leaderboards').addEventListener('click', function () {
+      setPageTab('leaderboards');
     });
 
     fillGoalOptions();

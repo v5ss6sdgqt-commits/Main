@@ -633,6 +633,24 @@
       setNotice('New run started against ' + Opponents.byId(this.value).name + '.');
     });
 
+    // Page tabs: purely which cards are visible, unrelated to game mode
+    // above - switching never touches the run in progress.
+    function setPageTab(next) {
+      const showLeaderboards = next === 'leaderboards';
+      $('tab-play').hidden = showLeaderboards;
+      $('tab-leaderboards').hidden = !showLeaderboards;
+      $('page-tab-play').classList.toggle('is-on', !showLeaderboards);
+      $('page-tab-leaderboards').classList.toggle('is-on', showLeaderboards);
+      $('page-tab-play').setAttribute('aria-selected', String(!showLeaderboards));
+      $('page-tab-leaderboards').setAttribute('aria-selected', String(showLeaderboards));
+    }
+    $('page-tab-play').addEventListener('click', function () {
+      setPageTab('play');
+    });
+    $('page-tab-leaderboards').addEventListener('click', function () {
+      setPageTab('leaderboards');
+    });
+
     fillGoalOptions();
     $('years-input').addEventListener('change', function () {
       /* Each length has its own default market. Swapping it in is only right

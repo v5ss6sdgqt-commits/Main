@@ -2072,6 +2072,41 @@ footer {
   background: color-mix(in srgb, var(--accent) 9%, var(--surface-1));
 }
 
+.page-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.page-tab {
+  appearance: none;
+  font: inherit;
+  cursor: pointer;
+  padding: 10px 4px;
+  margin-bottom: -1px;
+  border: none;
+  border-bottom: 2px solid transparent;
+  background: none;
+  color: var(--text-secondary);
+  font-weight: 700;
+  font-size: 14px;
+  transition: border-color 0.12s ease, color 0.12s ease;
+}
+
+.page-tab + .page-tab {
+  margin-left: 12px;
+}
+
+.page-tab:hover {
+  color: var(--text-primary);
+}
+
+.page-tab.is-on {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
 /* ============================================================
    The opponent
    ============================================================ */
