@@ -58,7 +58,12 @@
        * some things" and "selling in month 47 cost you $1,840". */
       sells: [],
       decisions: [],
-      finished: false
+      finished: false,
+      /* Every buy and sell, symbol/action/quantity/price/fee, in the shape the
+       * national leaderboard's server-side value recompute expects (see
+       * Leaderboard.submitGame in js/leaderboard.js). `month` stands in for a
+       * timestamp - this game has no real calendar, only a month index. */
+      trades: []
     };
 
     // The benchmark commits the opening balance immediately.
@@ -145,9 +150,18 @@
      * billionths of a negative cent behind — enough to render the cash tile as
      * "-$0", which reads as a bug to a student. */
     if (state.cash < 0 && state.cash > -0.01) state.cash = 0;
-    state.shares[assetId] += amount / priceOf(state, assetId);
+    const units = amount / priceOf(state, assetId);
+    state.shares[assetId] += units;
     state.totalFees += fee;
     state.tradeCount += 1;
+    state.trades.push({
+      symbol: assetId,
+      action: 'buy',
+      quantity: units,
+      price: priceOf(state, assetId),
+      month: state.month,
+      fees: fee
+    });
     addLog(state, 'buy', 'Bought ' + money(amount) + ' of ' + asset.name + ' (fee ' + money(fee) + ')');
     return { ok: true, amount: amount, fee: fee };
   }
@@ -183,6 +197,14 @@
       assetId: assetId,
       units: unitsSold,
       proceeds: amount - fee
+    });
+    state.trades.push({
+      symbol: assetId,
+      action: 'sell',
+      quantity: unitsSold,
+      price: priceOf(state, assetId),
+      month: state.month,
+      fees: fee
     });
     addLog(state, 'sell', 'Sold ' + money(amount) + ' of ' + asset.name + ' (fee ' + money(fee) + ')');
     return { ok: true, amount: amount, fee: fee };

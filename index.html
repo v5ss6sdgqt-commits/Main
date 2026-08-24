@@ -37,7 +37,7 @@
 <meta property="og:image:alt" content="Market Lab — an investing simulator for the classroom">
 <meta name="twitter:card" content="summary_large_image">
 <!-- pwa:end -->
-<link rel="stylesheet" href="css/styles.css?v=11">
+<link rel="stylesheet" href="css/styles.css?v=13">
 </head>
 <body>
 <div class="wrap">
@@ -380,6 +380,93 @@
     </div>
   </section>
 
+  <!-- Hidden by js/app.js at startup unless a backend is actually configured
+       in js/account.js (API_BASE) - this feature is opt-in infrastructure,
+       not part of the offline-first class leaderboard above. -->
+  <section class="card" id="national-account-card" hidden>
+    <div class="card-head">
+      <h2>National leaderboard account</h2>
+      <span class="sub">Compete for real prizes &mdash; needs an account</span>
+      <button class="icon-btn" id="account-toggle" type="button" aria-expanded="false">Show</button>
+    </div>
+    <div id="account-body" hidden>
+      <div id="account-signed-out">
+        <div class="setup">
+          <div class="field">
+            <label for="account-username">Username</label>
+            <input id="account-username" type="text" autocomplete="username">
+          </div>
+          <div class="field">
+            <label for="account-password">Password</label>
+            <input id="account-password" type="password" autocomplete="current-password">
+          </div>
+        </div>
+        <div class="controls">
+          <button class="primary" id="account-login-btn" type="button">Log in</button>
+          <button class="ghost" id="account-signup-toggle" type="button">New here? Sign up</button>
+        </div>
+        <div class="setup" id="account-signup-fields" hidden>
+          <div class="field">
+            <label for="account-email">Email</label>
+            <input id="account-email" type="email" autocomplete="email">
+          </div>
+          <div class="field">
+            <label for="account-display-name">Display name (shown on the leaderboard)</label>
+            <input id="account-display-name" type="text">
+          </div>
+          <div class="field">
+            <label for="account-city">City</label>
+            <input id="account-city" type="text">
+          </div>
+          <div class="field">
+            <label for="account-age-bracket">Year group</label>
+            <select id="account-age-bracket">
+              <option value="Y7-8">Year 7-8</option>
+              <option value="Y9-10">Year 9-10</option>
+              <option value="Y11-13" selected>Year 11-13</option>
+            </select>
+          </div>
+        </div>
+        <div class="controls" id="account-signup-controls" hidden>
+          <button class="primary" id="account-signup-btn" type="button">Create account</button>
+        </div>
+        <div id="account-error" class="board-warn soft" hidden></div>
+      </div>
+      <div id="account-signed-in" hidden>
+        <p class="board-help">Signed in as <strong id="account-name"></strong>.</p>
+        <button class="ghost" id="account-logout-btn" type="button">Log out</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="card" id="national-board-card" hidden>
+    <div class="card-head">
+      <h2>National leaderboard</h2>
+      <span class="sub">Live, time-bound competitions with real prizes</span>
+      <button class="icon-btn" id="national-board-toggle" type="button" aria-expanded="false">Show</button>
+    </div>
+    <div id="national-board-body" hidden>
+      <div class="setup">
+        <div class="field">
+          <label for="competition-select">Competition</label>
+          <select id="competition-select"></select>
+        </div>
+        <div class="field">
+          <label for="scope-select">Scope</label>
+          <select id="scope-select">
+            <option value="national">National</option>
+            <option value="school">My school</option>
+            <option value="city">My city</option>
+            <option value="age_bracket">My year group</option>
+          </select>
+        </div>
+        <button class="ghost" id="national-board-refresh" type="button">Refresh</button>
+      </div>
+      <p class="board-help">Playing a run while a competition is selected here submits your result to it automatically when the run finishes.</p>
+      <div id="national-board-out"></div>
+    </div>
+  </section>
+
   <footer>
     <div class="disclaimer">
       <strong>This is a teaching tool, not financial advice.</strong>
@@ -442,17 +529,19 @@
   </div>
 </div>
 
-<script src="js/rng.js?v=11"></script>
-<script src="js/market.js?v=11"></script>
-<script src="js/portfolio.js?v=11"></script>
-<script src="js/goals.js?v=11"></script>
-<script src="js/opponents.js?v=11"></script>
-<script src="js/share.js?v=11"></script>
-<script src="js/charts.js?v=11"></script>
-<script src="js/asset-panel.js?v=11"></script>
-<script src="js/intro.js?v=11"></script>
-<script src="js/ui.js?v=11"></script>
-<script src="js/glossary.js?v=11"></script>
-<script src="js/app.js?v=11"></script>
+<script src="js/rng.js?v=13"></script>
+<script src="js/market.js?v=13"></script>
+<script src="js/portfolio.js?v=13"></script>
+<script src="js/goals.js?v=13"></script>
+<script src="js/opponents.js?v=13"></script>
+<script src="js/share.js?v=13"></script>
+<script src="js/charts.js?v=13"></script>
+<script src="js/asset-panel.js?v=13"></script>
+<script src="js/intro.js?v=13"></script>
+<script src="js/ui.js?v=13"></script>
+<script src="js/glossary.js?v=13"></script>
+<script src="js/account.js?v=13"></script>
+<script src="js/leaderboard.js?v=13"></script>
+<script src="js/app.js?v=13"></script>
 </body>
 </html>

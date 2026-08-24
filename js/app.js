@@ -264,8 +264,26 @@
     if (state.finished) {
       stopPlaying();
       $('results-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      submitToNationalLeaderboard();
     }
     return sawBigEvent;
+  }
+
+  /* Opt-in only: does nothing unless the student is logged in and picked a
+   * competition before this run started (js/leaderboard.js). A practice run
+   * with no competition selected never touches the network. */
+  function submitToNationalLeaderboard() {
+    if (!Account.isConfigured() || !Account.isLoggedIn() || !Leaderboard.getActiveCompetition()) return;
+    const code = $('share-code').textContent;
+    Leaderboard.maybeSubmit(state, code).then(
+      function () {
+        setNotice('Submitted to the national leaderboard.');
+        refreshNationalBoard();
+      },
+      function (err) {
+        setNotice('Could not submit to the national leaderboard: ' + err.message);
+      }
+    );
   }
 
   /* ---------------- the crash decision ---------------- */
@@ -698,8 +716,132 @@
       else if (mq.addListener) mq.addListener(onChange);
     }
 
+    initNationalLeaderboard();
+
     const openingYears = parseInt($('years-input').value, 10) || 10;
     newGame($('seed-input').value.trim() || defaultSeedFor(openingYears), openingYears, 'car');
     Intro.maybeOpen();
   });
+
+  /* ---------------- national leaderboard (account-gated, opt-in) ---------------- */
+
+  function initNationalLeaderboard() {
+    if (!Account.isConfigured()) return; // no backend deployed yet - stays hidden
+    $('national-account-card').hidden = false;
+    $('national-board-card').hidden = false;
+
+    reflectAccountState();
+
+    $('account-toggle').addEventListener('click', function () {
+      const body = $('account-body');
+      const showing = !body.hidden;
+      body.hidden = showing;
+      this.textContent = showing ? 'Show' : 'Hide';
+      this.setAttribute('aria-expanded', String(!showing));
+    });
+
+    $('account-signup-toggle').addEventListener('click', function () {
+      const showing = !$('account-signup-fields').hidden;
+      $('account-signup-fields').hidden = showing;
+      $('account-signup-controls').hidden = showing;
+    });
+
+    $('account-login-btn').addEventListener('click', function () {
+      accountError('');
+      Account.login($('account-username').value.trim(), $('account-password').value).then(
+        reflectAccountState,
+        function (err) {
+          accountError(err.message);
+        }
+      );
+    });
+
+    $('account-signup-btn').addEventListener('click', function () {
+      accountError('');
+      Account.signup({
+        email: $('account-email').value.trim(),
+        username: $('account-username').value.trim(),
+        password: $('account-password').value,
+        display_name: $('account-display-name').value.trim(),
+        city: $('account-city').value.trim() || null,
+        age_bracket: $('account-age-bracket').value
+      }).then(reflectAccountState, function (err) {
+        accountError(err.message);
+      });
+    });
+
+    $('account-logout-btn').addEventListener('click', function () {
+      Account.logout();
+      reflectAccountState();
+    });
+
+    $('national-board-toggle').addEventListener('click', function () {
+      const body = $('national-board-body');
+      const showing = !body.hidden;
+      body.hidden = showing;
+      this.textContent = showing ? 'Show' : 'Hide';
+      this.setAttribute('aria-expanded', String(!showing));
+      if (!showing) loadCompetitions();
+    });
+
+    $('competition-select').addEventListener('change', function () {
+      const id = this.value ? parseInt(this.value, 10) : null;
+      Leaderboard.setActiveCompetition(id);
+      refreshNationalBoard();
+    });
+
+    $('scope-select').addEventListener('change', refreshNationalBoard);
+    $('national-board-refresh').addEventListener('click', refreshNationalBoard);
+  }
+
+  function accountError(message) {
+    const el = $('account-error');
+    el.hidden = !message;
+    el.textContent = message || '';
+  }
+
+  function reflectAccountState() {
+    const loggedIn = Account.isLoggedIn();
+    $('account-signed-out').hidden = loggedIn;
+    $('account-signed-in').hidden = !loggedIn;
+    if (loggedIn) {
+      $('account-name').textContent = Account.getUser().display_name;
+    }
+  }
+
+  function loadCompetitions() {
+    Leaderboard.listCompetitions().then(function (competitions) {
+      const select = $('competition-select');
+      select.innerHTML = competitions
+        .map(function (c) {
+          return '<option value="' + c.id + '">' + c.name.replace(/</g, '&lt;') + ' (' + c.status + ')</option>';
+        })
+        .join('');
+      if (competitions.length) {
+        Leaderboard.setActiveCompetition(parseInt(select.value, 10));
+      }
+      refreshNationalBoard();
+    }, function (err) {
+      $('national-board-out').innerHTML = '<p class="board-warn soft">Could not load competitions: ' + err.message + '</p>';
+    });
+  }
+
+  function refreshNationalBoard() {
+    const competitionId = Leaderboard.getActiveCompetition();
+    if (!competitionId) return;
+    const scope = $('scope-select').value;
+    const filters = {};
+    if (scope === 'school' && Account.getUser()) filters.school_id = Account.getUser().school_id;
+    if (scope === 'city' && Account.getUser()) filters.city = Account.getUser().city;
+    if (scope === 'age_bracket' && Account.getUser()) filters.age_bracket = Account.getUser().age_bracket;
+
+    Leaderboard.fetchLeaderboard(competitionId, scope, filters).then(
+      function (board) {
+        $('national-board-out').innerHTML = Leaderboard.renderRows(board);
+      },
+      function (err) {
+        $('national-board-out').innerHTML = '<p class="board-warn soft">Could not load leaderboard: ' + err.message + '</p>';
+      }
+    );
+  }
 })();
