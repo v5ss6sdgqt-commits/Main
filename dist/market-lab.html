@@ -585,6 +585,28 @@ button {
 
 /* ---------- market table ---------- */
 
+.market-filters {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+}
+
+.market-filters .field {
+  min-width: 0;
+}
+
+.market-filters #market-search {
+  width: 200px;
+}
+
+.market-filter-note {
+  margin: 10px 0 0;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
 .table-scroll {
   overflow-x: auto;
   margin-top: 6px;
@@ -3031,6 +3053,46 @@ footer {
         <button type="button" class="term-link" data-term="fees">$3 + 0.5% per trade</button>
       </span>
     </div>
+    <!-- Collapsed to a starter set of 16 by default (see js/ui.js's
+         applyMarketFilter) - the full list runs past 90 assets, and dumping
+         all of it on a student who hasn't asked for it is the opposite of
+         what a search box is for. Typing or picking a filter searches the
+         full list; clearing everything back to blank returns to the
+         starter set. -->
+    <div class="market-filters">
+      <div class="field">
+        <label for="market-search">Search</label>
+        <input id="market-search" type="text" placeholder="Company or ticker&hellip;" autocomplete="off">
+      </div>
+      <div class="field">
+        <label for="market-filter-exchange">Where</label>
+        <select id="market-filter-exchange">
+          <option value="">All</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="market-filter-risk">Risk</label>
+        <select id="market-filter-risk">
+          <option value="">All</option>
+          <option value="1">Very low</option>
+          <option value="2">Low</option>
+          <option value="3">Medium</option>
+          <option value="4">High</option>
+          <option value="5">Extreme</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="market-filter-return">Expected return</label>
+        <select id="market-filter-return">
+          <option value="">All</option>
+          <option value="low">Under 4%</option>
+          <option value="mid">4% to 6%</option>
+          <option value="high">Above 6%</option>
+        </select>
+      </div>
+      <button class="ghost" id="market-filter-clear" type="button">Clear</button>
+    </div>
+    <p class="market-filter-note" id="market-filter-note" hidden></p>
     <div class="table-scroll">
       <table class="market-table">
         <thead>
@@ -3757,7 +3819,1554 @@ footer {
       blurb:
         'The most volatile thing on this board. Expected to do no better than shares over time, while moving roughly six times as much along the way.'
     }
+,
+    {
+      id: 'msft',
+      name: 'Microsoft',
+      ticker: 'MSFT',
+      where: 'NYSE/NASDAQ',
+      category: 'world',
+      generatedColor: true,
+      start: 487.31,
+      past: { ret: 0.2528, since: 'past 10 years' },
+      mu: 0.06,
+      sigma: 0.228,
+      cyclical: 0.9,
+      dividend: 0.0075,
+      rhoW: 0.41,
+      rhoNz: 0.34,
+      risk: 3,
+      what: 'Makes Windows, Office, and a huge cloud computing business.',
+      blurb:
+        'One of the largest companies in the world by value. Software and cloud computing rarely go out of fashion, but a company this size can\'t grow forever at the same pace.'
+    },
+    {
+      id: 'googl',
+      name: 'Alphabet',
+      ticker: 'GOOGL',
+      where: 'NYSE/NASDAQ',
+      category: 'world',
+      generatedColor: true,
+      start: 348.06,
+      past: { ret: 0.242, since: 'past 10 years' },
+      mu: 0.05,
+      sigma: 0.269,
+      cyclical: 0.9,
+      dividend: 0.0024,
+      rhoW: 0.52,
+      rhoNz: 0.37,
+      risk: 3,
+      what: 'Runs Google Search, YouTube, and Android.',
+      blurb:
+        'Most of its money comes from ads next to search results. A single antitrust ruling can move the price more than a quarter of earnings.'
+    },
+    {
+      id: 'amzn',
+      name: 'Amazon',
+      ticker: 'AMZN',
+      where: 'NYSE/NASDAQ',
+      category: 'world',
+      generatedColor: true,
+      start: 262.07,
+      past: { ret: 0.2013, since: 'past 10 years' },
+      mu: 0.05,
+      sigma: 0.312,
+      cyclical: 1.1,
+      dividend: 0.0,
+      rhoW: 0.5,
+      rhoNz: 0.37,
+      risk: 4,
+      what: 'The online store, plus a huge cloud computing arm (AWS).',
+      blurb:
+        'Retail runs on thin margins; the cloud business is where most of the profit actually comes from.'
+    },
+    {
+      id: 'meta',
+      name: 'Meta Platforms',
+      ticker: 'META',
+      where: 'NYSE/NASDAQ',
+      category: 'world',
+      generatedColor: true,
+      start: 559.02,
+      past: { ret: 0.1596, since: 'past 10 years' },
+      mu: 0.05,
+      sigma: 0.357,
+      cyclical: 1.1,
+      dividend: 0.0038,
+      rhoW: 0.41,
+      rhoNz: 0.34,
+      risk: 4,
+      what: 'Owns Facebook, Instagram, and WhatsApp.',
+      blurb:
+        'Almost all of its revenue is advertising. Big bets on VR/AR headsets have cost billions with no clear payoff yet.'
+    },
+    {
+      id: 'brkb',
+      name: 'Berkshire Hathaway',
+      ticker: 'BRK-B',
+      where: 'NYSE/NASDAQ',
+      category: 'world',
+      generatedColor: true,
+      start: 504.32,
+      past: { ret: 0.1332, since: 'past 10 years' },
+      mu: 0.06,
+      sigma: 0.181,
+      cyclical: 0.9,
+      dividend: 0.0,
+      rhoW: 0.35,
+      rhoNz: 0.34,
+      risk: 3,
+      what: 'Warren Buffett\'s holding company — owns big stakes in dozens of businesses.',
+      blurb:
+        'Not one company but a collection of them, from insurance to railroads to Apple shares. Famously boring on purpose.'
+    },
+    {
+      id: 'avgo',
+      name: 'Broadcom',
+      ticker: 'AVGO',
+      where: 'NYSE/NASDAQ',
+      category: 'world',
+      generatedColor: true,
+      start: 358.76,
+      past: { ret: 0.3906, since: 'past 10 years' },
+      mu: 0.05,
+      sigma: 0.343,
+      cyclical: 1.1,
+      dividend: 0.0071,
+      rhoW: 0.43,
+      rhoNz: 0.36,
+      risk: 4,
+      what: 'Makes chips used in phones, networking gear, and AI data centres.',
+      blurb:
+        'Rode the AI infrastructure boom hard — a company whose fortunes are tied closely to how much money other companies spend on data centres.'
+    },
+    {
+      id: 'lly',
+      name: 'Eli Lilly',
+      ticker: 'LLY',
+      where: 'NYSE/NASDAQ',
+      category: 'world',
+      generatedColor: true,
+      start: 1246.93,
+      past: { ret: 0.3364, since: 'past 10 years' },
+      mu: 0.05,
+      sigma: 0.286,
+      cyclical: 0.9,
+      dividend: 0.0054,
+      rhoW: 0.07,
+      rhoNz: 0.01,
+      risk: 3,
+      what: 'A pharmaceutical company, currently best known for weight-loss drugs.',
+      blurb:
+        'One drug category (GLP-1 medications) has driven a huge share of recent growth — a reminder that even giant companies can be surprisingly dependent on one product line.'
+    },
+    {
+      id: 'jpm',
+      name: 'JPMorgan Chase',
+      ticker: 'JPM',
+      where: 'NYSE/NASDAQ',
+      category: 'world',
+      generatedColor: true,
+      start: 356.39,
+      past: { ret: 0.2141, since: 'past 10 years' },
+      mu: 0.06,
+      sigma: 0.243,
+      cyclical: 0.9,
+      dividend: 0.0168,
+      rhoW: 0.52,
+      rhoNz: 0.44,
+      risk: 3,
+      what: 'The largest bank in the United States by assets.',
+      blurb:
+        'Banks make money on the gap between what they pay savers and charge borrowers, so they\'re sensitive to interest rates and the health of the economy.'
+    },
+    {
+      id: 'wmt',
+      name: 'Walmart',
+      ticker: 'WMT',
+      where: 'NYSE/NASDAQ',
+      category: 'world',
+      generatedColor: true,
+      start: 106.49,
+      past: { ret: 0.18, since: 'past 10 years' },
+      mu: 0.06,
+      sigma: 0.192,
+      cyclical: 0.9,
+      dividend: 0.0092,
+      rhoW: 0.27,
+      rhoNz: 0.18,
+      risk: 3,
+      what: 'The world\'s largest retailer by revenue.',
+      blurb:
+        'Thin margins, enormous scale. Tends to hold up better than most retailers when people are cutting back on spending.'
+    },
+    {
+      id: 'v',
+      name: 'Visa',
+      ticker: 'V',
+      where: 'NYSE/NASDAQ',
+      category: 'world',
+      generatedColor: true,
+      start: 382.41,
+      past: { ret: 0.1737, since: 'past 10 years' },
+      mu: 0.06,
+      sigma: 0.2,
+      cyclical: 0.9,
+      dividend: 0.007,
+      rhoW: 0.52,
+      rhoNz: 0.43,
+      risk: 3,
+      what: 'Runs the Visa payment network — not a bank, just the plumbing behind card payments.',
+      blurb:
+        'Takes a small cut of an enormous number of transactions worldwide. Growth tracks how much of the world\'s spending moves onto cards.'
+    },
+    {
+      id: 'xom',
+      name: 'ExxonMobil',
+      ticker: 'XOM',
+      where: 'NYSE/NASDAQ',
+      category: 'world',
+      generatedColor: true,
+      start: 164.05,
+      past: { ret: 0.1122, since: 'past 10 years' },
+      mu: 0.05,
+      sigma: 0.285,
+      cyclical: 0.9,
+      dividend: 0.0251,
+      rhoW: 0.26,
+      rhoNz: 0.22,
+      risk: 3,
+      what: 'One of the world\'s largest oil and gas companies.',
+      blurb:
+        'Profits swing hard with the oil price, which nobody — including this simulation — can predict.'
+    },
+    {
+      id: 'unh',
+      name: 'UnitedHealth Group',
+      ticker: 'UNH',
+      where: 'NYSE/NASDAQ',
+      category: 'world',
+      generatedColor: true,
+      start: 398.76,
+      past: { ret: 0.1283, since: 'past 10 years' },
+      mu: 0.05,
+      sigma: 0.289,
+      cyclical: 0.9,
+      dividend: 0.0224,
+      rhoW: 0.25,
+      rhoNz: 0.22,
+      risk: 3,
+      what: 'The largest health insurer in the United States.',
+      blurb:
+        'US healthcare policy and regulation can move this stock more than almost anything the company itself does.'
+    },
+    {
+      id: 'orcl',
+      name: 'Oracle',
+      ticker: 'ORCL',
+      where: 'NYSE/NASDAQ',
+      category: 'world',
+      generatedColor: true,
+      start: 142.45,
+      past: { ret: 0.1546, since: 'past 10 years' },
+      mu: 0.05,
+      sigma: 0.354,
+      cyclical: 1.1,
+      dividend: 0.014,
+      rhoW: 0.39,
+      rhoNz: 0.28,
+      risk: 4,
+      what: 'A database and business-software company, now also renting out cloud computing.',
+      blurb:
+        'An old-guard tech company that\'s spent big trying to compete with the newer cloud giants.'
+    },
+    {
+      id: 'ma',
+      name: 'Mastercard',
+      ticker: 'MA',
+      where: 'NYSE/NASDAQ',
+      category: 'world',
+      generatedColor: true,
+      start: 599.86,
+      past: { ret: 0.2012, since: 'past 10 years' },
+      mu: 0.06,
+      sigma: 0.223,
+      cyclical: 0.9,
+      dividend: 0.0056,
+      rhoW: 0.51,
+      rhoNz: 0.44,
+      risk: 3,
+      what: 'Runs the Mastercard payment network.',
+      blurb:
+        'Visa\'s closest rival — the same \'toll booth on card payments\' business model.'
+    },
+    {
+      id: 'hd',
+      name: 'Home Depot',
+      ticker: 'HD',
+      where: 'NYSE/NASDAQ',
+      category: 'world',
+      generatedColor: true,
+      start: 337.43,
+      past: { ret: 0.1276, since: 'past 10 years' },
+      mu: 0.06,
+      sigma: 0.229,
+      cyclical: 0.9,
+      dividend: 0.0274,
+      rhoW: 0.55,
+      rhoNz: 0.51,
+      risk: 3,
+      what: 'The largest home-improvement retailer in the US.',
+      blurb:
+        'Sales track the housing market closely — more renovations when people are moving house or fixing up what they\'ve got.'
+    },
+    {
+      id: 'pg',
+      name: 'Procter & Gamble',
+      ticker: 'PG',
+      where: 'NYSE/NASDAQ',
+      category: 'world',
+      generatedColor: true,
+      start: 146.6,
+      past: { ret: 0.0793, since: 'past 10 years' },
+      mu: 0.06,
+      sigma: 0.17,
+      cyclical: 0.9,
+      dividend: 0.0293,
+      rhoW: 0.16,
+      rhoNz: 0.27,
+      risk: 3,
+      what: 'Makes everyday household brands — Pampers, Gillette, Tide, and more.',
+      blurb:
+        'People buy this stuff in good times and bad, which is why it\'s considered a defensive stock despite being a regular company, not a bond.'
+    },
+    {
+      id: 'cost',
+      name: 'Costco',
+      ticker: 'COST',
+      where: 'NYSE/NASDAQ',
+      category: 'world',
+      generatedColor: true,
+      start: 971.4,
+      past: { ret: 0.2239, since: 'past 10 years' },
+      mu: 0.06,
+      sigma: 0.208,
+      cyclical: 0.9,
+      dividend: 0.0057,
+      rhoW: 0.34,
+      rhoNz: 0.3,
+      risk: 3,
+      what: 'A membership-only warehouse retailer.',
+      blurb:
+        'Makes much of its actual profit from membership fees, not the groceries — an unusual business model for a retailer.'
+    },
+    {
+      id: 'jnj',
+      name: 'Johnson & Johnson',
+      ticker: 'JNJ',
+      where: 'NYSE/NASDAQ',
+      category: 'world',
+      generatedColor: true,
+      start: 273.04,
+      past: { ret: 0.1168, since: 'past 10 years' },
+      mu: 0.06,
+      sigma: 0.173,
+      cyclical: 0.9,
+      dividend: 0.0144,
+      rhoW: 0.29,
+      rhoNz: 0.28,
+      risk: 3,
+      what: 'A healthcare giant spanning medicines, medical devices, and consumer health products.',
+      blurb:
+        'Faced years of lawsuits over talc products — a reminder that legal risk can hang over even the steadiest-looking companies.'
+    },
+    {
+      id: 'nflx',
+      name: 'Netflix',
+      ticker: 'NFLX',
+      where: 'NYSE/NASDAQ',
+      category: 'world',
+      generatedColor: true,
+      start: 80.01,
+      past: { ret: 0.233, since: 'past 10 years' },
+      mu: 0.035,
+      sigma: 0.402,
+      cyclical: 1.1,
+      dividend: 0.0,
+      rhoW: 0.26,
+      rhoNz: 0.2,
+      risk: 4,
+      what: 'The largest video streaming service.',
+      blurb:
+        'Went from cheap disruptor to expensive incumbent as competitors (Disney+, Prime Video, and others) piled into streaming.'
+    },
+    {
+      id: 'bac',
+      name: 'Bank of America',
+      ticker: 'BAC',
+      where: 'NYSE/NASDAQ',
+      category: 'world',
+      generatedColor: true,
+      start: 62.33,
+      past: { ret: 0.1735, since: 'past 10 years' },
+      mu: 0.05,
+      sigma: 0.286,
+      cyclical: 0.9,
+      dividend: 0.018,
+      rhoW: 0.54,
+      rhoNz: 0.45,
+      risk: 3,
+      what: 'The second-largest US bank by assets.',
+      blurb:
+        'Like any bank, its profits move with interest rates and how many loans go bad in a downturn.'
+    },
+    {
+      id: 'abbv',
+      name: 'AbbVie',
+      ticker: 'ABBV',
+      where: 'NYSE/NASDAQ',
+      category: 'world',
+      generatedColor: true,
+      start: 264.52,
+      past: { ret: 0.2025, since: 'past 10 years' },
+      mu: 0.05,
+      sigma: 0.257,
+      cyclical: 0.9,
+      dividend: 0.0258,
+      rhoW: 0.21,
+      rhoNz: 0.27,
+      risk: 3,
+      what: 'A pharmaceutical company built around a small number of blockbuster drugs.',
+      blurb:
+        'Heavily dependent on Humira, one of the best-selling drugs ever — and on finding what replaces it as patents expire.'
+    },
+    {
+      id: 'crm',
+      name: 'Salesforce',
+      ticker: 'CRM',
+      where: 'NYSE/NASDAQ',
+      category: 'world',
+      generatedColor: true,
+      start: 209.06,
+      past: { ret: 0.1154, since: 'past 10 years' },
+      mu: 0.05,
+      sigma: 0.333,
+      cyclical: 1.1,
+      dividend: 0.0082,
+      rhoW: 0.45,
+      rhoNz: 0.38,
+      risk: 4,
+      what: 'Makes Salesforce, the software many companies use to track customers and sales.',
+      blurb:
+        'A pure software business — no factories, no oil rigs, just code and subscriptions.'
+    },
+    {
+      id: 'ko',
+      name: 'Coca-Cola',
+      ticker: 'KO',
+      where: 'NYSE/NASDAQ',
+      category: 'world',
+      generatedColor: true,
+      start: 91.99,
+      past: { ret: 0.1141, since: 'past 10 years' },
+      mu: 0.06,
+      sigma: 0.164,
+      cyclical: 0.9,
+      dividend: 0.0226,
+      rhoW: 0.19,
+      rhoNz: 0.32,
+      risk: 3,
+      what: 'Makes Coca-Cola and a large stable of other drinks brands.',
+      blurb:
+        'About as close to \'boring and predictable\' as a public company gets, which is exactly why some investors like it.'
+    },
+    {
+      id: 'amd',
+      name: 'Advanced Micro Devices',
+      ticker: 'AMD',
+      where: 'NYSE/NASDAQ',
+      category: 'world',
+      generatedColor: true,
+      start: 456.74,
+      past: { ret: 0.5206, since: 'past 10 years' },
+      mu: 0.035,
+      sigma: 0.623,
+      cyclical: 1.3,
+      dividend: 0.0,
+      rhoW: 0.4,
+      rhoNz: 0.24,
+      risk: 5,
+      what: 'Nvidia\'s main rival in computer chips.',
+      blurb:
+        'Rides the same AI and gaming demand waves as Nvidia, usually a step behind, usually cheaper.'
+    },
+    {
+      id: 'cvx',
+      name: 'Chevron',
+      ticker: 'CVX',
+      where: 'NYSE/NASDAQ',
+      category: 'world',
+      generatedColor: true,
+      start: 203.09,
+      past: { ret: 0.1164, since: 'past 10 years' },
+      mu: 0.05,
+      sigma: 0.285,
+      cyclical: 0.9,
+      dividend: 0.0347,
+      rhoW: 0.27,
+      rhoNz: 0.27,
+      risk: 3,
+      what: 'One of the largest oil and gas companies in the US.',
+      blurb:
+        'Like Exxon, its profits rise and fall with the oil price more than with anything the company controls.'
+    },
+    {
+      id: 'tmus',
+      name: 'T-Mobile US',
+      ticker: 'TMUS',
+      where: 'NYSE/NASDAQ',
+      category: 'world',
+      generatedColor: true,
+      start: 182.62,
+      past: { ret: 0.1512, since: 'past 10 years' },
+      mu: 0.06,
+      sigma: 0.214,
+      cyclical: 0.9,
+      dividend: 0.0168,
+      rhoW: 0.2,
+      rhoNz: 0.22,
+      risk: 3,
+      what: 'A major US mobile phone network.',
+      blurb:
+        'Phone bills are one of the last things people cancel in a downturn, which makes telecoms relatively defensive.'
+    },
+    {
+      id: 'pep',
+      name: 'PepsiCo',
+      ticker: 'PEP',
+      where: 'NYSE/NASDAQ',
+      category: 'world',
+      generatedColor: true,
+      start: 144.67,
+      past: { ret: 0.0602, since: 'past 10 years' },
+      mu: 0.06,
+      sigma: 0.162,
+      cyclical: 0.9,
+      dividend: 0.0397,
+      rhoW: 0.32,
+      rhoNz: 0.38,
+      risk: 3,
+      what: 'Makes Pepsi, Gatorade, Doritos, and a wide range of snack and drink brands.',
+      blurb:
+        'Similar defensive logic to Coca-Cola — people keep buying snacks and soft drinks through a recession.'
+    },
+    {
+      id: 'wfc',
+      name: 'Wells Fargo',
+      ticker: 'WFC',
+      where: 'NYSE/NASDAQ',
+      category: 'world',
+      generatedColor: true,
+      start: 84.72,
+      past: { ret: 0.0968, since: 'past 10 years' },
+      mu: 0.05,
+      sigma: 0.291,
+      cyclical: 0.9,
+      dividend: 0.0218,
+      rhoW: 0.44,
+      rhoNz: 0.35,
+      risk: 3,
+      what: 'One of the largest US banks, historically focused on everyday consumer banking.',
+      blurb:
+        'Spent years under regulatory restrictions after a string of scandals — a reminder that trust, once lost, is expensive to rebuild.'
+    },
+    {
+      id: 'adbe',
+      name: 'Adobe',
+      ticker: 'ADBE',
+      where: 'NYSE/NASDAQ',
+      category: 'world',
+      generatedColor: true,
+      start: 276.27,
+      past: { ret: 0.0979, since: 'past 10 years' },
+      mu: 0.05,
+      sigma: 0.322,
+      cyclical: 1.1,
+      dividend: 0.0,
+      rhoW: 0.36,
+      rhoNz: 0.34,
+      risk: 4,
+      what: 'Makes Photoshop, Premiere, and other creative software, now sold by subscription.',
+      blurb:
+        'Its business model shift from one-off software sales to subscriptions transformed how predictable its revenue is.'
+    },
+    {
+      id: 'lin',
+      name: 'Linde',
+      ticker: 'LIN',
+      where: 'NYSE/NASDAQ',
+      category: 'world',
+      generatedColor: true,
+      start: 490.03,
+      past: { ret: 0.1691, since: 'past 10 years' },
+      mu: 0.06,
+      sigma: 0.193,
+      cyclical: 0.9,
+      dividend: 0.0127,
+      rhoW: 0.34,
+      rhoNz: 0.37,
+      risk: 3,
+      what: 'The world\'s largest industrial gas company — oxygen, nitrogen, hydrogen, sold to factories and hospitals.',
+      blurb:
+        'Unglamorous but essential: modern manufacturing and healthcare can\'t run without industrial gases.'
+    },
+    {
+      id: 'mcd',
+      name: 'McDonald\'s',
+      ticker: 'MCD',
+      where: 'NYSE/NASDAQ',
+      category: 'world',
+      generatedColor: true,
+      start: 272.54,
+      past: { ret: 0.1155, since: 'past 10 years' },
+      mu: 0.06,
+      sigma: 0.171,
+      cyclical: 0.9,
+      dividend: 0.027,
+      rhoW: 0.36,
+      rhoNz: 0.4,
+      risk: 3,
+      what: 'The world\'s largest fast-food chain by locations.',
+      blurb:
+        'Most restaurants are run by franchisees, not McDonald\'s itself — the company mostly collects rent and royalties.'
+    },
+    {
+      id: 'csco',
+      name: 'Cisco Systems',
+      ticker: 'CSCO',
+      where: 'NYSE/NASDAQ',
+      category: 'world',
+      generatedColor: true,
+      start: 110.23,
+      past: { ret: 0.1668, since: 'past 10 years' },
+      mu: 0.06,
+      sigma: 0.249,
+      cyclical: 0.9,
+      dividend: 0.0151,
+      rhoW: 0.46,
+      rhoNz: 0.37,
+      risk: 3,
+      what: 'Makes the networking hardware that much of the internet runs on.',
+      blurb:
+        'A dominant player in a market (networking equipment) that\'s grown much more slowly than it did in the 1990s.'
+    },
+    {
+      id: 'acn',
+      name: 'Accenture',
+      ticker: 'ACN',
+      where: 'NYSE/NASDAQ',
+      category: 'world',
+      generatedColor: true,
+      start: 186.53,
+      past: { ret: 0.061, since: 'past 10 years' },
+      mu: 0.05,
+      sigma: 0.288,
+      cyclical: 0.9,
+      dividend: 0.0175,
+      rhoW: 0.34,
+      rhoNz: 0.43,
+      risk: 3,
+      what: 'A large consulting and IT services firm.',
+      blurb:
+        'Gets paid to help other big companies with technology and strategy — its fortunes track corporate spending on both.'
+    },
+    {
+      id: 'tmo',
+      name: 'Thermo Fisher Scientific',
+      ticker: 'TMO',
+      where: 'NYSE/NASDAQ',
+      category: 'world',
+      generatedColor: true,
+      start: 628.74,
+      past: { ret: 0.1505, since: 'past 10 years' },
+      mu: 0.06,
+      sigma: 0.239,
+      cyclical: 0.9,
+      dividend: 0.0029,
+      rhoW: 0.32,
+      rhoNz: 0.43,
+      risk: 3,
+      what: 'Makes lab equipment and supplies used in scientific research and manufacturing.',
+      blurb:
+        'A less well-known name that quietly supplies the tools behind a huge amount of medical and scientific work.'
+    },
+    {
+      id: 'abt',
+      name: 'Abbott Laboratories',
+      ticker: 'ABT',
+      where: 'NYSE/NASDAQ',
+      category: 'world',
+      generatedColor: true,
+      start: 116.67,
+      past: { ret: 0.1278, since: 'past 10 years' },
+      mu: 0.06,
+      sigma: 0.211,
+      cyclical: 0.9,
+      dividend: 0.0213,
+      rhoW: 0.23,
+      rhoNz: 0.37,
+      risk: 3,
+      what: 'A healthcare company spanning medical devices, diagnostics, and nutrition products.',
+      blurb:
+        'Diversified across several parts of healthcare rather than betting on one drug or device.'
+    },
+    {
+      id: 'ibm',
+      name: 'IBM',
+      ticker: 'IBM',
+      where: 'NYSE/NASDAQ',
+      category: 'world',
+      generatedColor: true,
+      start: 231.04,
+      past: { ret: 0.0872, since: 'past 10 years' },
+      mu: 0.05,
+      sigma: 0.279,
+      cyclical: 0.9,
+      dividend: 0.0292,
+      rhoW: 0.43,
+      rhoNz: 0.35,
+      risk: 3,
+      what: 'One of the oldest technology companies, now focused on enterprise software and consulting.',
+      blurb:
+        'Spent much of the last two decades trying to reinvent itself as older hardware and services businesses declined.'
+    },
+    {
+      id: 'ge',
+      name: 'General Electric',
+      ticker: 'GE',
+      where: 'NYSE/NASDAQ',
+      category: 'world',
+      generatedColor: true,
+      start: 341.84,
+      past: { ret: 0.1032, since: 'past 10 years' },
+      mu: 0.05,
+      sigma: 0.371,
+      cyclical: 1.1,
+      dividend: 0.0049,
+      rhoW: 0.41,
+      rhoNz: 0.35,
+      risk: 4,
+      what: 'An industrial conglomerate now focused mainly on jet engines.',
+      blurb:
+        'A famous name that shrank dramatically after selling off or spinning out most of its old divisions.'
+    },
+    {
+      id: 'dis',
+      name: 'Walt Disney',
+      ticker: 'DIS',
+      where: 'NYSE/NASDAQ',
+      category: 'world',
+      generatedColor: true,
+      start: 110.61,
+      past: { ret: 0.026, since: 'past 10 years' },
+      mu: 0.05,
+      sigma: 0.307,
+      cyclical: 1.1,
+      dividend: 0.0136,
+      rhoW: 0.49,
+      rhoNz: 0.51,
+      risk: 4,
+      what: 'Owns Disney\'s film studios, theme parks, and streaming service.',
+      blurb:
+        'A rare company where the theme parks (not the movies) have often been the biggest profit driver.'
+    },
+    {
+      id: 'pm',
+      name: 'Philip Morris International',
+      ticker: 'PM',
+      where: 'NYSE/NASDAQ',
+      category: 'world',
+      generatedColor: true,
+      start: 191.46,
+      past: { ret: 0.1231, since: 'past 10 years' },
+      mu: 0.06,
+      sigma: 0.241,
+      cyclical: 0.9,
+      dividend: 0.0307,
+      rhoW: 0.14,
+      rhoNz: 0.18,
+      risk: 3,
+      what: 'Sells Marlboro and other cigarette brands outside the United States, plus newer \'reduced-risk\' products.',
+      blurb:
+        'A defensive business built on a product with declining long-term demand and heavy regulation.'
+    },
+    {
+      id: 'now',
+      name: 'ServiceNow',
+      ticker: 'NOW',
+      where: 'NYSE/NASDAQ',
+      category: 'world',
+      generatedColor: true,
+      start: 128.05,
+      past: { ret: 0.2325, since: 'past 10 years' },
+      mu: 0.05,
+      sigma: 0.337,
+      cyclical: 1.1,
+      dividend: 0.0,
+      rhoW: 0.34,
+      rhoNz: 0.37,
+      risk: 4,
+      what: 'Makes ServiceNow, workflow software big companies use to run their internal operations.',
+      blurb:
+        'A fast-growing enterprise software business — expensive by traditional measures, priced for continued growth.'
+    },
+    {
+      id: 'intu',
+      name: 'Intuit',
+      ticker: 'INTU',
+      where: 'NYSE/NASDAQ',
+      category: 'world',
+      generatedColor: true,
+      start: 369.92,
+      past: { ret: 0.1379, since: 'past 10 years' },
+      mu: 0.05,
+      sigma: 0.295,
+      cyclical: 0.9,
+      dividend: 0.013,
+      rhoW: 0.36,
+      rhoNz: 0.36,
+      risk: 3,
+      what: 'Makes TurboTax, QuickBooks, and Credit Karma.',
+      blurb:
+        'Its tax software business is famously seasonal — most of the year\'s activity crams into a few months.'
+    },
+    {
+      id: 'txn',
+      name: 'Texas Instruments',
+      ticker: 'TXN',
+      where: 'NYSE/NASDAQ',
+      category: 'world',
+      generatedColor: true,
+      start: 258.94,
+      past: { ret: 0.171, since: 'past 10 years' },
+      mu: 0.05,
+      sigma: 0.287,
+      cyclical: 0.9,
+      dividend: 0.0219,
+      rhoW: 0.43,
+      rhoNz: 0.4,
+      risk: 3,
+      what: 'Makes analog chips used in almost every kind of electronics.',
+      blurb:
+        'Less flashy than AI chipmakers, but its chips go into everything from cars to washing machines.'
+    },
+    {
+      id: 'cat',
+      name: 'Caterpillar',
+      ticker: 'CAT',
+      where: 'NYSE/NASDAQ',
+      category: 'world',
+      generatedColor: true,
+      start: 811.02,
+      past: { ret: 0.2753, since: 'past 10 years' },
+      mu: 0.05,
+      sigma: 0.325,
+      cyclical: 1.1,
+      dividend: 0.0076,
+      rhoW: 0.43,
+      rhoNz: 0.36,
+      risk: 4,
+      what: 'Makes construction and mining machinery.',
+      blurb:
+        'A classic cyclical stock — sales track construction activity and commodity prices around the world.'
+    },
+    {
+      id: 'vz',
+      name: 'Verizon',
+      ticker: 'VZ',
+      where: 'NYSE/NASDAQ',
+      category: 'world',
+      generatedColor: true,
+      start: 50.15,
+      past: { ret: 0.0515, since: 'past 10 years' },
+      mu: 0.06,
+      sigma: 0.19,
+      cyclical: 0.9,
+      dividend: 0.0558,
+      rhoW: 0.02,
+      rhoNz: 0.03,
+      risk: 3,
+      what: 'One of the largest US mobile phone networks.',
+      blurb:
+        'A slow-growing but steady business — heavy debt from network build-outs, but reliable subscription revenue.'
+    },
+    {
+      id: 'qcom',
+      name: 'Qualcomm',
+      ticker: 'QCOM',
+      where: 'NYSE/NASDAQ',
+      category: 'world',
+      generatedColor: true,
+      start: 158.53,
+      past: { ret: 0.1167, since: 'past 10 years' },
+      mu: 0.035,
+      sigma: 0.425,
+      cyclical: 1.1,
+      dividend: 0.0226,
+      rhoW: 0.42,
+      rhoNz: 0.29,
+      risk: 4,
+      what: 'Makes the chips inside most non-Apple smartphones.',
+      blurb:
+        'Earns a licence fee on a huge share of mobile phones sold worldwide, on top of selling its own chips.'
+    },
+    {
+      id: 'amgn',
+      name: 'Amgen',
+      ticker: 'AMGN',
+      where: 'NYSE/NASDAQ',
+      category: 'world',
+      generatedColor: true,
+      start: 443.84,
+      past: { ret: 0.1362, since: 'past 10 years' },
+      mu: 0.06,
+      sigma: 0.244,
+      cyclical: 0.9,
+      dividend: 0.0224,
+      rhoW: 0.18,
+      rhoNz: 0.21,
+      risk: 3,
+      what: 'A biotechnology company focused on drugs for cancer, bone disease, and inflammation.',
+      blurb:
+        'Like most drugmakers, a small number of products account for most of its revenue.'
+    },
+    {
+      id: 'nke',
+      name: 'Nike',
+      ticker: 'NKE',
+      where: 'NYSE/NASDAQ',
+      category: 'world',
+      generatedColor: true,
+      start: 40.75,
+      past: { ret: -0.0121, since: 'past 10 years' },
+      mu: 0.05,
+      sigma: 0.287,
+      cyclical: 0.9,
+      dividend: 0.04,
+      rhoW: 0.24,
+      rhoNz: 0.42,
+      risk: 3,
+      what: 'The world\'s largest sportswear brand.',
+      blurb:
+        'Sensitive to consumer spending and fashion trends — sneakers are an easy thing to cut back on when money\'s tight.'
+    },
+    {
+      id: 'spk',
+      name: 'Spark New Zealand',
+      ticker: 'SPK',
+      where: 'NZX',
+      category: 'nz',
+      generatedColor: true,
+      start: 2.15,
+      past: { ret: 0.0108, since: 'past 10 years' },
+      mu: 0.06,
+      sigma: 0.176,
+      cyclical: 0.9,
+      dividend: 0.0953,
+      rhoW: 0.24,
+      rhoNz: 0.33,
+      risk: 3,
+      what: 'New Zealand\'s largest mobile and broadband provider.',
+      blurb:
+        'A steady, high-dividend-paying telecom — the kind of company people hold for the dividend, not for growth.'
+    },
+    {
+      id: 'cen',
+      name: 'Contact Energy',
+      ticker: 'CEN',
+      where: 'NZX',
+      category: 'nz',
+      generatedColor: true,
+      start: 8.84,
+      past: { ret: 0.1119, since: 'past 10 years' },
+      mu: 0.06,
+      sigma: 0.171,
+      cyclical: 0.9,
+      dividend: 0.0452,
+      rhoW: 0.32,
+      rhoNz: 0.55,
+      risk: 3,
+      what: 'Generates electricity in New Zealand, mostly from geothermal and hydro.',
+      blurb:
+        'Power demand barely changes with the economy, which is why utilities are considered defensive.'
+    },
+    {
+      id: 'ift',
+      name: 'Infratil',
+      ticker: 'IFT',
+      where: 'NZX',
+      category: 'nz',
+      generatedColor: true,
+      start: 14.7,
+      past: { ret: 0.2005, since: 'past 10 years' },
+      mu: 0.06,
+      sigma: 0.203,
+      cyclical: 0.9,
+      dividend: 0.0142,
+      rhoW: 0.4,
+      rhoNz: 0.59,
+      risk: 3,
+      what: 'An investment company that owns stakes in infrastructure and other businesses (including a large stake in One NZ).',
+      blurb:
+        'More of a diversified holding company than a single business — its value depends on how its various investments perform.'
+    },
+    {
+      id: 'aia',
+      name: 'Auckland Airport',
+      ticker: 'AIA',
+      where: 'NZX',
+      category: 'nz',
+      generatedColor: true,
+      start: 8.55,
+      past: { ret: 0.0292, since: 'past 10 years' },
+      mu: 0.06,
+      sigma: 0.22,
+      cyclical: 0.9,
+      dividend: 0.0158,
+      rhoW: 0.42,
+      rhoNz: 0.63,
+      risk: 3,
+      what: 'Owns and operates Auckland Airport.',
+      blurb:
+        'Revenue depends heavily on how many people are flying, which makes it sensitive to tourism and travel demand.'
+    },
+    {
+      id: 'ebo',
+      name: 'EBOS Group',
+      ticker: 'EBO',
+      where: 'NZX',
+      category: 'nz',
+      generatedColor: true,
+      start: 22.28,
+      past: { ret: 0.0485, since: 'past 10 years' },
+      mu: 0.06,
+      sigma: 0.2,
+      cyclical: 0.9,
+      dividend: 0.0532,
+      rhoW: 0.11,
+      rhoNz: 0.3,
+      risk: 3,
+      what: 'Distributes medicines and other products to pharmacies and healthcare providers across Australasia.',
+      blurb:
+        'An unglamorous logistics business sitting behind New Zealand\'s healthcare and pharmacy supply chain.'
+    },
+    {
+      id: 'fbu',
+      name: 'Fletcher Building',
+      ticker: 'FBU',
+      where: 'NZX',
+      category: 'nz',
+      generatedColor: true,
+      start: 3.9,
+      past: { ret: -0.0104, since: 'past 10 years' },
+      mu: 0.05,
+      sigma: 0.359,
+      cyclical: 1.1,
+      dividend: 0.0,
+      rhoW: 0.37,
+      rhoNz: 0.47,
+      risk: 4,
+      what: 'New Zealand\'s largest building materials and construction company.',
+      blurb:
+        'Tracks the construction cycle closely — new housing and building activity drive its results up or down.'
+    },
+    {
+      id: 'rym',
+      name: 'Ryman Healthcare',
+      ticker: 'RYM',
+      where: 'NZX',
+      category: 'nz',
+      generatedColor: true,
+      start: 2.09,
+      past: { ret: -0.1262, since: 'past 10 years' },
+      mu: 0.05,
+      sigma: 0.339,
+      cyclical: 1.1,
+      dividend: 0.0,
+      rhoW: 0.47,
+      rhoNz: 0.66,
+      risk: 4,
+      what: 'Builds and operates retirement villages and aged care in NZ and Australia.',
+      blurb:
+        'An ageing population is a long-term tailwind, but the business is capital-intensive and sensitive to interest rates and house prices.'
+    },
+    {
+      id: 'sum',
+      name: 'Summerset Group',
+      ticker: 'SUM',
+      where: 'NZX',
+      category: 'nz',
+      generatedColor: true,
+      start: 7.66,
+      past: { ret: 0.0568, since: 'past 10 years' },
+      mu: 0.05,
+      sigma: 0.278,
+      cyclical: 0.9,
+      dividend: 0.032,
+      rhoW: 0.34,
+      rhoNz: 0.65,
+      risk: 3,
+      what: 'Another major retirement village and aged care operator.',
+      blurb:
+        'Ryman\'s closest local rival, with a similar exposure to house prices and interest rates.'
+    },
+    {
+      id: 'vct',
+      name: 'Vector',
+      ticker: 'VCT',
+      where: 'NZX',
+      category: 'nz',
+      generatedColor: true,
+      start: 4.86,
+      past: { ret: 0.0897, since: 'past 10 years' },
+      mu: 0.06,
+      sigma: 0.136,
+      cyclical: 0.6,
+      dividend: 0.0525,
+      rhoW: 0.4,
+      rhoNz: 0.51,
+      risk: 2,
+      what: 'Owns and operates New Zealand\'s electricity and gas distribution networks.',
+      blurb:
+        'A regulated monopoly-style business — steady, predictable revenue, but growth is limited by regulation.'
+    },
+    {
+      id: 'gne',
+      name: 'Genesis Energy',
+      ticker: 'GNE',
+      where: 'NZX',
+      category: 'nz',
+      generatedColor: true,
+      start: 2.67,
+      past: { ret: 0.0861, since: 'past 10 years' },
+      mu: 0.06,
+      sigma: 0.176,
+      cyclical: 0.9,
+      dividend: 0.0534,
+      rhoW: 0.37,
+      rhoNz: 0.64,
+      risk: 3,
+      what: 'Generates and retails electricity and gas in New Zealand.',
+      blurb:
+        'Like Contact and Mercury, a defensive utility whose revenue barely moves with the wider economy.'
+    },
+    {
+      id: 'pot',
+      name: 'Port of Tauranga',
+      ticker: 'POT',
+      where: 'NZX',
+      category: 'nz',
+      generatedColor: true,
+      start: 8.1,
+      past: { ret: 0.1023, since: 'past 10 years' },
+      mu: 0.06,
+      sigma: 0.175,
+      cyclical: 0.9,
+      dividend: 0.0219,
+      rhoW: 0.34,
+      rhoNz: 0.5,
+      risk: 3,
+      what: 'Operates the Port of Tauranga, New Zealand\'s largest port.',
+      blurb:
+        'Trade volumes track the broader economy and global shipping demand.'
+    },
+    {
+      id: 'skc',
+      name: 'SkyCity Entertainment',
+      ticker: 'SKC',
+      where: 'NZX',
+      category: 'nz',
+      generatedColor: true,
+      start: 0.69,
+      past: { ret: -0.1496, since: 'past 10 years' },
+      mu: 0.05,
+      sigma: 0.328,
+      cyclical: 1.1,
+      dividend: 0.0,
+      rhoW: 0.38,
+      rhoNz: 0.49,
+      risk: 4,
+      what: 'Runs SkyCity\'s casinos and entertainment venues in NZ and Australia.',
+      blurb:
+        'A discretionary-spending business — gambling and entertainment budgets are among the first things people cut.'
+    },
+    {
+      id: 'kmd',
+      name: 'KMD Brands',
+      ticker: 'KMD',
+      where: 'NZX',
+      category: 'nz',
+      generatedColor: true,
+      start: 1.74,
+      past: { ret: -0.1898, since: 'past 10 years' },
+      mu: 0.035,
+      sigma: 0.428,
+      cyclical: 1.1,
+      dividend: 0.0,
+      rhoW: 0.17,
+      rhoNz: 0.44,
+      risk: 4,
+      what: 'Owns outdoor and sports brands including Kathmandu, Rip Curl, and Oboz.',
+      blurb:
+        'A consumer retail business exposed to fashion trends and discretionary spending, on top of typical retail margins.'
+    },
+    {
+      id: 'skl',
+      name: 'Skellerup Holdings',
+      ticker: 'SKL',
+      where: 'NZX',
+      category: 'nz',
+      generatedColor: true,
+      start: 7.3,
+      past: { ret: 0.2391, since: 'past 10 years' },
+      mu: 0.06,
+      sigma: 0.223,
+      cyclical: 0.9,
+      dividend: 0.0428,
+      rhoW: 0.32,
+      rhoNz: 0.48,
+      risk: 3,
+      what: 'Makes rubber and polymer products for agriculture, industry, and medical use.',
+      blurb:
+        'A smaller, less well-known manufacturer whose fortunes track farming and industrial activity.'
+    },
+    {
+      id: 'pct',
+      name: 'Precinct Properties',
+      ticker: 'PCT',
+      where: 'NZX',
+      category: 'nz',
+      generatedColor: true,
+      start: 1.04,
+      past: { ret: 0.0244, since: 'past 10 years' },
+      mu: 0.06,
+      sigma: 0.143,
+      cyclical: 0.6,
+      dividend: 0.0646,
+      rhoW: 0.18,
+      rhoNz: 0.53,
+      risk: 2,
+      what: 'Owns and develops commercial office and retail property in NZ.',
+      blurb:
+        'Property values and rents here move with interest rates and how much office space businesses actually need.'
+    },
+    {
+      id: 'kpg',
+      name: 'Kiwi Property Group',
+      ticker: 'KPG',
+      where: 'NZX',
+      category: 'nz',
+      generatedColor: true,
+      start: 0.92,
+      past: { ret: 0.0029, since: 'past 10 years' },
+      mu: 0.06,
+      sigma: 0.179,
+      cyclical: 0.9,
+      dividend: 0.0609,
+      rhoW: 0.43,
+      rhoNz: 0.74,
+      risk: 3,
+      what: 'Owns retail and mixed-use property across New Zealand.',
+      blurb:
+        'Like other property trusts, sensitive to interest rates — borrowing costs eat into returns when rates rise.'
+    },
+    {
+      id: 'spg',
+      name: 'Stride Property',
+      ticker: 'SPG',
+      where: 'NZX',
+      category: 'nz',
+      generatedColor: true,
+      start: 1.13,
+      past: { ret: -0.0029, since: 'past 10 years' },
+      mu: 0.06,
+      sigma: 0.219,
+      cyclical: 0.9,
+      dividend: 0.0705,
+      rhoW: 0.37,
+      rhoNz: 0.68,
+      risk: 3,
+      what: 'Owns industrial and office property in New Zealand.',
+      blurb:
+        'Similar interest-rate sensitivity to other listed property trusts, with a more industrial-property focus.'
+    },
+    {
+      id: 'mcy',
+      name: 'Mercury NZ',
+      ticker: 'MCY',
+      where: 'NZX',
+      category: 'nz',
+      generatedColor: true,
+      start: 6.77,
+      past: { ret: 0.1225, since: 'past 10 years' },
+      mu: 0.06,
+      sigma: 0.183,
+      cyclical: 0.9,
+      dividend: 0.036,
+      rhoW: 0.35,
+      rhoNz: 0.55,
+      risk: 3,
+      what: 'Generates and retails electricity in New Zealand, mostly from geothermal and hydro.',
+      blurb:
+        'One of several NZ power utilities in this list — all sit in the same defensive, low-volatility corner of the market.'
+    },
+    {
+      id: 'twl',
+      name: 'Turners Automotive Group',
+      ticker: 'TWL',
+      where: 'NZX',
+      category: 'nz',
+      generatedColor: true,
+      start: 0.14,
+      past: { ret: -0.4445, since: 'past 10 years' },
+      mu: 0.035,
+      sigma: 0.56,
+      cyclical: 1.3,
+      dividend: 0.0,
+      rhoW: 0.17,
+      rhoNz: 0.22,
+      risk: 5,
+      what: 'Sells and finances used cars and other vehicles across NZ and Australia.',
+      blurb:
+        'A retail and lending business rolled into one — car sales and loan demand both move with the economy.'
+    },
+    {
+      id: 'thl',
+      name: 'Tourism Holdings',
+      ticker: 'THL',
+      where: 'NZX',
+      category: 'nz',
+      generatedColor: true,
+      start: 2.81,
+      past: { ret: 0.016, since: 'past 10 years' },
+      mu: 0.035,
+      sigma: 0.444,
+      cyclical: 1.1,
+      dividend: 0.0249,
+      rhoW: 0.38,
+      rhoNz: 0.55,
+      risk: 4,
+      what: 'Rents motorhomes and campervans, mostly to tourists, across several countries.',
+      blurb:
+        'About as tied to tourism demand as a company can get — travel disruptions hit it hard and fast.'
+    },
+    {
+      id: 'scl',
+      name: 'Scales Corporation',
+      ticker: 'SCL',
+      where: 'NZX',
+      category: 'nz',
+      generatedColor: true,
+      start: 6.9,
+      past: { ret: 0.1234, since: 'past 10 years' },
+      mu: 0.06,
+      sigma: 0.204,
+      cyclical: 0.9,
+      dividend: 0.0362,
+      rhoW: 0.27,
+      rhoNz: 0.39,
+      risk: 3,
+      what: 'A food and agriculture company spanning horticulture, logistics, and animal proteins.',
+      blurb:
+        'Agricultural earnings can swing a lot with weather, commodity prices, and export demand.'
+    },
+    {
+      id: 'frw',
+      name: 'Freightways',
+      ticker: 'FRW',
+      where: 'NZX',
+      category: 'nz',
+      generatedColor: true,
+      start: 13.25,
+      past: { ret: 0.1084, since: 'past 10 years' },
+      mu: 0.06,
+      sigma: 0.226,
+      cyclical: 0.9,
+      dividend: 0.0317,
+      rhoW: 0.56,
+      rhoNz: 0.71,
+      risk: 3,
+      what: 'Runs courier and information management businesses across Australasia.',
+      blurb:
+        'A logistics company whose volumes track how much stuff people and businesses are shipping around.'
+    },
+    {
+      id: 'whs',
+      name: 'The Warehouse Group',
+      ticker: 'WHS',
+      where: 'NZX',
+      category: 'nz',
+      generatedColor: true,
+      start: 0.68,
+      past: { ret: -0.0945, since: 'past 10 years' },
+      mu: 0.05,
+      sigma: 0.304,
+      cyclical: 1.1,
+      dividend: 0.0,
+      rhoW: 0.27,
+      rhoNz: 0.37,
+      risk: 4,
+      what: 'Owns The Warehouse, Warehouse Stationery, and Noel Leeming.',
+      blurb:
+        'A discount retailer — tends to do relatively better than premium retailers when shoppers are being careful with money.'
+    },
+    {
+      id: 'san',
+      name: 'Sanford',
+      ticker: 'SAN',
+      where: 'NZX',
+      category: 'nz',
+      generatedColor: true,
+      start: 6.97,
+      past: { ret: 0.0306, since: 'past 10 years' },
+      mu: 0.06,
+      sigma: 0.202,
+      cyclical: 0.9,
+      dividend: 0.0171,
+      rhoW: 0.3,
+      rhoNz: 0.33,
+      risk: 3,
+      what: 'New Zealand\'s largest fishing and seafood company.',
+      blurb:
+        'Earnings depend on catch volumes, quota allocations, and global seafood prices — all outside the company\'s control.'
+    },
+    {
+      id: 'oca',
+      name: 'Oceania Healthcare',
+      ticker: 'OCA',
+      where: 'NZX',
+      category: 'nz',
+      generatedColor: true,
+      start: 0.8,
+      past: { ret: 0.0163, since: 'past 10 years' },
+      mu: 0.05,
+      sigma: 0.341,
+      cyclical: 1.1,
+      dividend: 0.0,
+      rhoW: 0.37,
+      rhoNz: 0.61,
+      risk: 4,
+      what: 'Builds and operates aged care facilities and retirement villages.',
+      blurb:
+        'A smaller player in the same ageing-population, interest-rate-sensitive space as Ryman and Summerset.'
+    },
+    {
+      id: 'vhp',
+      name: 'Vital Healthcare Property Trust',
+      ticker: 'VHP',
+      where: 'NZX',
+      category: 'nz',
+      generatedColor: true,
+      start: 1.83,
+      past: { ret: 0.021, since: 'past 10 years' },
+      mu: 0.06,
+      sigma: 0.171,
+      cyclical: 0.9,
+      dividend: 0.0668,
+      rhoW: 0.39,
+      rhoNz: 0.64,
+      risk: 3,
+      what: 'Owns hospitals and medical facilities that it leases to healthcare operators.',
+      blurb:
+        'A property trust with tenants (hospitals, clinics) less likely to skip rent than most, but still interest-rate sensitive.'
+    },
+    {
+      id: 'pfi',
+      name: 'Property For Industry',
+      ticker: 'PFI',
+      where: 'NZX',
+      category: 'nz',
+      generatedColor: true,
+      start: 2.36,
+      past: { ret: 0.0757, since: 'past 10 years' },
+      mu: 0.06,
+      sigma: 0.14,
+      cyclical: 0.6,
+      dividend: 0.0301,
+      rhoW: 0.47,
+      rhoNz: 0.72,
+      risk: 2,
+      what: 'Owns industrial property — warehouses and distribution centres — across New Zealand.',
+      blurb:
+        'Industrial property has been in high demand as online shopping drives need for warehouse space.'
+    },
+    {
+      id: 'cnu',
+      name: 'Chorus',
+      ticker: 'CNU',
+      where: 'NZX',
+      category: 'nz',
+      generatedColor: true,
+      start: 9.17,
+      past: { ret: 0.1398, since: 'past 10 years' },
+      mu: 0.06,
+      sigma: 0.171,
+      cyclical: 0.9,
+      dividend: 0.0638,
+      rhoW: 0.18,
+      rhoNz: 0.29,
+      risk: 3,
+      what: 'Owns and operates New Zealand\'s fibre broadband network.',
+      blurb:
+        'A regulated infrastructure monopoly — steady revenue, heavily influenced by government regulation of what it can charge.'
+    }
   ];
+
+  /* Per-asset color, for the ~91 assets that don't have a hand-picked
+   * --series-* CSS variable (the original 16 keep theirs unchanged - this
+   * only applies to entries marked `generatedColor: true`, added when the
+   * asset universe expanded past what anyone hand-authors CSS for).
+   *
+   * Derived from the asset's category hue (matching --cat-* in
+   * css/styles.css) plus an offset spread across that category's other
+   * generated assets, so a 34-strong 'nz' category doesn't render as one
+   * indistinguishable green blob. A getter, not a computed-once string, so
+   * it stays correct if the theme is toggled after the page loads - `a.color`
+   * is read at draw time (js/charts.js, js/ui.js's resolveColor) exactly
+   * like the CSS-variable colors already are. */
+  const CATEGORY_HUE = { defensive: 192, funds: 243, nz: 142, world: 333, crypto: 21 };
+
+  (function assignGeneratedColors() {
+    const byCategory = {};
+    ASSETS.forEach(function (a) {
+      if (!a.generatedColor) return;
+      (byCategory[a.category] = byCategory[a.category] || []).push(a);
+    });
+    Object.keys(byCategory).forEach(function (cat) {
+      const group = byCategory[cat];
+      const hue = CATEGORY_HUE[cat] || 200;
+      group.forEach(function (a, i) {
+        const t = group.length > 1 ? i / (group.length - 1) : 0.5;
+        const hueOffset = (t - 0.5) * 50;
+        Object.defineProperty(a, 'color', {
+          enumerable: true,
+          get: function () {
+            const root = typeof document !== 'undefined' ? document.documentElement : null;
+            const dark =
+              !!root &&
+              (root.getAttribute('data-theme') === 'dark' ||
+                (!root.hasAttribute('data-theme') &&
+                  typeof window !== 'undefined' &&
+                  window.matchMedia &&
+                  window.matchMedia('(prefers-color-scheme: dark)').matches));
+            const light = dark ? Math.round(64 - t * 16) : Math.round(32 + t * 16);
+            const sat = dark ? 70 : 58;
+            return 'hsl(' + Math.round(hue + hueOffset) + ', ' + sat + '%, ' + light + '%)';
+          }
+        });
+      });
+    });
+  })();
 
   /* News events apply an extra shock on top of the random walk, so students see
    * prices move because something happened rather than for no visible reason.
@@ -4336,7 +5945,7 @@ footer {
 })(window);
 
 </script>
-<script src="js/live-prices.js?v=23"></script>
+<script src="js/live-prices.js?v=24"></script>
 <script>
 /* Player state, trading, and the benchmark counterfactual.
  *
@@ -7027,7 +8636,16 @@ footer {
 
   const marketRows = {};
 
-  function buildMarketRows(state, handlers) {
+  // Shown when no search/filter is active - the original 16, unmarked by
+  // the expanded universe's `generatedColor` flag (see js/market.js). A
+  // student who hasn't asked to see the other ~75 assets doesn't get them
+  // dumped on screen; searching or picking a filter reveals the full list.
+  function isStarterAsset(a) {
+    return !a.generatedColor;
+  }
+
+  function buildMarketRows(state, handlers, matchFn) {
+    const match = matchFn || isStarterAsset;
     const body = $('market-body');
     body.innerHTML = '';
     Object.keys(marketRows).forEach(function (k) {
@@ -7035,6 +8653,9 @@ footer {
     });
 
     Market.CATEGORIES.forEach(function (cat) {
+      const assets = Market.assetsInCategory(cat.id).filter(match);
+      if (!assets.length) return;
+
       const head = document.createElement('tr');
       head.className = 'cat-row';
       head.innerHTML =
@@ -7047,7 +8668,7 @@ footer {
         '</span></td>';
       body.appendChild(head);
 
-      Market.assetsInCategory(cat.id).forEach(function (a) {
+      assets.forEach(function (a) {
         const tr = document.createElement('tr');
         tr.innerHTML =
           '<td><div class="asset-cell"><span class="key dot" style="background:' +
@@ -8856,6 +10477,79 @@ footer {
   let mode = 'solo';
   let opponent = null;
 
+  /* ---------------- market search/filter ----------------
+   *
+   * The full asset list runs past 90 names once the expanded universe
+   * lands (js/market.js), so the table defaults to a starter set
+   * (UI.buildMarketRows' own default) and only searches/filters the full
+   * list once the student actually asks for it - see js/ui.js's
+   * isStarterAsset. Returning null here means "no filter active," which
+   * UI.buildMarketRows treats as "show the starter set." */
+  function currentMarketMatch() {
+    const q = $('market-search').value.trim().toLowerCase();
+    const exchange = $('market-filter-exchange').value;
+    const risk = $('market-filter-risk').value;
+    const retBand = $('market-filter-return').value;
+    if (!q && !exchange && !risk && !retBand) return null;
+
+    return function (a) {
+      if (q && a.name.toLowerCase().indexOf(q) === -1 && a.ticker.toLowerCase().indexOf(q) === -1) return false;
+      if (exchange && a.where !== exchange) return false;
+      if (risk && String(a.risk) !== risk) return false;
+      // Filtered on expected return (mu), never past return - sorting by
+      // what already happened would teach "buy last decade's winner,"
+      // which is the one thing this app argues against.
+      if (retBand === 'low' && !(a.mu < 0.04)) return false;
+      if (retBand === 'mid' && !(a.mu >= 0.04 && a.mu <= 0.06)) return false;
+      if (retBand === 'high' && !(a.mu > 0.06)) return false;
+      return true;
+    };
+  }
+
+  function refreshMarketFilter() {
+    if (!state) return;
+    const match = currentMarketMatch();
+    UI.buildMarketRows(state, { onTrade: onTrade }, match);
+    UI.updateMarket(state);
+    const note = $('market-filter-note');
+    if (match) {
+      const shown = Market.ASSETS.filter(match).length;
+      note.hidden = false;
+      note.textContent = 'Showing ' + shown + ' of ' + Market.ASSETS.length + ' assets.';
+    } else {
+      note.hidden = true;
+    }
+  }
+
+  function initMarketFilters() {
+    const exchanges = Array.from(new Set(Market.ASSETS.map(function (a) {
+      return a.where;
+    }))).sort();
+    const select = $('market-filter-exchange');
+    exchanges.forEach(function (w) {
+      const opt = document.createElement('option');
+      opt.value = w;
+      opt.textContent = w;
+      select.appendChild(opt);
+    });
+
+    let searchTimer = null;
+    $('market-search').addEventListener('input', function () {
+      clearTimeout(searchTimer);
+      searchTimer = setTimeout(refreshMarketFilter, 150);
+    });
+    $('market-filter-exchange').addEventListener('change', refreshMarketFilter);
+    $('market-filter-risk').addEventListener('change', refreshMarketFilter);
+    $('market-filter-return').addEventListener('change', refreshMarketFilter);
+    $('market-filter-clear').addEventListener('click', function () {
+      $('market-search').value = '';
+      $('market-filter-exchange').value = '';
+      $('market-filter-risk').value = '';
+      $('market-filter-return').value = '';
+      refreshMarketFilter();
+    });
+  }
+
   function newGame(seed, years, goalId, liveStartPrices) {
     stopPlaying();
     cancelAnimation();
@@ -8871,7 +10565,7 @@ footer {
     // Same market object, so the opponent races on the identical price path.
     opponent = mode === 'comp' ? Opponents.create($('difficulty-input').value, market) : null;
 
-    UI.buildMarketRows(state, { onTrade: onTrade });
+    UI.buildMarketRows(state, { onTrade: onTrade }, currentMarketMatch());
     UI.renderBanner(state, null);
     setNotice('');
     // Any modal belongs to the run that just ended.
@@ -9350,6 +11044,7 @@ footer {
 
   document.addEventListener('DOMContentLoaded', function () {
     initGate();
+    initMarketFilters();
     restoreTheme();
     setupInstall();
 

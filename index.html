@@ -37,7 +37,7 @@
 <meta property="og:image:alt" content="Market Lab — an investing simulator for the classroom">
 <meta name="twitter:card" content="summary_large_image">
 <!-- pwa:end -->
-<link rel="stylesheet" href="css/styles.css?v=23">
+<link rel="stylesheet" href="css/styles.css?v=24">
 </head>
 <body>
 <!-- gate:start — stripped from the single-file bundle (see build.js), which
@@ -538,6 +538,46 @@
         <button type="button" class="term-link" data-term="fees">$3 + 0.5% per trade</button>
       </span>
     </div>
+    <!-- Collapsed to a starter set of 16 by default (see js/ui.js's
+         applyMarketFilter) - the full list runs past 90 assets, and dumping
+         all of it on a student who hasn't asked for it is the opposite of
+         what a search box is for. Typing or picking a filter searches the
+         full list; clearing everything back to blank returns to the
+         starter set. -->
+    <div class="market-filters">
+      <div class="field">
+        <label for="market-search">Search</label>
+        <input id="market-search" type="text" placeholder="Company or ticker&hellip;" autocomplete="off">
+      </div>
+      <div class="field">
+        <label for="market-filter-exchange">Where</label>
+        <select id="market-filter-exchange">
+          <option value="">All</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="market-filter-risk">Risk</label>
+        <select id="market-filter-risk">
+          <option value="">All</option>
+          <option value="1">Very low</option>
+          <option value="2">Low</option>
+          <option value="3">Medium</option>
+          <option value="4">High</option>
+          <option value="5">Extreme</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="market-filter-return">Expected return</label>
+        <select id="market-filter-return">
+          <option value="">All</option>
+          <option value="low">Under 4%</option>
+          <option value="mid">4% to 6%</option>
+          <option value="high">Above 6%</option>
+        </select>
+      </div>
+      <button class="ghost" id="market-filter-clear" type="button">Clear</button>
+    </div>
+    <p class="market-filter-note" id="market-filter-note" hidden></p>
     <div class="table-scroll">
       <table class="market-table">
         <thead>
@@ -780,20 +820,20 @@
   </div>
 </div>
 
-<script src="js/rng.js?v=23"></script>
-<script src="js/market.js?v=23"></script>
-<script src="js/live-prices.js?v=23"></script>
-<script src="js/portfolio.js?v=23"></script>
-<script src="js/goals.js?v=23"></script>
-<script src="js/opponents.js?v=23"></script>
-<script src="js/share.js?v=23"></script>
-<script src="js/charts.js?v=23"></script>
-<script src="js/asset-panel.js?v=23"></script>
-<script src="js/intro.js?v=23"></script>
-<script src="js/ui.js?v=23"></script>
-<script src="js/glossary.js?v=23"></script>
-<script src="js/account.js?v=23"></script>
-<script src="js/leaderboard.js?v=23"></script>
-<script src="js/app.js?v=23"></script>
+<script src="js/rng.js?v=24"></script>
+<script src="js/market.js?v=24"></script>
+<script src="js/live-prices.js?v=24"></script>
+<script src="js/portfolio.js?v=24"></script>
+<script src="js/goals.js?v=24"></script>
+<script src="js/opponents.js?v=24"></script>
+<script src="js/share.js?v=24"></script>
+<script src="js/charts.js?v=24"></script>
+<script src="js/asset-panel.js?v=24"></script>
+<script src="js/intro.js?v=24"></script>
+<script src="js/ui.js?v=24"></script>
+<script src="js/glossary.js?v=24"></script>
+<script src="js/account.js?v=24"></script>
+<script src="js/leaderboard.js?v=24"></script>
+<script src="js/app.js?v=24"></script>
 </body>
 </html>

@@ -601,7 +601,16 @@
 
   const marketRows = {};
 
-  function buildMarketRows(state, handlers) {
+  // Shown when no search/filter is active - the original 16, unmarked by
+  // the expanded universe's `generatedColor` flag (see js/market.js). A
+  // student who hasn't asked to see the other ~75 assets doesn't get them
+  // dumped on screen; searching or picking a filter reveals the full list.
+  function isStarterAsset(a) {
+    return !a.generatedColor;
+  }
+
+  function buildMarketRows(state, handlers, matchFn) {
+    const match = matchFn || isStarterAsset;
     const body = $('market-body');
     body.innerHTML = '';
     Object.keys(marketRows).forEach(function (k) {
@@ -609,6 +618,9 @@
     });
 
     Market.CATEGORIES.forEach(function (cat) {
+      const assets = Market.assetsInCategory(cat.id).filter(match);
+      if (!assets.length) return;
+
       const head = document.createElement('tr');
       head.className = 'cat-row';
       head.innerHTML =
@@ -621,7 +633,7 @@
         '</span></td>';
       body.appendChild(head);
 
-      Market.assetsInCategory(cat.id).forEach(function (a) {
+      assets.forEach(function (a) {
         const tr = document.createElement('tr');
         tr.innerHTML =
           '<td><div class="asset-cell"><span class="key dot" style="background:' +

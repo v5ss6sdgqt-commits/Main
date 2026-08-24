@@ -61,6 +61,79 @@
   let mode = 'solo';
   let opponent = null;
 
+  /* ---------------- market search/filter ----------------
+   *
+   * The full asset list runs past 90 names once the expanded universe
+   * lands (js/market.js), so the table defaults to a starter set
+   * (UI.buildMarketRows' own default) and only searches/filters the full
+   * list once the student actually asks for it - see js/ui.js's
+   * isStarterAsset. Returning null here means "no filter active," which
+   * UI.buildMarketRows treats as "show the starter set." */
+  function currentMarketMatch() {
+    const q = $('market-search').value.trim().toLowerCase();
+    const exchange = $('market-filter-exchange').value;
+    const risk = $('market-filter-risk').value;
+    const retBand = $('market-filter-return').value;
+    if (!q && !exchange && !risk && !retBand) return null;
+
+    return function (a) {
+      if (q && a.name.toLowerCase().indexOf(q) === -1 && a.ticker.toLowerCase().indexOf(q) === -1) return false;
+      if (exchange && a.where !== exchange) return false;
+      if (risk && String(a.risk) !== risk) return false;
+      // Filtered on expected return (mu), never past return - sorting by
+      // what already happened would teach "buy last decade's winner,"
+      // which is the one thing this app argues against.
+      if (retBand === 'low' && !(a.mu < 0.04)) return false;
+      if (retBand === 'mid' && !(a.mu >= 0.04 && a.mu <= 0.06)) return false;
+      if (retBand === 'high' && !(a.mu > 0.06)) return false;
+      return true;
+    };
+  }
+
+  function refreshMarketFilter() {
+    if (!state) return;
+    const match = currentMarketMatch();
+    UI.buildMarketRows(state, { onTrade: onTrade }, match);
+    UI.updateMarket(state);
+    const note = $('market-filter-note');
+    if (match) {
+      const shown = Market.ASSETS.filter(match).length;
+      note.hidden = false;
+      note.textContent = 'Showing ' + shown + ' of ' + Market.ASSETS.length + ' assets.';
+    } else {
+      note.hidden = true;
+    }
+  }
+
+  function initMarketFilters() {
+    const exchanges = Array.from(new Set(Market.ASSETS.map(function (a) {
+      return a.where;
+    }))).sort();
+    const select = $('market-filter-exchange');
+    exchanges.forEach(function (w) {
+      const opt = document.createElement('option');
+      opt.value = w;
+      opt.textContent = w;
+      select.appendChild(opt);
+    });
+
+    let searchTimer = null;
+    $('market-search').addEventListener('input', function () {
+      clearTimeout(searchTimer);
+      searchTimer = setTimeout(refreshMarketFilter, 150);
+    });
+    $('market-filter-exchange').addEventListener('change', refreshMarketFilter);
+    $('market-filter-risk').addEventListener('change', refreshMarketFilter);
+    $('market-filter-return').addEventListener('change', refreshMarketFilter);
+    $('market-filter-clear').addEventListener('click', function () {
+      $('market-search').value = '';
+      $('market-filter-exchange').value = '';
+      $('market-filter-risk').value = '';
+      $('market-filter-return').value = '';
+      refreshMarketFilter();
+    });
+  }
+
   function newGame(seed, years, goalId, liveStartPrices) {
     stopPlaying();
     cancelAnimation();
@@ -76,7 +149,7 @@
     // Same market object, so the opponent races on the identical price path.
     opponent = mode === 'comp' ? Opponents.create($('difficulty-input').value, market) : null;
 
-    UI.buildMarketRows(state, { onTrade: onTrade });
+    UI.buildMarketRows(state, { onTrade: onTrade }, currentMarketMatch());
     UI.renderBanner(state, null);
     setNotice('');
     // Any modal belongs to the run that just ended.
@@ -555,6 +628,7 @@
 
   document.addEventListener('DOMContentLoaded', function () {
     initGate();
+    initMarketFilters();
     restoreTheme();
     setupInstall();
 
