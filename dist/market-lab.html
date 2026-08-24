@@ -1066,6 +1066,12 @@ tbody tr:last-child td {
   }
 }
 
+.gate-admin {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+}
+
 /* ---------- table view toggle ---------- */
 
 .data-table {
@@ -4046,7 +4052,7 @@ footer {
 })(window);
 
 </script>
-<script src="js/live-prices.js?v=17"></script>
+<script src="js/live-prices.js?v=18"></script>
 <script>
 /* Player state, trading, and the benchmark counterfactual.
  *
@@ -9383,6 +9389,37 @@ footer {
     note.textContent = 'Personal memberships aren’t open yet — check back soon.';
   }
 
+  /* A plain local unlock for kicking the tyres on the gate itself while
+   * signup/payment are still being built out - not a real account, not
+   * checked against the backend, and visible to anyone who reads the page
+   * source. Sets the same marketlab_gate_bypass flag the test suite uses
+   * (see gateUnlocked()), so it must never be treated as guarding anything
+   * that actually matters. */
+  const ADMIN_USERNAME = 'marketlab';
+  const ADMIN_PASSWORD = '12345';
+
+  function initGateAdmin() {
+    $('gate-admin-toggle').addEventListener('click', function () {
+      const showing = !$('gate-admin-fields').hidden;
+      $('gate-admin-fields').hidden = showing;
+    });
+
+    $('gate-admin-btn').addEventListener('click', function () {
+      const errorEl = $('gate-admin-error');
+      const ok =
+        $('gate-admin-username').value.trim() === ADMIN_USERNAME &&
+        $('gate-admin-password').value === ADMIN_PASSWORD;
+      if (!ok) {
+        errorEl.hidden = false;
+        errorEl.textContent = 'Wrong username or password.';
+        return;
+      }
+      errorEl.hidden = true;
+      localStorage.setItem('marketlab_gate_bypass', '1');
+      applyGateState();
+    });
+  }
+
   function initGate() {
     const gate = $('gate-screen');
     if (!gate) return;
@@ -9393,6 +9430,7 @@ footer {
     });
 
     $('gate-personal-btn').addEventListener('click', startPersonalMembership);
+    initGateAdmin();
 
     applyGateState();
   }

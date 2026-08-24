@@ -1058,6 +1058,12 @@ tbody tr:last-child td {
   }
 }
 
+.gate-admin {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+}
+
 /* ---------- table view toggle ---------- */
 
 .data-table {

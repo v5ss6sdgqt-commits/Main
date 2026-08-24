@@ -887,6 +887,37 @@
     note.textContent = 'Personal memberships aren’t open yet — check back soon.';
   }
 
+  /* A plain local unlock for kicking the tyres on the gate itself while
+   * signup/payment are still being built out - not a real account, not
+   * checked against the backend, and visible to anyone who reads the page
+   * source. Sets the same marketlab_gate_bypass flag the test suite uses
+   * (see gateUnlocked()), so it must never be treated as guarding anything
+   * that actually matters. */
+  const ADMIN_USERNAME = 'marketlab';
+  const ADMIN_PASSWORD = '12345';
+
+  function initGateAdmin() {
+    $('gate-admin-toggle').addEventListener('click', function () {
+      const showing = !$('gate-admin-fields').hidden;
+      $('gate-admin-fields').hidden = showing;
+    });
+
+    $('gate-admin-btn').addEventListener('click', function () {
+      const errorEl = $('gate-admin-error');
+      const ok =
+        $('gate-admin-username').value.trim() === ADMIN_USERNAME &&
+        $('gate-admin-password').value === ADMIN_PASSWORD;
+      if (!ok) {
+        errorEl.hidden = false;
+        errorEl.textContent = 'Wrong username or password.';
+        return;
+      }
+      errorEl.hidden = true;
+      localStorage.setItem('marketlab_gate_bypass', '1');
+      applyGateState();
+    });
+  }
+
   function initGate() {
     const gate = $('gate-screen');
     if (!gate) return;
@@ -897,6 +928,7 @@
     });
 
     $('gate-personal-btn').addEventListener('click', startPersonalMembership);
+    initGateAdmin();
 
     applyGateState();
   }
