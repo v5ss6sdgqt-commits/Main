@@ -28,7 +28,7 @@
  * On release, bump all three together — CACHE below, VERSION below, and the
  * `?v=` on every tag in index.html. They must agree. */
 
-const VERSION = '21';
+const VERSION = '22';
 const CACHE = 'market-lab-v' + VERSION;
 
 const v = url => url + '?v=' + VERSION;

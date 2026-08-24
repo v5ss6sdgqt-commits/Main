@@ -1198,7 +1198,7 @@ tbody tr:last-child td {
 }
 
 .screenshot {
-  max-width: 420px;
+  max-width: 1000px;
   width: 100%;
   height: auto;
   border-radius: var(--radius);
